@@ -42,6 +42,17 @@ extern const void* ioDigital;
 
 // ********************************************************************************
 /**
+ * Enumeración con las posibles niveles de un ioDigital.
+ */
+enum ioDigital_Level {
+	IODIGITAL_LEVEL_LOW = 0,			///< Nivel lógico bajo.
+	IODIGITAL_LEVEL_HIGH = 1			///< Nivel lógico alto.
+};
+// ********************************************************************************
+
+
+// ********************************************************************************
+/**
  * @name Métodos de la clase ioDigital
  * @{
  */
