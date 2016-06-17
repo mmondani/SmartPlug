@@ -53,6 +53,7 @@ static void* cStaticBuffer_ctor  (void* _this, va_list* va)
 
 	this->len = va_arg(*va, uint32_t);
 	this->objectSize = va_arg(*va, size_t);
+	this->count = 0;
 
 	this->buffer = memAlloc(this->len * this->objectSize);
 	cStaticBuffer_clear(this);
@@ -69,6 +70,7 @@ static void* cStaticBuffer_dtor (void* _this)
 	this->buffer = 0;
 	this->len = 0;
 	this->objectSize = 0;
+	this->count = 0;
 
 	return this;
 }

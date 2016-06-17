@@ -27,6 +27,7 @@ struct cStaticBuffer
 	void* buffer;			///< Puntero al área de memoria reservada para guardar los objetos contenidos en el cStaticBuffer.
 	uint32_t len;			///< Longitud del cStaticBuffer, expresado en cantidad de objetos que puede contener.
 	size_t objectSize;		///< Tamaño, en bytes, del objeto que debe contener el buffer.
+	uint32_t count;			///< Cantidad de elementos almacenados.
 };
 
 // ********************************************************************************
@@ -41,10 +42,12 @@ struct cStaticBuffer
 #define buffer(p)		(((const struct cStaticBuffer*)p)->buffer)
 #define len(p)			(((const struct cStaticBuffer*)p)->len)
 #define objectSize(p)	(((const struct cStaticBuffer*)p)->objectSize)
+#define count(p)		(((const struct cStaticBuffer*)p)->count)
 
 #define set_buffer(p, v)			(((struct cStaticBuffer*)p)->buffer = (v))
 #define set_len(p, v)				(((struct cStaticBuffer*)p)->len = (v))
 #define set_objectSize(p, v)		(((struct cStaticBuffer*)p)->objectSize = (v))
+#define set_count(p, v)				(((struct cStaticBuffer*)p)->count = (v))
 
 
 ///@}

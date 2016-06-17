@@ -110,9 +110,11 @@ static void* cQueue_put (void* _this, void* _object)
 
 	assert(len(this) > 0);
 
-	if (cQueue_getFreeSpace(_this) > 0)
+	if (cQueue_getFreeSpace(this) > 0)
 	{
 		memcpy(buffer(this) + this->ptrIn * objectSize(this), _object, objectSize(this));
+
+		set_count(this, count(this) + 1);
 
 		this->ptrIn ++;
 		if (this->ptrIn >= len(this))
@@ -132,6 +134,8 @@ static void* cQueue_remove (void* _this, void* _object)
 	if (cQueue_getPending(this) > 0)
 	{
 		memcpy(_object, buffer(this) + this->ptrOut * objectSize(this), objectSize(this));
+
+		set_count(this, count(this) - 1);
 
 		this->ptrOut ++;
 		if (this->ptrOut >= len(this))
@@ -163,14 +167,7 @@ static uint32_t cQueue_getFreeSpace (void* _this)
 {
 	struct cQueue* this = _this;
 
-	if (this->ptrOut <= this->ptrIn)
-	{
-		return (len(this) - (this->ptrIn - this->ptrOut));
-	}
-	else
-	{
-		return (this->ptrOut - this->ptrIn);
-	}
+	return (len(this) - count(this));
 }
 
 
@@ -178,14 +175,7 @@ static uint32_t cQueue_getPending (void* _this)
 {
 	struct cQueue* this = _this;
 
-	if (this->ptrOut <= this->ptrIn)
-	{
-		return (this->ptrIn - this->ptrOut);
-	}
-	else
-	{
-		return (len(this) - (this->ptrOut - this->ptrIn));
-	}
+	return (count(this));
 }
 
 
