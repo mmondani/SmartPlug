@@ -13,7 +13,11 @@ OS	ExampleOS {
 
 APPMODE = AppMode1;
 
-EVENT = evBlink;
+EVENT = evSw1;
+EVENT = evSw2;
+EVENT = evSw3;
+
+RESOURCE = resUART3;
 
 TASK TaskInit {
     PRIORITY = 1;
@@ -21,49 +25,57 @@ TASK TaskInit {
     AUTOSTART = TRUE {
         APPMODE = AppMode1;
     }
-    STACK = 512;
+    STACK = 200;
     TYPE = BASIC;
     SCHEDULE = NON;
 }
 
-TASK TaskBlink {
-    PRIORITY = 5;
+TASK InputManager {
+    PRIORITY = 10;
     ACTIVATION = 1;
     STACK = 512;
     TYPE = EXTENDED;
     SCHEDULE = FULL;
-    EVENT = evBlink;
+    EVENT = evSw1;
+    EVENT = evSw2;
+    EVENT = evSw3;
 }
 
-TASK TaskPeriodic {
-    PRIORITY = 10;
+TASK Sender1 {
+    PRIORITY = 5;
     ACTIVATION = 1;
     STACK = 512;
-    TYPE = BASIC;
+    TYPE = EXTENDER;
     SCHEDULE = FULL;
+    EVENT = evSw1;
+    EVENT = evSw2;
+    RESOURCE = resUART3;
 }
 
-TASK TaskBackground {
-    PRIORITY = 1;
+TASK Sender2 {
+    PRIORITY = 5;
     ACTIVATION = 1;
     STACK = 512;
-    TYPE = BASIC;
+    TYPE = EXTENDER;
     SCHEDULE = FULL;
+    EVENT = evSw2;
+    EVENT = evSw3;
+    RESOURCE = resUART3;
 }
 
-ALARM ActivateTaskPeriodic {
+ISR UART3_handler {
+	CATEGORY = 2;
+	INTERRUPT = UART3;
+	PRIORITY = 0;
+}
+
+ALARM ActivateInputManager {
     COUNTER = HardwareCounter;
     ACTION = ACTIVATETASK {
-        TASK = TaskPeriodic;
+        TASK = InputManager;
     }
 }
 
-ALARM AppCallbackAlarm {
-    COUNTER = HardwareCounter;
-    ACTION = ALARMCALLBACK {
-        ALARMCALLBACKNAME = "AppCallback";
-    }
-}
 
 COUNTER HardwareCounter {
    MAXALLOWEDVALUE = 60000000;

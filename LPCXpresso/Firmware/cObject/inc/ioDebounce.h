@@ -95,7 +95,7 @@ uint32_t ioDebounce_getActiveEdge (void* _this);
  * @return	   0 si no se produjo flanco a pasivo.
  * 			   1 si se produjo un flanco a pasivo. La próxima vez que se la llame va a retornar 0.
  */
-uint32_t ioDebounce_getPasiveEdge (void* _this);
+uint32_t ioDebounce_getPassiveEdge (void* _this);
 
 
 ///@}

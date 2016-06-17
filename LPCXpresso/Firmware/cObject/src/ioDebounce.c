@@ -145,7 +145,7 @@ uint32_t ioDebounce_getActiveEdge (void* _this)
 }
 
 
-uint32_t ioDebounce_getPasiveEdge (void* _this)
+uint32_t ioDebounce_getPassiveEdge (void* _this)
 {
 	struct ioDebounce* this = _this;
 	uint32_t ret = 0;
