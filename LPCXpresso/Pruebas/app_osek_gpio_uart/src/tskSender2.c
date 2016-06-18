@@ -6,6 +6,8 @@ static void* uart;
 void tskSender2_init(void* _uart)
 {
 	uart = _uart;
+
+	ActivateTask(Sender2);
 }
 
 
@@ -33,7 +35,7 @@ TASK(Sender2)
 		{
 			// Se presionó el switch 3
 			GetResource(resUART3);
-			ioComm_writeBytes(uart, sizeof ("Switch 3 presionado. Sender2\n\r"), "Switch 2 presionado. Sender2\n\r");
+			ioComm_writeBytes(uart, sizeof ("Switch 3 presionado. Sender2\n\r"), "Switch 3 presionado. Sender2\n\r");
 			ReleaseResource(resUART3);
 		}
 

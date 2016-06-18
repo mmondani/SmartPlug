@@ -63,15 +63,15 @@
 								<option id="com.crt.advproject.link.gcc.hdrlib.1567808386" name="Library" superClass="com.crt.advproject.link.gcc.hdrlib" value="com.crt.advproject.gcc.link.hdrlib.codered.semihost" valueType="enumerated"/>
 								<option id="gnu.c.link.option.libs.2076135089" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="cObject"/>
+									<listOptionValue builtIn="false" value="memAlloc"/>
 									<listOptionValue builtIn="false" value="lpc_board_nxp_lpcxpresso_1769"/>
 									<listOptionValue builtIn="false" value="lpc_chip_175x_6x"/>
-									<listOptionValue builtIn="false" value="memAlloc"/>
 								</option>
 								<option id="gnu.c.link.option.paths.634042218" name="Library search path (-L)" superClass="gnu.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/cObject/Debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memAlloc/Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lpc_board_nxp_lpcxpresso_1769/Debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lpc_chip_175x_6x/Debug}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/memAlloc/Debug}&quot;"/>
 								</option>
 								<option id="com.crt.advproject.link.crpenable.945988918" name="Enable Code Read Protect" superClass="com.crt.advproject.link.crpenable" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.gcc.multicore.slave.1467851286" name="Multicore configuration" superClass="com.crt.advproject.link.gcc.multicore.slave"/>
@@ -79,7 +79,11 @@
 								<option id="com.crt.advproject.link.thumb.457351583" name="Thumb mode" superClass="com.crt.advproject.link.thumb" value="true" valueType="boolean"/>
 								<option id="gnu.c.link.option.nostdlibs.1056033015" name="No startup or default libs (-nostdlib)" superClass="gnu.c.link.option.nostdlibs" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.manage.1224144451" name="Manage linker script" superClass="com.crt.advproject.link.manage" value="true" valueType="boolean"/>
-								<option id="com.crt.advproject.link.script.1540969560" name="Linker script" superClass="com.crt.advproject.link.script" value="app_osek_blinky.ld" valueType="string"/>
+								<option id="com.crt.advproject.link.script.1540969560" name="Linker script" superClass="com.crt.advproject.link.script" value="app_osek_gpio_uart_Debug.ld" valueType="string"/>
+								<option id="gnu.c.link.option.other.52818495" name="Other options (-Xlinker [option])" superClass="gnu.c.link.option.other" valueType="stringList">
+									<listOptionValue builtIn="false" value="-Map=&quot;${BuildArtifactFileBaseName}.map&quot;"/>
+									<listOptionValue builtIn="false" value="--gc-sections"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.218442353" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

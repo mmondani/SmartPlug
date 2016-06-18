@@ -6,6 +6,8 @@ static void* uart;
 void tskSender1_init(void* _uart)
 {
 	uart = _uart;
+
+	ActivateTask(Sender1);
 }
 
 

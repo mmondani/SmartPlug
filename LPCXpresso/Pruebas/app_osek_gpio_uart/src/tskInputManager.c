@@ -12,6 +12,7 @@ static void* debounceSw3;
 
 void tskInputManager_init (void)
 {
+
 	sw1 = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0, 3);
 	ioObject_init(sw1);
 
@@ -25,6 +26,7 @@ void tskInputManager_init (void)
 	debounceSw1 = cObject_new(ioDebounce, sw1, IODIGITAL_LEVEL_HIGH, 4);
 	debounceSw2 = cObject_new(ioDebounce, sw2, IODIGITAL_LEVEL_HIGH, 4);
 	debounceSw3 = cObject_new(ioDebounce, sw3, IODIGITAL_LEVEL_HIGH, 4);
+
 }
 
 

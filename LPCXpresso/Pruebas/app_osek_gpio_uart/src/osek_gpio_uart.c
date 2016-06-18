@@ -52,6 +52,17 @@ int main(void)
 	SystemCoreClockUpdate();
 	initMemHeap();
 
+	uart = cObject_new(ioUART, LPC_UART3, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 100, 10);
+    ioObject_init(uart);
+    ioComm_intEnable(uart, IOUART_INT_TX);
+    //ioComm_intEnable(uart3, IOUART_INT_RX);
+    ioUART_configFIFO(uart, IOUART_FIFO_LEVEL0);
+
+
+    NVIC_SetPriority(UART3_IRQn, 1);
+    NVIC_EnableIRQ(UART3_IRQn);
+
+
 	// Comienza el RTOS en el modo AppMode1
     StartOS(AppMode1);
 
@@ -73,14 +84,7 @@ TASK(TaskInit)
 	tskInputManager_init();
 
 
-	uart = cObject_new(ioUART, LPC_UART3, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 100, 10);
-    ioObject_init(uart);
-    ioComm_intEnable(uart, IOUART_INT_TX);
-    //ioComm_intEnable(uart3, IOUART_INT_RX);
-    ioUART_configFIFO(uart, IOUART_FIFO_LEVEL0);
 
-    NVIC_SetPriority(UART3_IRQn, 1);
-    NVIC_EnableIRQ(UART3_IRQn);
 
 	tskSender1_init(uart);
 	tskSender2_init(uart);
