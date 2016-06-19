@@ -35,6 +35,7 @@
 #include "tskInputManager.h"
 #include "tskSender1.h"
 #include "tskSender2.h"
+#include "tskEchoTask.h"
 
 
 
@@ -80,7 +81,7 @@ TASK(TaskInit)
 	uart = cObject_new(ioUART, LPC_UART3, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 100, 10);
     ioObject_init(uart);
     ioComm_intEnable(uart, IOUART_INT_TX);
-    //ioComm_intEnable(uart3, IOUART_INT_RX);
+    ioComm_intEnable(uart, IOUART_INT_RX);
     ioUART_configFIFO(uart, IOUART_FIFO_LEVEL0);
 
     NVIC_SetPriority(UART3_IRQn, 1);
@@ -88,9 +89,10 @@ TASK(TaskInit)
 
 
 
-	tskInputManager_init();
+	tskInputManager_init(uart);
 	tskSender1_init(uart);
 	tskSender2_init(uart);
+	tskEchoTask_init(uart);
 
 
 	// Cada 10 ms se va llamar a InpurManager para que muestree los switches.
@@ -107,9 +109,9 @@ ISR(UART3_handler)
 	{
 		ioUART_txHandler(uart);
 	}
-	/*else if(ioComm_getInt(uart3, IOUART_INT_ID_RX))
+	else if(ioComm_getInt(uart, IOUART_INT_ID_RX))
 	{
-		ioUART_rxHandler(uart3);
-	}*/
+		ioUART_rxHandler(uart);
+	}
 }
 

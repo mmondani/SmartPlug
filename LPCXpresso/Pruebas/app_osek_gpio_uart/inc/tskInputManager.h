@@ -5,9 +5,10 @@
 #include "memAlloc.h"
 #include "cObject.h"
 #include "ioDebounce.h"
+#include "ioUART.h"
 
 
-void tskInputManager_init (void);
+void tskInputManager_init (void* _uart);
 
 
 

@@ -7,11 +7,12 @@ static void* sw3;
 static void* debounceSw1;
 static void* debounceSw2;
 static void* debounceSw3;
+static void* uart;
 
 
-
-void tskInputManager_init (void)
+void tskInputManager_init (void* _uart)
 {
+	uart = _uart;
 
 	sw1 = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0, 3);
 	ioObject_init(sw1);
@@ -34,7 +35,7 @@ void tskInputManager_init (void)
 
 /*
  * Este task se ejecuta periódicamente cada 10 mseg y genera
- * los eventos cuando se presiona un pulsador.
+ * los eventos cuando se presiona un pulsador o llega un mensaje por la UART
  */
 TASK(InputManager)
 {
@@ -54,6 +55,9 @@ TASK(InputManager)
 
 	if (ioDebounce_getActiveEdge(debounceSw3))
 		SetEvent(Sender2, evSw3);
+
+	if (ioComm_dataAvailable(uart))
+		SetEvent(EchoTask, evRxMsg);
 
 	TerminateTask();
 }

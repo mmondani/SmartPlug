@@ -16,6 +16,7 @@ APPMODE = AppMode1;
 EVENT = evSw1;
 EVENT = evSw2;
 EVENT = evSw3;
+EVENT = evRxMsg;
 
 RESOURCE = resUART3;
 
@@ -39,6 +40,7 @@ TASK InputManager {
     EVENT = evSw1;
     EVENT = evSw2;
     EVENT = evSw3;
+    EVENT = evRxMsg;
 }
 
 TASK Sender1 {
@@ -62,6 +64,17 @@ TASK Sender2 {
     EVENT = evSw3;
     RESOURCE = resUART3;
 }
+
+TASK EchoTask {
+    PRIORITY = 5;
+    ACTIVATION = 1;
+    STACK = 512;
+    TYPE = EXTENDED;
+    SCHEDULE = FULL;
+    EVENT = evRxMsg;
+    RESOURCE = resUART3;
+}
+
 
 ISR UART3_handler {
 	CATEGORY = 2;
