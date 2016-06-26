@@ -98,7 +98,7 @@ enum ioSPI_Interrupt_ID{
  * @brief      Configura la velocidad del clock del SPI.
  *
  * @param      _this   instancia de la clase ioSPI.
- * @param      clock   valocidad de clock a configurar.
+ * @param      clock   velocidad de clock a configurar.
  */
 void ioSPI_setClock (void* _this, uint32_t clock);
 
