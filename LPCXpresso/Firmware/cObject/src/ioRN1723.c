@@ -131,7 +131,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define EV_WPS_SUCCESS_RECEIVED			0x00000080
 #define EV_ASSOCIATED_RECEIVED			0x00000100
 
-#define ev_isTriggered(v,e)		((v & e == 0)? 0 : 1)
+#define ev_isTriggered(v,e)		(((v & e) == 0)? 0 : 1)
 #define ev_emit(v,e)			(v |= e)
 #define ev_flush(v)				(v = 0)
 // ********************************************************************************
@@ -166,6 +166,8 @@ static void* ioRN1723_ctor  (void* _this, va_list* va)
 	this->uart = va_arg(*va, void*);
 	this->gpioNetwork = va_arg(*va, void*);
 	this->gpioTCP = va_arg(*va, void*);
+	this->inBuffer = va_arg(*va, void*);
+	this->outBuffer = va_arg(*va, void*);
 
 	this->cmdBuffer = cObject_new(cQueue, 40, sizeof(char));
 
@@ -198,7 +200,7 @@ static uint32_t ioRN1723_differ (void* _this, void* _dst)
 	struct ioRN1723* dst = _dst;
 
 	return ( cObject_differ(uart(this), uart(dst)) || cObject_differ(gpioNetwork(this), gpioNetwork(dst)) || cObject_differ(gpioTCP(this), gpioTCP(dst)) ||
-			(authenticated(this) != authenticated(dst)) || (tcpConnected(this) != tcpConnected(dst)) );
+			(this->authenticated != dst->authenticated) || (this->tcpConnected != dst->tcpConnected) );
 }
 
 
@@ -239,7 +241,6 @@ static uint32_t ioRN1723_init (void* _this)
 
 static uint32_t ioRN1723_deInit (void* _this)
 {
-	Chip_SSP_DeInit(periphMem(_this));
 
 	return 0;
 }
@@ -247,7 +248,6 @@ static uint32_t ioRN1723_deInit (void* _this)
 
 static uint32_t ioRN1723_enable (void* _this)
 {
-	Chip_SSP_Enable(periphMem(_this));
 
 	return 0;
 }
@@ -255,7 +255,6 @@ static uint32_t ioRN1723_enable (void* _this)
 
 static uint32_t ioRN1723_disable (void* _this)
 {
-	Chip_SSP_Disable(periphMem(_this));
 
 	return 0;
 }
@@ -265,17 +264,7 @@ static uint32_t ioRN1723_read (void* _this)
 {
 	struct ioRN1723* this = _this;
 
-	// Se limpia el Status del SSP
-	Chip_SSP_ClearIntPending(periphMem(this), SSP_INT_CLEAR_BITMASK);
-
-	// Se envía un dato dummy para recibir.
-	Chip_SSP_SendFrame(periphMem(this), 0xFFFF);
-
-	// Espera hasta recibir el dato.
-	while (Chip_SSP_GetStatus(periphMem(this), SSP_STAT_RNE) == RESET);
-
-	// Se lee el dato recibido
-	return ( Chip_SSP_ReceiveFrame(periphMem(this)) );
+	return 0;
 }
 
 
@@ -284,18 +273,6 @@ static uint32_t ioRN1723_write (void* _this, uint32_t data)
 	struct ioRN1723* this = _this;
 
 
-	// Se limpia el Status del SSP
-	Chip_SSP_ClearIntPending(periphMem(this), SSP_INT_CLEAR_BITMASK);
-
-	// Se envía un dato
-	Chip_SSP_SendFrame(periphMem(this), data);
-
-	// Espera hasta recibir el dato.
-	while (Chip_SSP_GetStatus(periphMem(this), SSP_STAT_RNE) == RESET);
-
-	// Limpia el buffer de Rx
-	Chip_SSP_ReceiveFrame(periphMem(this));
-
 	return 0;
 }
 
@@ -303,32 +280,16 @@ static uint32_t ioRN1723_write (void* _this, uint32_t data)
 static uint32_t ioRN1723_writeBytes (void* _this, uint32_t len, uint8_t* data)
 {
 	struct ioRN1723* this = _this;
-	uint32_t i;
-	uint16_t data16;
 
-	for (i = 0; i < len; i++)
-	{
-		data16 = *(data+i);
-		ioRN1723_write(this, data16);
-	}
-
-	return len;
+	return 0;
 }
 
 
 static uint32_t ioRN1723_readBytes (void* _this, uint32_t len, uint8_t* data)
 {
 	struct ioRN1723* this = _this;
-	uint32_t i;
-	uint8_t data8;
 
-	for (i = 0; i < len; i++)
-	{
-		data8 = ioRN1723_read(this);
-		*(data+i) = data8;
-	}
-
-	return len;
+	return 0;
 }
 
 
@@ -346,19 +307,19 @@ static uint32_t ioRN1723_dataAvailable (void* _this)
 
 static void ioRN1723_intEnable (void* _this, uint32_t mask)
 {
-	Chip_SSP_Int_Enable(periphMem(_this));
+
 }
 
 
 static void ioRN1723_intDisable (void* _this, uint32_t mask)
 {
-	Chip_SSP_Int_Disable(periphMem(_this));
+
 }
 
 
 static uint32_t ioRN1723_getInt (void* _this, uint32_t intID)
 {
-	return ( Chip_SSP_GetRawIntStatus(periphMem(_this), intID) == SET );
+	return 0;
 }
 
 
@@ -367,7 +328,7 @@ static uint32_t ioRN1723_getInt (void* _this, uint32_t intID)
 void ioRN1723_handler (void* _this)
 {
 	struct ioRN1723* this = _this;
-	uint32_t i;
+	uint32_t i, count;
 	uint8_t data;
 
 
@@ -420,7 +381,8 @@ void ioRN1723_handler (void* _this)
 					this->cmdMode = 1;
 
 					// Se entró en el modo de comando, se envía el comando que está en cmdBuffer
-					for (i = 0; i < cBuffer_getPending(cmdBuffer(this)); i++)
+					count = cBuffer_getPending(cmdBuffer(this));
+					for (i = 0; i < count; i++)
 					{
 						if(ioComm_freeSpace(uart(this)) > 0)
 						{
@@ -438,11 +400,9 @@ void ioRN1723_handler (void* _this)
 				}
 				else if (ev_isTriggered(this->events, EV_OPEN_RECEIVED))
 				{
-					this->tcpConnected = 1;
 				}
 				else if (ev_isTriggered(this->events, EV_CLOSE_RECEIVED))
 				{
-					this->tcpConnected = 0;
 				}
 				else if (ev_isTriggered(this->events, EV_WPS_SUCCESS_RECEIVED))
 				{
@@ -450,7 +410,7 @@ void ioRN1723_handler (void* _this)
 				}
 				else if (ev_isTriggered(this->events, EV_ASSOCIATED_RECEIVED))
 				{
-					this->authenticated = 1;
+
 				}
 				else if (ev_isTriggered(this->events, EV_ERR_RECEIVED))
 				{
@@ -463,6 +423,8 @@ void ioRN1723_handler (void* _this)
 			this->fsm_state = FSM_IDLE;
 			break;
 	}
+
+	ev_flush(this->events);
 }
 
 
@@ -538,11 +500,13 @@ void processRX (void* _this)
 				case RESP_OPEN:
 					ev_emit(this->events, EV_OPEN_RECEIVED);
 					ev_emit(this->events, EV_RESP_RECEIVED);
+					this->tcpConnected = 1;
 					break;
 
 				case RESP_CLOSE:
 					ev_emit(this->events, EV_CLOSE_RECEIVED);
 					ev_emit(this->events, EV_RESP_RECEIVED);
+					this->tcpConnected = 0;
 					break;
 
 				case RESP_WPS_SUCCESS:
@@ -553,6 +517,7 @@ void processRX (void* _this)
 				case RESP_ASSOCIATED:
 					ev_emit(this->events, EV_ASSOCIATED_RECEIVED);
 					ev_emit(this->events, EV_RESP_RECEIVED);
+					this->authenticated = 1;
 					break;
 
 				default:
@@ -560,6 +525,7 @@ void processRX (void* _this)
 			}
 
 			this->responseIndex = 0;
+			responseNumber = -1;
 		}
 
 
@@ -578,7 +544,7 @@ void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params)
 	uint8_t c;
 
 
-	//Si no está en modo comando, primero se debe entrar en este modo y luego enviar el comando.
+	// Si no está en modo comando, primero se debe entrar en este modo y luego enviar el comando.
 	// Si está en modo comando, directamente se envía por la UART.
 	if (this->cmdMode == 1)
 	{
@@ -632,8 +598,10 @@ void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params)
 
 
 		// Se envía por la UART el comando para entrar en modo comando
-		if(ioComm_freeSpace(uart(this)) > 2)
+		if(ioComm_freeSpace(uart(this)) > 3)
+		{
 			ioComm_writeBytes(uart(this), 3, "$$$");
+		}
 	}
 
 	this->fsm_state = FSM_WAIT4ANSWER;

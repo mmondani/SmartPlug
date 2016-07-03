@@ -221,7 +221,12 @@ static uint32_t ioUART_write (void* _this, uint32_t data)
 	if (this->mode == IOUART_MODE_NON_BLOCKING)
 	{
 		if (cBuffer_getFreeSpace(this->txQueue) > 0)
+		{
 			cBuffer_put(this->txQueue, (void*)&data8);
+
+			// Se envía el primer caracter
+			ioUART_txHandler(this);
+		}
 		else
 			res = 1;
 	}
@@ -252,9 +257,6 @@ static uint32_t ioUART_writeBytes (void* _this, uint32_t len, uint8_t* data)
 				cBuffer_put(this->txQueue, (void*)(data+i));
 			}
 
-			// Se envía el primer caracter
-			ioUART_txHandler(this);
-
 			writtenBytes = len;
 		}
 		else
@@ -266,8 +268,10 @@ static uint32_t ioUART_writeBytes (void* _this, uint32_t len, uint8_t* data)
 			}
 
 			writtenBytes = freeSpace;
-
 		}
+
+		// Se envía el primer caracter
+		ioUART_txHandler(this);
 	}
 	else
 	{
@@ -362,8 +366,12 @@ void ioUART_txHandler (void* _this)
 
 	if (cBuffer_getPending(this->txQueue))
 	{
-		cBuffer_remove(this->txQueue, &data);
-		Chip_UART_SendByte(periphMem(this), data);
+		//Se verifica que haya lugar en el FIFO de TX de la UART.
+		if (((Chip_UART_ReadLineStatus(periphMem(this)) & UART_LSR_THRE) != 0))
+		{
+			cBuffer_remove(this->txQueue, &data);
+			Chip_UART_SendByte(periphMem(this), data);
+		}
 	}
 }
 
