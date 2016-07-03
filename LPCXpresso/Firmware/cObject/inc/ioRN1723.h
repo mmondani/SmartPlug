@@ -20,6 +20,7 @@
 #include "ioComm.h"
 #include "ioDigital.h"
 #include "ioUART.h"
+#include "cQueue.h"
 
 
 
@@ -29,12 +30,14 @@
  * @brief Nombre de la clase.
  * @details La forma de instanciar esta clase es la siguiente:
  * @code
- * void* module = cObject_new(ioRN1723, uart, network, tcp)
+ * void* module = cObject_new(ioRN1723, uart, network, tcp, inBuff, outBuff)
  * @endcode
  * @param ioRN1723 			nombre de la clase a instanciar.
  * @param uart				instancia de la clase @ref grp_ioUART a través de la que se va a establecer la comunicación con el módulo.
  * @param network			instancia de la clase @ref grp_ioDigital configurado como entrada y conectado al GPIO4 del módulo RN1723.
  * @param tcp				instancia de la clase @ref grp_ioDigital configurado como entrada y conectado al GPIO6 del módulo RN1723.
+ * @param inBuff			instancia de la clase @ref grp_cQueue usada para enviar datos al módulo
+ * @param outBuff			instancia de la clase @ref grp_cQueue usada para recibir datos del módulo.
  */
 extern const void* ioRN1723;
 
@@ -53,7 +56,7 @@ extern const void* ioRN1723;
  *
  * @param      _this   instancia de la clase ioRN1723.
  */
-void ioRN1723_handler (void* _this, uint32_t retries);
+void ioRN1723_handler (void* _this);
 
 
 /**

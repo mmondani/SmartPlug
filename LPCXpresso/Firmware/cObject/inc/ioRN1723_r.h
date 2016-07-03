@@ -28,8 +28,16 @@ struct ioRN1723
 	void* uart;						///< Instancia de la clase @ref grp_ioUART a tavés de la cual se comunica con el módulo RN1723.
 	void* gpioNetwork;				///< Instancia de la clase @ref grp_ioDigital configurado como entrada y conectado al GPIO4 del módulo RN1723.
 	void* gpioTCP;					///< Instancia de la clase @ref grp_ioDigital configurado como entrada y conectado al GPIO6 del módulo RN1723.
-	uint32_t tcpConnected;			///< Indica si hay conexión TCP abierta o no.
-	uint32_t authenticated;			///< Indica si está autenticado en una red WiFi o no.
+	void* outBuffer;				///< Buffer en donde se guardan los datos a enviar al módulo.
+	void* inBuffer;					///< Buffer en donde se guardan los datos recibidos desde el módulo.
+	void* cmdBuffer;				///< Buffer en donde se guarda el comando a enviar al módulo hasta entrar en el modo comando.
+	uint32_t events;				///< Eventos que recibe la FSM.
+	uint32_t responseIndex;			///< Variable usada para parsear las respuestas del módulo.
+	uint32_t fsm_state;				///< Estado actual de la FSM del módulo.
+	uint32_t config_state;			///< Estado actual de la FSM de configuración del módulo.
+	uint32_t tcpConnected:1;		///< Indica si hay conexión TCP abierta o no.
+	uint32_t authenticated:1;		///< Indica si está autenticado en una red WiFi o no.
+	uint32_t cmdMode:1;				///< Indica si está en modo comando o no.
 };
 
 // ********************************************************************************
@@ -41,17 +49,15 @@ struct ioRN1723
  * @brief Macros de get y set para ser usados de forma privada por la clase ioRN1723 y por las que la heredan.
  * @{
 */
-#define uart(p)						(((const struct ioSPI*)p)->uart)
-#define gpioNetwork(p)				(((const struct ioSPI*)p)->gpioNetwork)
-#define gpioTCP(p)			    	(((const struct ioSPI*)p)->gpioTCP)
-#define tcpConnected(p)				(((const struct ioSPI*)p)->tcpConnected)
-#define authenticated(p)	    	(((const struct ioSPI*)p)->authenticated)
+#define uart(p)						(((const struct ioRN1723*)p)->uart)
+#define gpioNetwork(p)				(((const struct ioRN1723*)p)->gpioNetwork)
+#define gpioTCP(p)			    	(((const struct ioRN1723*)p)->gpioTCP)
+#define cmdBuffer(p)				(((const struct ioRN1723*)p)->cmdBuffer)
 
-#define set_uart(p, v)				(((struct ioSPI*)p)->uart = (v))
-#define set_gpioNetwork(p, v)		(((struct ioSPI*)p)->gpioNetwork = (v))
-#define set_gpioTCP(p, v)			(((struct ioSPI*)p)->gpioTCP = (v))
-#define set_tcpConnected(p, v)		(((struct ioSPI*)p)->tcpConnected = (v))
-#define set_authenticated(p, v)		(((struct ioSPI*)p)->authenticated = (v))
+#define set_uart(p, v)				(((struct ioRN1723*)p)->uart = (v))
+#define set_gpioNetwork(p, v)		(((struct ioRN1723*)p)->gpioNetwork = (v))
+#define set_gpioTCP(p, v)			(((struct ioRN1723*)p)->gpioTCP = (v))
+#define set_cmdBuffer(p, v)			(((struct ioRN1723*)p)->cmdBuffer = (v))
 
 ///@}
 // ********************************************************************************
