@@ -21,6 +21,7 @@
 #include "cObject.h"
 #include "ioUART.h"
 #include "ioRN1723.h"
+#include "ioDebounce.h"
 
 void* uart2;
 void* rn1723;
@@ -28,12 +29,15 @@ void* gpioIP;
 void* gpioTCP;
 void* outBuffer;
 void* inBuffer;
+void* gpioConfig;
+void* swConfig;
 
 
 void SysTick_Handler(void)
 {
-	//ioComm_writeBytes(uart3, sizeof ("Hola mundo\n\r"), str1);
 	ioRN1723_handler(rn1723);
+
+	ioDebounce_handler(swConfig);
 }
 
 
@@ -81,14 +85,26 @@ int main(void)
 
 
     rn1723 = cObject_new(ioRN1723, uart2, gpioIP, gpioTCP, inBuffer, outBuffer);
-    ioObject_init(rn1723);
+
+
+    // Al presionarlo se configura el RN1723
+    gpioConfig = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,3);
+    ioObject_init(gpioConfig);
+
+    swConfig = cObject_new(ioDebounce, gpioConfig, IODIGITAL_LEVEL_HIGH, 3);
+
 
     SysTick_Config(SystemCoreClock / 10);
 
 
     while(1)
     {
-
+    	if (ioDebounce_getActiveEdge(swConfig))
+    	{
+    		// El módulo debe estar desocupado.
+    		if (ioRN1723_isIdle(rn1723))
+    			ioObject_init(rn1723);
+    	}
     }
 
 

@@ -32,9 +32,9 @@ struct ioRN1723
 	void* inBuffer;					///< Buffer en donde se guardan los datos recibidos desde el módulo.
 	void* cmdBuffer;				///< Buffer en donde se guarda el comando a enviar al módulo hasta entrar en el modo comando.
 	uint32_t events;				///< Eventos que recibe la FSM.
-	uint32_t responseIndex;			///< Variable usada para parsear las respuestas del módulo.
-	uint32_t fsm_state;				///< Estado actual de la FSM del módulo.
-	uint32_t config_state;			///< Estado actual de la FSM de configuración del módulo.
+	uint8_t responseIndex;			///< Variable usada para parsear las respuestas del módulo.
+	uint8_t fsm_state;				///< Estado actual de la FSM del módulo.
+	uint8_t config_state;			///< Estado actual de la FSM de configuración del módulo.
 	uint32_t tcpConnected:1;		///< Indica si hay conexión TCP abierta o no.
 	uint32_t authenticated:1;		///< Indica si está autenticado en una red WiFi o no.
 	uint32_t cmdMode:1;				///< Indica si está en modo comando o no.

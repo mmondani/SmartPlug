@@ -71,19 +71,21 @@ const uint8_t* cmdWLANJoin = "set wlan join";
 const uint8_t* cmdSysIOfunc = "set sys iofunc";
 const uint8_t* cmdCmdMode = "$$$";
 const uint8_t* cmdExit = "exit";
+const uint8_t* cmdSave = "save";
 
 
 #define CMD_WLAN_JOIN		cmdWLANJoin
 #define CMD_SYS_IOFUNC		cmdSysIOfunc
 #define CMD_CMD_MODE		cmdCmdMode
 #define CMD_EXIT			cmdExit
+#define CMD_SAVE			cmdSave
 
 // ********************************************************************************
 
 // ********************************************************************************
 // Definiciones de las respuestas del módulo
 // ********************************************************************************
-#define RN_RESPONSES_COUNT		8
+#define RN_RESPONSES_COUNT		9
 uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"OK",
 												"ERR",
@@ -92,7 +94,8 @@ uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"*OPEN*",
 												"*CLOS*",
 												"CMD",
-												"EXIT"
+												"EXIT",
+												"Storing in config"
 };
 
 uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
@@ -103,7 +106,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 												6,
 												6,
 												3,
-												4
+												4,
+												17
 };
 
 #define RESP_OK						0
@@ -114,6 +118,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define RESP_CLOSE					5
 #define RESP_CMD					6
 #define	 RESP_EXIT					7
+#define	 RESP_SAVE_OK				8
 
 // ********************************************************************************
 
@@ -130,6 +135,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define EV_CLOSE_RECEIVED				0x00000040
 #define EV_WPS_SUCCESS_RECEIVED			0x00000080
 #define EV_ASSOCIATED_RECEIVED			0x00000100
+#define EV_SAVE_OK_RECEIVED				0x00000200
 
 #define ev_isTriggered(v,e)		(((v & e) == 0)? 0 : 1)
 #define ev_emit(v,e)			(v |= e)
@@ -151,6 +157,7 @@ enum {
 enum {
 	CONFIG_WLAN_JOIN = 0,
 	CONFIG_IOFUNC,
+	CONFIG_SAVE,
 	CONFIG_EXIT,
 	CONFIG_FINAL
 };
@@ -349,6 +356,11 @@ void ioRN1723_handler (void* _this)
 						this->config_state++;
 						break;
 
+					case CONFIG_SAVE:
+						sendCmd(this, cmdSave, "");
+						this->config_state++;
+						break;
+
 					case CONFIG_EXIT:
 						sendCmd(this, cmdExit, "");
 						this->config_state++;
@@ -398,6 +410,10 @@ void ioRN1723_handler (void* _this)
 					this->cmdMode = 0;
 					this->fsm_state = FSM_IDLE;
 				}
+				else if (ev_isTriggered(this->events, EV_SAVE_OK_RECEIVED))
+				{
+					this->fsm_state = FSM_IDLE;
+				}
 				else if (ev_isTriggered(this->events, EV_OPEN_RECEIVED))
 				{
 				}
@@ -428,6 +444,12 @@ void ioRN1723_handler (void* _this)
 }
 
 
+uint32_t ioRN1723_isIdle (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	return (this->fsm_state == FSM_IDLE);
+}
 
 
 // ********************************************************************************
@@ -518,6 +540,11 @@ void processRX (void* _this)
 					ev_emit(this->events, EV_ASSOCIATED_RECEIVED);
 					ev_emit(this->events, EV_RESP_RECEIVED);
 					this->authenticated = 1;
+					break;
+
+				case RESP_SAVE_OK:
+					ev_emit(this->events, EV_SAVE_OK_RECEIVED);
+					ev_emit(this->events, EV_RESP_RECEIVED);
 					break;
 
 				default:

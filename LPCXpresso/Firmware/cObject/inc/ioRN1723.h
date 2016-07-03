@@ -60,6 +60,14 @@ void ioRN1723_handler (void* _this);
 
 
 /**
+ * @brief      Devuelve si la lógica está en estado idle o no.
+ *
+ * @param      _this   instancia de la clase ioRN1723.
+ */
+uint32_t ioRN1723_isIdle (void* _this);
+
+
+/**
  * @brief      Comienza el proceso de WPS en el módulo. Va a intentar conectarse la cantidad de retries indicada.
  *
  * @param      _this   instancia de la clase ioRN1723.
