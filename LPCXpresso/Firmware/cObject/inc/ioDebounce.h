@@ -69,7 +69,7 @@ void ioDebounce_handler (void* _this);
  * @param      _this  instancia de la clase ioDebounce.
  *
  * @return     0 si la entrada no está activa.
- * 			   1 ai la entrada está activa.
+ * 			   1 si la entrada está activa.
  */
 uint32_t ioDebounce_isActive (void* _this);
 
