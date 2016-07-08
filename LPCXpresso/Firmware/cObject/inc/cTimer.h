@@ -45,6 +45,13 @@ extern const void* cTimer;
 
 
 /**
+ * @brief      método estático. Debe ser llamado periódicamente usando la base de tiempo deseada para los cTimers.
+ *
+ */
+void cTimer_handler (void);
+
+
+/**
  * @brief      inicia el timer con el intervalo interval
  *
  * @param      _this  instancia de la clase cTimer.

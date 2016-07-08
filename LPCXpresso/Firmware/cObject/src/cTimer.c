@@ -32,6 +32,12 @@ const void* cTimer = &_cTimer;
 // ********************************************************************************
 
 
+// ********************************************************************************
+// Miembros estáticos de la clase cTimer
+// ********************************************************************************
+static uint32_t ticks = 0;
+// ********************************************************************************
+
 
 
 static void* cTimer_ctor  (void* _this, va_list* va)
@@ -83,34 +89,55 @@ static void* cTimer_copy (void* _this, void* _src)
 }
 
 
+void cTimer_handler (void)
+{
+	ticks++;
+}
+
 
 void cTimer_start (void* _this, uint32_t interval)
 {
+	struct cTimer* this = _this;
 
+	this->start = ticks;
+	this->interval = interval;
+	this->running = 1;
 }
 
 
 void cTimer_restart (void* _this)
 {
+	struct cTimer* this = _this;
 
+	this->start = ticks;
+	this->running = 1;
 }
 
 
 uint32_t cTimer_hasExpired (void* _this)
 {
+	struct cTimer* this = _this;
 
+	if(this->running)
+		return ( (ticks - this->start) > this->interval);
+	else
+		return 0;
 }
 
 
 void cTimer_stop (void* _this)
 {
+	struct cTimer* this = _this;
 
+	this->running = 0;
 }
 
 
 uint32_t cTimer_isRunning (void* _this)
 {
+	struct cTimer* this = _this;
 
+	return (this->running);
 }
 
 
