@@ -37,6 +37,8 @@ void* gpioLeave;
 void* swLeave;
 void* gpioOpenTcp;
 void* swOpenTcp;
+void* gpioCloseTcp;
+void* swCloseTcp;
 void* gpioSend1Tcp;
 void* swSend1Tcp;
 
@@ -51,6 +53,7 @@ void SysTick_Handler(void)
 	ioDebounce_handler(swWPS);
 	ioDebounce_handler(swLeave);
 	ioDebounce_handler(swOpenTcp);
+	ioDebounce_handler(swCloseTcp);
 	ioDebounce_handler(swSend1Tcp);
 }
 
@@ -119,6 +122,11 @@ int main(void)
     ioObject_init(gpioOpenTcp);
     swOpenTcp = cObject_new(ioDebounce, gpioOpenTcp, IODIGITAL_LEVEL_HIGH, 300);
 
+    // Al presionarlo cierra la conexión TCP
+    gpioCloseTcp = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2,11);
+    ioObject_init(gpioCloseTcp);
+    swCloseTcp = cObject_new(ioDebounce, gpioCloseTcp, IODIGITAL_LEVEL_HIGH, 300);
+
     // Al presionarlo se envía un mensaje por TCP
     gpioSend1Tcp = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2,6);
     ioObject_init(gpioSend1Tcp);
@@ -158,6 +166,12 @@ int main(void)
 			// El módulo debe estar desconectado de un socket
 			if (ioRN1723_isTCPConnected(rn1723) == 0)
 				ioRN1723_connectTCP(rn1723, "192.168.0.103", "9871");
+		}
+    	if (ioDebounce_getActiveEdge(swCloseTcp))
+		{
+			// El módulo debe estar conectado a un socket
+			if (ioRN1723_isTCPConnected(rn1723))
+				ioRN1723_disconnectTCP(rn1723);
 		}
     	if (ioDebounce_getActiveEdge(swSend1Tcp))
 		{

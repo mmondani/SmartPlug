@@ -77,6 +77,7 @@ const uint8_t* cmdSave = "save";
 const uint8_t* cmdRunWPS = "run wps";
 const uint8_t* cmdLeave = "leave";
 const uint8_t* cmdOpen = "open";
+const uint8_t* cmdClose = "close";
 
 
 #define CMD_WLAN_JOIN		cmdWLANJoin
@@ -87,6 +88,7 @@ const uint8_t* cmdOpen = "open";
 #define CMD_RUN_WPS			cmdRunWPS
 #define CMD_LEAVE			cmdLeave
 #define CMD_OPEN			cmdOpen
+#define CMD_CLOSE			cmdClose
 
 // ********************************************************************************
 
@@ -193,7 +195,8 @@ enum {
 	FSM_SENDING_CMD = 0x300,
 	FSM_WAIT4ANSWER = 0x400,
 	FSM_WPS_WAIT4REBOOT = 0x500,
-	FSM_LEAVE_NETWORK = 0x600
+	FSM_LEAVE_NETWORK = 0x600,
+	FSM_CLOSE_TCP = 0x700
 };
 
 enum {
@@ -203,6 +206,8 @@ enum {
 	CONFIG_EXIT = FSM_CONFIG | 4,
 	LEAVE_NETWORK_CMD = FSM_LEAVE_NETWORK | 1,
 	LEAVE_NETWORK_EXIT = FSM_LEAVE_NETWORK | 2,
+	CLOSE_TCP_CMD = FSM_CLOSE_TCP | 1,
+	CLOSE_TCP_EXIT = FSM_CLOSE_TCP | 2,
 };
 // ********************************************************************************
 
@@ -587,6 +592,26 @@ void ioRN1723_handler (void* _this)
 			}
 			break;
 
+			case FSM_CLOSE_TCP:
+				switch (this->fsm_sub_state)
+				{
+					case CLOSE_TCP_CMD:
+						sendCmd(this, CMD_CLOSE, "", RESP_FILTER_CLOSE, 2000);
+						this->fsm_sub_state = CLOSE_TCP_EXIT;
+						break;
+
+					case CLOSE_TCP_EXIT:
+						sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+						this->fsm_sub_state = FSM_NO_SUBSTATE;
+						break;
+
+					default:
+						this->fsm_state = FSM_IDLE;
+						this->fsm_sub_state = FSM_NO_SUBSTATE;
+						break;
+				}
+				break;
+
 		default:
 			this->fsm_state = FSM_IDLE;
 			break;
@@ -658,6 +683,18 @@ void ioRN1723_connectTCP (void* _this, uint8_t* ip, uint8_t* port)
 	sendCmd(this, CMD_OPEN, socket, RESP_FILTER_OPEN | RESP_FILTER_CONNECT_FAILED, 8000);
 
 	//this->retries = retries;
+}
+
+
+void ioRN1723_disconnectTCP (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	if (ioRN1723_isTCPConnected(this))
+	{
+		this->fsm_state = FSM_CLOSE_TCP;
+		this->fsm_sub_state = CLOSE_TCP_CMD;
+	}
 }
 
 
