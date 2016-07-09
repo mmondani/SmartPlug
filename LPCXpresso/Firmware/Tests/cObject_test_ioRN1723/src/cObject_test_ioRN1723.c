@@ -33,6 +33,8 @@ void* gpioConfig;
 void* swConfig;
 void* gpioWPS;
 void* swWPS;
+void* gpioLeave;
+void* swLeave;
 
 
 void SysTick_Handler(void)
@@ -41,6 +43,7 @@ void SysTick_Handler(void)
 
 	ioDebounce_handler(swConfig);
 	ioDebounce_handler(swWPS);
+	ioDebounce_handler(swLeave);
 }
 
 
@@ -100,6 +103,11 @@ int main(void)
     ioObject_init(gpioConfig);
     swWPS = cObject_new(ioDebounce, gpioWPS, IODIGITAL_LEVEL_HIGH, 30);
 
+    // Al presionarlo se abandona la red a la que está unido el módulo
+    gpioLeave = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,28);
+    ioObject_init(gpioConfig);
+    swLeave = cObject_new(ioDebounce, gpioLeave, IODIGITAL_LEVEL_HIGH, 30);
+
 
     SysTick_Config(SystemCoreClock / 100);
 
@@ -118,6 +126,16 @@ int main(void)
     		if (ioRN1723_isIdle(rn1723))
     			ioRN1723_runWPS(rn1723, 3);
     	}
+    	if (ioDebounce_getActiveEdge(swLeave))
+		{
+			// El módulo debe estar desocupado.
+			if (ioRN1723_isIdle(rn1723))
+			{
+				// El módulo debe estar unido a una red
+				if (ioRN1723_isAuthenticated(rn1723))
+					ioRN1723_leaveNetwork(rn1723);
+			}
+		}
     }
 
 

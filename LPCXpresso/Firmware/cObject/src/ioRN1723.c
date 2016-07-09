@@ -73,6 +73,7 @@ const uint8_t* cmdCmdMode = "$$$";
 const uint8_t* cmdExit = "exit";
 const uint8_t* cmdSave = "save";
 const uint8_t* cmdRunWPS = "run wps";
+const uint8_t* cmdLeave = "leave";
 
 
 #define CMD_WLAN_JOIN		cmdWLANJoin
@@ -81,13 +82,14 @@ const uint8_t* cmdRunWPS = "run wps";
 #define CMD_EXIT			cmdExit
 #define CMD_SAVE			cmdSave
 #define CMD_RUN_WPS			cmdRunWPS
+#define CMD_LEAVE			cmdLeave
 
 // ********************************************************************************
 
 // ********************************************************************************
 // Definiciones de las respuestas del módulo
 // ********************************************************************************
-#define RN_RESPONSES_COUNT		11
+#define RN_RESPONSES_COUNT		12
 uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"OK",
 												"ERR",
@@ -99,7 +101,8 @@ uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"EXIT",
 												"Storing in config",
 												"WPS-FAILED",
-												"*READY*"
+												"*READY*",
+												"DeAuth"
 };
 
 uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
@@ -113,7 +116,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 												4,
 												17,
 												10,
-												7
+												7,
+												6
 };
 
 #define RESP_OK						0
@@ -127,6 +131,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_SAVE_OK				8
 #define	 RESP_WPS_FAILED			9
 #define	 RESP_READY					10
+#define	 RESP_DEAUTH				11
 
 #define RESP_FILTER_OK					(1 << 0)
 #define RESP_FILTER_ERROR				(1 << 1)
@@ -139,6 +144,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_FILTER_SAVE_OK			(1 << 8)
 #define	 RESP_FILTER_WPS_FAILED			(1 << 9)
 #define	 RESP_FILTER_READY				(1 << 10)
+#define	 RESP_FILTER_DEAUTH				(1 << 11)
 
 // ********************************************************************************
 
@@ -158,6 +164,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define EV_SAVE_OK_RECEIVED				0x00000200
 #define EV_WPS_FAILED_RECEIVED			0x00000400
 #define EV_READY_RECEIVED				0x00000800
+#define EV_DEAUTH_RECEIVED				0x00001000
 
 #define ev_isTriggered(v,e)		(((v & e) == 0)? 0 : 1)
 #define ev_emit(v,e)			(v |= e)
@@ -176,14 +183,17 @@ enum {
 	FSM_IDLE = 0x200,
 	FSM_SENDING_CMD = 0x300,
 	FSM_WAIT4ANSWER = 0x400,
-	FSM_WPS_WAIT4REBOOT = 0x500
+	FSM_WPS_WAIT4REBOOT = 0x500,
+	FSM_LEAVE_NETWORK = 0x600
 };
 
 enum {
 	CONFIG_WLAN_JOIN = FSM_CONFIG | 1,
 	CONFIG_IOFUNC = FSM_CONFIG | 2,
 	CONFIG_SAVE = FSM_CONFIG | 3,
-	CONFIG_EXIT = FSM_CONFIG | 4
+	CONFIG_EXIT = FSM_CONFIG | 4,
+	LEAVE_NETWORK_CMD = FSM_LEAVE_NETWORK | 1,
+	LEAVE_NETWORK_EXIT = FSM_LEAVE_NETWORK | 2,
 };
 // ********************************************************************************
 
@@ -475,6 +485,10 @@ void ioRN1723_handler (void* _this)
 						this->fsm_state = FSM_IDLE;
 					}
 				}
+				else if (ev_isTriggered(this->events, EV_DEAUTH_RECEIVED))
+				{
+					this->fsm_state = FSM_IDLE;
+				}
 				else if (ev_isTriggered(this->events, EV_ERR_RECEIVED))
 				{
 					// TODO: gestionar errores
@@ -489,6 +503,25 @@ void ioRN1723_handler (void* _this)
 			}
 			break;
 
+		case FSM_LEAVE_NETWORK:
+			switch (this->fsm_sub_state)
+			{
+				case LEAVE_NETWORK_CMD:
+					sendCmd(this, CMD_LEAVE, "", RESP_FILTER_DEAUTH);
+					this->fsm_sub_state = LEAVE_NETWORK_EXIT;
+					break;
+
+				case LEAVE_NETWORK_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
 
 		default:
 			this->fsm_state = FSM_IDLE;
@@ -511,12 +544,33 @@ void ioRN1723_runWPS (void* _this, uint32_t retries)
 {
 	struct ioRN1723* this = _this;
 
-
 	sendCmd(this, CMD_RUN_WPS, "", RESP_FILTER_WPS_SUCCESS | RESP_FILTER_WPS_FAILED);
 
 	this->retries = retries;
 }
 
+
+void ioRN1723_runConfigWebServer (void* _this)
+{
+
+}
+
+
+uint32_t ioRN1723_isAuthenticated (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	return (this->authenticated == 1);
+}
+
+
+void ioRN1723_leaveNetwork (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	this->fsm_state = FSM_LEAVE_NETWORK;
+	this->fsm_sub_state = LEAVE_NETWORK_CMD;
+}
 
 // ********************************************************************************
 // ********************************************************************************
@@ -642,6 +696,12 @@ void processRX (void* _this)
 				case RESP_READY:
 					ev_emit(this->events, EV_READY_RECEIVED);
 					ev_emit(this->events, EV_RESP_RECEIVED);
+					break;
+
+				case RESP_DEAUTH:
+					ev_emit(this->events, EV_DEAUTH_RECEIVED);
+					ev_emit(this->events, EV_RESP_RECEIVED);
+					this->authenticated = 0;
 					break;
 
 				default:
