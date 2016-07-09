@@ -8,6 +8,8 @@
 #include "ioRN1723.h"
 #include "ioRN1723_r.h"
 
+#include "cTimer.h"
+
 
 static void* ioRN1723_ctor  (void* _this, va_list* va);
 static void* ioRN1723_dtor (void* _this);
@@ -60,7 +62,7 @@ const void* ioRN1723 = &_ioRN1723;
 // Funciones privadas
 // ********************************************************************************
 void processRX (void* _this);
-void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerFilter);
+void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerFilter, uint32_t timeout);
 // ********************************************************************************
 
 
@@ -205,12 +207,12 @@ static void* ioRN1723_ctor  (void* _this, va_list* va)
 
 
 	this->uart = va_arg(*va, void*);
-	this->gpioNetwork = va_arg(*va, void*);
-	this->gpioTCP = va_arg(*va, void*);
+	this->gpioReset = va_arg(*va, void*);
 	this->inBuffer = va_arg(*va, void*);
 	this->outBuffer = va_arg(*va, void*);
 
 	this->cmdBuffer = cObject_new(cQueue, 40, sizeof(char));
+	this->timer = cObject_new(cTimer);
 
 	this->authenticated = 0;
 	this->tcpConnected = 0;
@@ -240,7 +242,7 @@ static uint32_t ioRN1723_differ (void* _this, void* _dst)
 	struct ioRN1723* this = _this;
 	struct ioRN1723* dst = _dst;
 
-	return ( cObject_differ(uart(this), uart(dst)) || cObject_differ(gpioNetwork(this), gpioNetwork(dst)) || cObject_differ(gpioTCP(this), gpioTCP(dst)) ||
+	return ( cObject_differ(uart(this), uart(dst)) || cObject_differ(gpioReset(this), gpioReset(dst)) ||
 			(this->authenticated != dst->authenticated) || (this->tcpConnected != dst->tcpConnected) );
 }
 
@@ -257,8 +259,7 @@ static void* ioRN1723_copy (void* _this, void* _src)
 	struct ioRN1723* src = src;
 
 	cObject_copy(uart(this), uart(src));
-	cObject_copy(gpioNetwork(this), gpioNetwork(src));
-	cObject_copy(gpioTCP(this), gpioTCP(src));
+	cObject_copy(gpioReset(this), gpioReset(src));
 	this->authenticated = src->authenticated;
 	this->tcpConnected = src->tcpConnected;
 
@@ -372,6 +373,7 @@ void ioRN1723_handler (void* _this)
 	uint32_t i, count;
 	uint8_t data;
 
+	ioObject_write(gpioReset(this), 1);
 
 	processRX(this);
 
@@ -389,22 +391,22 @@ void ioRN1723_handler (void* _this)
 				switch(this->fsm_sub_state)
 				{
 					case CONFIG_WLAN_JOIN:
-						sendCmd(this, CMD_WLAN_JOIN, "1", RESP_FILTER_OK | RESP_FILTER_ERROR);
+						sendCmd(this, CMD_WLAN_JOIN, "1", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
 						this->fsm_sub_state = CONFIG_IOFUNC;
 						break;
 
 					case CONFIG_IOFUNC:
-						sendCmd(this, CMD_SYS_IOFUNC, "0x50", RESP_FILTER_OK | RESP_FILTER_ERROR);
+						sendCmd(this, CMD_SYS_IOFUNC, "0x50", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
 						this->fsm_sub_state = CONFIG_SAVE;
 						break;
 
 					case CONFIG_SAVE:
-						sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK);
+						sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
 						this->fsm_sub_state = CONFIG_EXIT;
 						break;
 
 					case CONFIG_EXIT:
-						sendCmd(this, cmdExit, "", RESP_FILTER_EXIT);
+						sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
 						this->fsm_sub_state = FSM_NO_SUBSTATE;
 						break;
 
@@ -494,12 +496,24 @@ void ioRN1723_handler (void* _this)
 					// TODO: gestionar errores
 				}
 			}
+			else
+			{
+				if (cTimer_hasExpired(timer(this)))
+				{
+					// Se produjo un timeout esperando una respueta.
+					// Se resetea el módulo para tratar de salvarlo.
+					ioObject_write(gpioReset(this), 0);
+					this->fsm_state = FSM_WAIT4READY;
+					this->cmdMode = 0;
+				}
+			}
+
 			break;
 
 		case FSM_WPS_WAIT4REBOOT:
 			if (ev_isTriggered(this->events, EV_READY_RECEIVED))
 			{
-				sendCmd(this, CMD_RUN_WPS, "", RESP_FILTER_WPS_SUCCESS | RESP_FILTER_WPS_FAILED);
+				sendCmd(this, CMD_RUN_WPS, "", RESP_FILTER_WPS_SUCCESS | RESP_FILTER_WPS_FAILED, 8000);
 			}
 			break;
 
@@ -507,12 +521,12 @@ void ioRN1723_handler (void* _this)
 			switch (this->fsm_sub_state)
 			{
 				case LEAVE_NETWORK_CMD:
-					sendCmd(this, CMD_LEAVE, "", RESP_FILTER_DEAUTH);
+					sendCmd(this, CMD_LEAVE, "", RESP_FILTER_DEAUTH, 2000);
 					this->fsm_sub_state = LEAVE_NETWORK_EXIT;
 					break;
 
 				case LEAVE_NETWORK_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT);
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -544,7 +558,7 @@ void ioRN1723_runWPS (void* _this, uint32_t retries)
 {
 	struct ioRN1723* this = _this;
 
-	sendCmd(this, CMD_RUN_WPS, "", RESP_FILTER_WPS_SUCCESS | RESP_FILTER_WPS_FAILED);
+	sendCmd(this, CMD_RUN_WPS, "", RESP_FILTER_WPS_SUCCESS | RESP_FILTER_WPS_FAILED, 8000);
 
 	this->retries = retries;
 }
@@ -721,7 +735,7 @@ void processRX (void* _this)
 }
 
 
-void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerFilter)
+void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerFilter, uint32_t timeout)
 {
 	struct ioRN1723* this = _this;
 	uint8_t i;
@@ -794,6 +808,7 @@ void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerF
 		this->answerFilter = answerFilter | RESP_FILTER_CMD;
 	}
 
+	cTimer_start(timer(this), timeout);
 	this->fsm_state = FSM_WAIT4ANSWER;
 }
 

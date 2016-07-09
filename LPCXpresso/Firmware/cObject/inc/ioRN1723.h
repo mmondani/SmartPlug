@@ -30,12 +30,11 @@
  * @brief Nombre de la clase.
  * @details La forma de instanciar esta clase es la siguiente:
  * @code
- * void* module = cObject_new(ioRN1723, uart, network, tcp, inBuff, outBuff)
+ * void* module = cObject_new(ioRN1723, uart, reset, inBuff, outBuff)
  * @endcode
  * @param ioRN1723 			nombre de la clase a instanciar.
  * @param uart				instancia de la clase @ref grp_ioUART a través de la que se va a establecer la comunicación con el módulo.
- * @param network			instancia de la clase @ref grp_ioDigital configurado como entrada y conectado al GPIO4 del módulo RN1723.
- * @param tcp				instancia de la clase @ref grp_ioDigital configurado como entrada y conectado al GPIO6 del módulo RN1723.
+ * @param reset				instancia de la clase @ref grp_ioDigital conectado al pin RESET del módulo RN1723.
  * @param inBuff			instancia de la clase @ref grp_cQueue usada para enviar datos al módulo
  * @param outBuff			instancia de la clase @ref grp_cQueue usada para recibir datos del módulo.
  */

@@ -22,11 +22,11 @@
 #include "ioUART.h"
 #include "ioRN1723.h"
 #include "ioDebounce.h"
+#include "cTimer.h"
 
 void* uart2;
 void* rn1723;
-void* gpioIP;
-void* gpioTCP;
+void* gpioReset;
 void* outBuffer;
 void* inBuffer;
 void* gpioConfig;
@@ -40,6 +40,8 @@ void* swLeave;
 void SysTick_Handler(void)
 {
 	ioRN1723_handler(rn1723);
+
+	cTimer_handler();
 
 	ioDebounce_handler(swConfig);
 	ioDebounce_handler(swWPS);
@@ -70,10 +72,8 @@ int main(void)
 
     initMemHeap();
 
-    gpioIP = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2, 4);
-    ioObject_init(gpioIP);
-    gpioTCP = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2, 5);
-    ioObject_init(gpioTCP);
+    gpioReset = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 4);
+    ioObject_init(gpioReset);
 
 
     uart2 = cObject_new(ioUART, LPC_UART2, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 50, 50);
@@ -90,26 +90,26 @@ int main(void)
     outBuffer = cObject_new(cQueue, 10, sizeof(uint8_t));
 
 
-    rn1723 = cObject_new(ioRN1723, uart2, gpioIP, gpioTCP, inBuffer, outBuffer);
+    rn1723 = cObject_new(ioRN1723, uart2, gpioReset, inBuffer, outBuffer);
 
 
     // Al presionarlo se configura el RN1723
     gpioConfig = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,3);
     ioObject_init(gpioConfig);
-    swConfig = cObject_new(ioDebounce, gpioConfig, IODIGITAL_LEVEL_HIGH, 30);
+    swConfig = cObject_new(ioDebounce, gpioConfig, IODIGITAL_LEVEL_HIGH, 300);
 
     // Al presionarlo se dispara el proceso de WPS en el RN1723
     gpioWPS = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,27);
     ioObject_init(gpioConfig);
-    swWPS = cObject_new(ioDebounce, gpioWPS, IODIGITAL_LEVEL_HIGH, 30);
+    swWPS = cObject_new(ioDebounce, gpioWPS, IODIGITAL_LEVEL_HIGH, 300);
 
     // Al presionarlo se abandona la red a la que está unido el módulo
     gpioLeave = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,28);
     ioObject_init(gpioConfig);
-    swLeave = cObject_new(ioDebounce, gpioLeave, IODIGITAL_LEVEL_HIGH, 30);
+    swLeave = cObject_new(ioDebounce, gpioLeave, IODIGITAL_LEVEL_HIGH, 300);
 
 
-    SysTick_Config(SystemCoreClock / 100);
+    SysTick_Config(SystemCoreClock / 1000);
 
 
     while(1)

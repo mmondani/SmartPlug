@@ -26,11 +26,11 @@ struct ioRN1723
 {
 	const void* class;				///< Puntero a la interfaz @ref grp_ioComm
 	void* uart;						///< Instancia de la clase @ref grp_ioUART a tavés de la cual se comunica con el módulo RN1723.
-	void* gpioNetwork;				///< Instancia de la clase @ref grp_ioDigital configurado como entrada y conectado al GPIO4 del módulo RN1723.
-	void* gpioTCP;					///< Instancia de la clase @ref grp_ioDigital configurado como entrada y conectado al GPIO6 del módulo RN1723.
+	void* gpioReset;				///< Instancia de la clase @ref grp_ioDigital conectado al pin RESET del módulo RN1723.
 	void* outBuffer;				///< Buffer en donde se guardan los datos a enviar al módulo.
 	void* inBuffer;					///< Buffer en donde se guardan los datos recibidos desde el módulo.
 	void* cmdBuffer;				///< Buffer en donde se guarda el comando a enviar al módulo hasta entrar en el modo comando.
+	void* timer;					///< Instancia de la clase @ref grp_cTimer usado para el timeout de las operaciones. Se debe proveer una base de tiempo de 1ms.
 	uint32_t events;				///< Eventos que recibe la FSM.
 	uint32_t retries;				///< Cantidad de reintentos restantes para distintas operaciones.
 	uint8_t responseIndex;			///< Variable usada para parsear las respuestas del módulo.
@@ -52,14 +52,14 @@ struct ioRN1723
  * @{
 */
 #define uart(p)						(((const struct ioRN1723*)p)->uart)
-#define gpioNetwork(p)				(((const struct ioRN1723*)p)->gpioNetwork)
-#define gpioTCP(p)			    	(((const struct ioRN1723*)p)->gpioTCP)
+#define gpioReset(p)				(((const struct ioRN1723*)p)->gpioReset)
 #define cmdBuffer(p)				(((const struct ioRN1723*)p)->cmdBuffer)
+#define timer(p)					(((const struct ioRN1723*)p)->timer)
 
 #define set_uart(p, v)				(((struct ioRN1723*)p)->uart = (v))
-#define set_gpioNetwork(p, v)		(((struct ioRN1723*)p)->gpioNetwork = (v))
-#define set_gpioTCP(p, v)			(((struct ioRN1723*)p)->gpioTCP = (v))
+#define set_gpioReset(p, v)			(((struct ioRN1723*)p)->gpioReset = (v))
 #define set_cmdBuffer(p, v)			(((struct ioRN1723*)p)->cmdBuffer = (v))
+#define set_timer(p, v)				(((struct ioRN1723*)p)->timer = (v))
 
 ///@}
 // ********************************************************************************
