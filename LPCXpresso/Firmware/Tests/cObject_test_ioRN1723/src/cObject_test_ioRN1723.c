@@ -31,6 +31,8 @@ void* outBuffer;
 void* inBuffer;
 void* gpioConfig;
 void* swConfig;
+void* gpioWPS;
+void* swWPS;
 
 
 void SysTick_Handler(void)
@@ -38,6 +40,7 @@ void SysTick_Handler(void)
 	ioRN1723_handler(rn1723);
 
 	ioDebounce_handler(swConfig);
+	ioDebounce_handler(swWPS);
 }
 
 
@@ -90,8 +93,12 @@ int main(void)
     // Al presionarlo se configura el RN1723
     gpioConfig = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,3);
     ioObject_init(gpioConfig);
-
     swConfig = cObject_new(ioDebounce, gpioConfig, IODIGITAL_LEVEL_HIGH, 3);
+
+    // Al presionarlo se dispara el proceso de WPS en el RN1723
+    gpioWPS = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,27);
+    ioObject_init(gpioConfig);
+    swWPS = cObject_new(ioDebounce, gpioWPS, IODIGITAL_LEVEL_HIGH, 3);
 
 
     SysTick_Config(SystemCoreClock / 10);
@@ -104,6 +111,12 @@ int main(void)
     		// El módulo debe estar desocupado.
     		if (ioRN1723_isIdle(rn1723))
     			ioObject_init(rn1723);
+    	}
+    	if (ioDebounce_getActiveEdge(swWPS))
+    	{
+    		// El módulo debe estar desocupado.
+    		if (ioRN1723_isIdle(rn1723))
+    			ioRN1723_runWPS(rn1723, 3);
     	}
     }
 
