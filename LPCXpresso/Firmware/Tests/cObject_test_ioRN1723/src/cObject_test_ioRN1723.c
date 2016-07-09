@@ -93,15 +93,15 @@ int main(void)
     // Al presionarlo se configura el RN1723
     gpioConfig = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,3);
     ioObject_init(gpioConfig);
-    swConfig = cObject_new(ioDebounce, gpioConfig, IODIGITAL_LEVEL_HIGH, 3);
+    swConfig = cObject_new(ioDebounce, gpioConfig, IODIGITAL_LEVEL_HIGH, 30);
 
     // Al presionarlo se dispara el proceso de WPS en el RN1723
     gpioWPS = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0,27);
     ioObject_init(gpioConfig);
-    swWPS = cObject_new(ioDebounce, gpioWPS, IODIGITAL_LEVEL_HIGH, 3);
+    swWPS = cObject_new(ioDebounce, gpioWPS, IODIGITAL_LEVEL_HIGH, 30);
 
 
-    SysTick_Config(SystemCoreClock / 10);
+    SysTick_Config(SystemCoreClock / 100);
 
 
     while(1)

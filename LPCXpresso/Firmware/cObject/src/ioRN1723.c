@@ -87,7 +87,7 @@ const uint8_t* cmdRunWPS = "run wps";
 // ********************************************************************************
 // Definiciones de las respuestas del módulo
 // ********************************************************************************
-#define RN_RESPONSES_COUNT		10
+#define RN_RESPONSES_COUNT		11
 uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"OK",
 												"ERR",
@@ -98,7 +98,8 @@ uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"CMD",
 												"EXIT",
 												"Storing in config",
-												"WPS-FAILED"
+												"WPS-FAILED",
+												"*READY*"
 };
 
 uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
@@ -111,7 +112,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 												3,
 												4,
 												17,
-												10
+												10,
+												7
 };
 
 #define RESP_OK						0
@@ -124,6 +126,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_EXIT					7
 #define	 RESP_SAVE_OK				8
 #define	 RESP_WPS_FAILED			9
+#define	 RESP_READY					10
 
 #define RESP_FILTER_OK					(1 << 0)
 #define RESP_FILTER_ERROR				(1 << 1)
@@ -135,6 +138,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_FILTER_EXIT				(1 << 7)
 #define	 RESP_FILTER_SAVE_OK			(1 << 8)
 #define	 RESP_FILTER_WPS_FAILED			(1 << 9)
+#define	 RESP_FILTER_READY				(1 << 10)
 
 // ********************************************************************************
 
@@ -153,6 +157,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define EV_ASSOCIATED_RECEIVED			0x00000100
 #define EV_SAVE_OK_RECEIVED				0x00000200
 #define EV_WPS_FAILED_RECEIVED			0x00000400
+#define EV_READY_RECEIVED				0x00000800
 
 #define ev_isTriggered(v,e)		(((v & e) == 0)? 0 : 1)
 #define ev_emit(v,e)			(v |= e)
@@ -166,12 +171,12 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define FSM_NO_SUBSTATE			0xFFFFFFFF
 
 enum {
+	FSM_WAIT4READY = 0x000,
 	FSM_CONFIG = 0x100,
 	FSM_IDLE = 0x200,
 	FSM_SENDING_CMD = 0x300,
 	FSM_WAIT4ANSWER = 0x400,
-	FSM_WAIT4CMD = 0x500,
-	FSM_WAIT_WPS_RESULT = 0x600
+	FSM_WPS_WAIT4REBOOT = 0x500
 };
 
 enum {
@@ -199,7 +204,7 @@ static void* ioRN1723_ctor  (void* _this, va_list* va)
 
 	this->authenticated = 0;
 	this->tcpConnected = 0;
-	this->fsm_state = FSM_IDLE;
+	this->fsm_state = FSM_WAIT4READY;
 	this->fsm_sub_state = FSM_NO_SUBSTATE;
 	this->events = 0;
 	this->responseIndex = 0;
@@ -362,6 +367,14 @@ void ioRN1723_handler (void* _this)
 
 	switch (this->fsm_state)
 	{
+		case FSM_WAIT4READY:
+			if (ev_isTriggered(this->events, EV_READY_RECEIVED))
+			{
+				this->fsm_state = FSM_IDLE;
+			}
+
+			break;
+
 		case FSM_CONFIG:
 				switch(this->fsm_sub_state)
 				{
@@ -446,15 +459,20 @@ void ioRN1723_handler (void* _this)
 				}
 				else if (ev_isTriggered(this->events, EV_WPS_SUCCESS_RECEIVED))
 				{
-					if (this->fsm_state == )
+					this->cmdMode = 0;
 					this->fsm_state = FSM_IDLE;
 				}
 				else if (ev_isTriggered(this->events, EV_WPS_FAILED_RECEIVED))
 				{
+					this->retries --;
+					this->cmdMode = 0;
 					if (this->retries > 0)
 					{
-						this->retries --;
-						sendCmd(this, CMD_RUN_WPS, "", FSM_WAIT_WPS_RESULT);
+						this->fsm_state = FSM_WPS_WAIT4REBOOT;
+					}
+					else
+					{
+						this->fsm_state = FSM_IDLE;
 					}
 				}
 				else if (ev_isTriggered(this->events, EV_ERR_RECEIVED))
@@ -464,12 +482,13 @@ void ioRN1723_handler (void* _this)
 			}
 			break;
 
-		case FSM_WAIT_WPS_RESULT:
-			if (ev_isTriggered(this->events, EV_RESP_RECEIVED))
+		case FSM_WPS_WAIT4REBOOT:
+			if (ev_isTriggered(this->events, EV_READY_RECEIVED))
 			{
-
+				sendCmd(this, CMD_RUN_WPS, "", RESP_FILTER_WPS_SUCCESS | RESP_FILTER_WPS_FAILED);
 			}
 			break;
+
 
 		default:
 			this->fsm_state = FSM_IDLE;
@@ -491,9 +510,9 @@ uint32_t ioRN1723_isIdle (void* _this)
 void ioRN1723_runWPS (void* _this, uint32_t retries)
 {
 	struct ioRN1723* this = _this;
-	uint32_t res = 0;
 
-	sendCmd(this, CMD_RUN_WPS, "", FSM_WAIT_WPS_RESULT);
+
+	sendCmd(this, CMD_RUN_WPS, "", RESP_FILTER_WPS_SUCCESS | RESP_FILTER_WPS_FAILED);
 
 	this->retries = retries;
 }
@@ -620,6 +639,11 @@ void processRX (void* _this)
 					}
 					break;
 
+				case RESP_READY:
+					ev_emit(this->events, EV_READY_RECEIVED);
+					ev_emit(this->events, EV_RESP_RECEIVED);
+					break;
+
 				default:
 					break;
 			}
@@ -670,8 +694,8 @@ void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerF
 		// CR final
 		ioObject_write(uart(this), 13);
 
-		// Al filtro de respuestas se le agrega el de CMD
-		this->answerFilter = answerFilter | RESP_FILTER_CMD;
+		// Se configura el filtro de respuestas
+		this->answerFilter = answerFilter;
 	}
 	else
 	{
@@ -706,8 +730,8 @@ void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerF
 			ioComm_writeBytes(uart(this), 3, "$$$");
 		}
 
-		// e configura el filtro de respuestas
-		this->answerFilter = answerFilter;
+		// Al filtro de respuestas se le agrega el de CMD
+		this->answerFilter = answerFilter | RESP_FILTER_CMD;
 	}
 
 	this->fsm_state = FSM_WAIT4ANSWER;
