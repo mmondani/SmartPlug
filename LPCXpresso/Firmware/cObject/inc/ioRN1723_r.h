@@ -33,6 +33,7 @@ struct ioRN1723
 	void* timer;					///< Instancia de la clase @ref grp_cTimer usado para el timeout de las operaciones. Se debe proveer una base de tiempo de 1ms.
 	uint32_t events;				///< Eventos que recibe la FSM.
 	uint32_t retries;				///< Cantidad de reintentos restantes para distintas operaciones.
+	uint32_t possibleResponses;		///< Cada bit i indicasi la i-esima respuesta es posible que llegue o no de acuerdo al parseo de lo recibido por la UART desde el módulo.
 	uint8_t responseIndex;			///< Variable usada para parsear las respuestas del módulo.
 	uint32_t fsm_state;				///< Estado actual de la FSM del módulo.
 	uint32_t fsm_sub_state;			///< Sub-estado actual
@@ -55,11 +56,15 @@ struct ioRN1723
 #define gpioReset(p)				(((const struct ioRN1723*)p)->gpioReset)
 #define cmdBuffer(p)				(((const struct ioRN1723*)p)->cmdBuffer)
 #define timer(p)					(((const struct ioRN1723*)p)->timer)
+#define outBuffer(p)				(((const struct ioRN1723*)p)->outBuffer)
+#define inBuffer(p)					(((const struct ioRN1723*)p)->inBuffer)
 
 #define set_uart(p, v)				(((struct ioRN1723*)p)->uart = (v))
 #define set_gpioReset(p, v)			(((struct ioRN1723*)p)->gpioReset = (v))
 #define set_cmdBuffer(p, v)			(((struct ioRN1723*)p)->cmdBuffer = (v))
 #define set_timer(p, v)				(((struct ioRN1723*)p)->timer = (v))
+#define set_outBuffer(p, v)			(((struct ioRN1723*)p)->outBuffer = (v))
+#define set_inBuffer(p, v)			(((struct ioRN1723*)p)->inBuffer = (v))
 
 ///@}
 // ********************************************************************************

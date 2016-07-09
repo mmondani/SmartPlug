@@ -76,6 +76,7 @@ const uint8_t* cmdExit = "exit";
 const uint8_t* cmdSave = "save";
 const uint8_t* cmdRunWPS = "run wps";
 const uint8_t* cmdLeave = "leave";
+const uint8_t* cmdOpen = "open";
 
 
 #define CMD_WLAN_JOIN		cmdWLANJoin
@@ -85,13 +86,14 @@ const uint8_t* cmdLeave = "leave";
 #define CMD_SAVE			cmdSave
 #define CMD_RUN_WPS			cmdRunWPS
 #define CMD_LEAVE			cmdLeave
+#define CMD_OPEN			cmdOpen
 
 // ********************************************************************************
 
 // ********************************************************************************
 // Definiciones de las respuestas del módulo
 // ********************************************************************************
-#define RN_RESPONSES_COUNT		12
+#define RN_RESPONSES_COUNT		13
 uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"OK",
 												"ERR",
@@ -104,7 +106,8 @@ uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"Storing in config",
 												"WPS-FAILED",
 												"*READY*",
-												"DeAuth"
+												"DeAuth",
+												"Connect FAILED"
 };
 
 uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
@@ -119,7 +122,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 												17,
 												10,
 												7,
-												6
+												6,
+												14
 };
 
 #define RESP_OK						0
@@ -134,6 +138,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_WPS_FAILED			9
 #define	 RESP_READY					10
 #define	 RESP_DEAUTH				11
+#define	 RESP_CONNECT_FAILED		12
 
 #define RESP_FILTER_OK					(1 << 0)
 #define RESP_FILTER_ERROR				(1 << 1)
@@ -147,6 +152,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_FILTER_WPS_FAILED			(1 << 9)
 #define	 RESP_FILTER_READY				(1 << 10)
 #define	 RESP_FILTER_DEAUTH				(1 << 11)
+#define	 RESP_FILTER_CONNECT_FAILED		(1 << 12)
 
 // ********************************************************************************
 
@@ -167,6 +173,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define EV_WPS_FAILED_RECEIVED			0x00000400
 #define EV_READY_RECEIVED				0x00000800
 #define EV_DEAUTH_RECEIVED				0x00001000
+#define EV_CONNECT_FAILED_RECEIVED		0x00002000
 
 #define ev_isTriggered(v,e)		(((v & e) == 0)? 0 : 1)
 #define ev_emit(v,e)			(v |= e)
@@ -221,6 +228,8 @@ static void* ioRN1723_ctor  (void* _this, va_list* va)
 	this->events = 0;
 	this->responseIndex = 0;
 	this->cmdMode = 0;
+	this->answerFilter = 0;
+	this->possibleResponses = 0xFFFFFFFF;
 
 
 	return this;
@@ -314,16 +323,35 @@ static uint32_t ioRN1723_write (void* _this, uint32_t data)
 {
 	struct ioRN1723* this = _this;
 
-
-	return 0;
+	if (cBuffer_getFreeSpace(outBuffer(this)) > 0)
+	{
+		cBuffer_put(outBuffer(this), &data);
+		return 0;
+	}
+	else
+		return 1;
 }
 
 
 static uint32_t ioRN1723_writeBytes (void* _this, uint32_t len, uint8_t* data)
 {
 	struct ioRN1723* this = _this;
+	uint32_t i;
+	uint8_t c;
 
-	return 0;
+	for (i = 0; i < len; i ++)
+	{
+		c = *data;
+		if (ioRN1723_write(this, c) == 0)
+			data ++;
+		else
+			break;
+	}
+
+
+	this->fsm_state = FSM_IDLE;
+
+	return i;
 }
 
 
@@ -418,6 +446,20 @@ void ioRN1723_handler (void* _this)
 			break;
 
 		case FSM_IDLE:
+
+			// Si está conectado por TCP y hay datos para enviar se los envía
+			if (ioRN1723_isTCPConnected(this))
+			{
+				if (cBuffer_getPending(outBuffer(this)) > 0)
+				{
+					if (ioComm_freeSpace(uart(this)) > 0)
+					{
+						cBuffer_remove(outBuffer(this), &data);
+						ioObject_write(uart(this), data);
+					}
+				}
+			}
+
 			if (this->fsm_sub_state != FSM_NO_SUBSTATE)
 			{
 				this->fsm_state = this->fsm_sub_state & 0xFF00;		// El subestado tiene información del estado al que pertenece.
@@ -461,13 +503,16 @@ void ioRN1723_handler (void* _this)
 				}
 				else if (ev_isTriggered(this->events, EV_OPEN_RECEIVED))
 				{
+					this->cmdMode = 0;		// Al abrir una conexión sale del modo comando.
+					this->fsm_state = FSM_IDLE;
 				}
 				else if (ev_isTriggered(this->events, EV_CLOSE_RECEIVED))
 				{
+					this->fsm_state = FSM_IDLE;
 				}
 				else if (ev_isTriggered(this->events, EV_ASSOCIATED_RECEIVED))
 				{
-
+					this->fsm_state = FSM_IDLE;
 				}
 				else if (ev_isTriggered(this->events, EV_WPS_SUCCESS_RECEIVED))
 				{
@@ -489,6 +534,11 @@ void ioRN1723_handler (void* _this)
 				}
 				else if (ev_isTriggered(this->events, EV_DEAUTH_RECEIVED))
 				{
+					this->fsm_state = FSM_IDLE;
+				}
+				else if (ev_isTriggered(this->events, EV_CONNECT_FAILED_RECEIVED))
+				{
+					this->cmdMode = 1;			// Al no poder abrir una conexión, se queda en modo comando
 					this->fsm_state = FSM_IDLE;
 				}
 				else if (ev_isTriggered(this->events, EV_ERR_RECEIVED))
@@ -586,6 +636,38 @@ void ioRN1723_leaveNetwork (void* _this)
 	this->fsm_sub_state = LEAVE_NETWORK_CMD;
 }
 
+
+void ioRN1723_connectTCP (void* _this, uint8_t* ip, uint8_t* port)
+{
+	struct ioRN1723* this = _this;
+	uint8_t socket[30];
+	uint8_t i;
+
+	// Se arma el socket a partir de la dirección IP y el puerto TCP
+	for (i = 0; *ip != '\0'; i++, ip++)
+		socket[i] = *ip;
+
+	socket[i] = ' ';
+
+	for (i = i+1; *port != '\0'; i++, port++)
+		socket[i] = *port;
+
+	socket[i] = '\0';
+
+
+	sendCmd(this, CMD_OPEN, socket, RESP_FILTER_OPEN | RESP_FILTER_CONNECT_FAILED, 8000);
+
+	//this->retries = retries;
+}
+
+
+uint32_t ioRN1723_isTCPConnected (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	return (this->tcpConnected == 1);
+}
+
 // ********************************************************************************
 // ********************************************************************************
 
@@ -607,26 +689,38 @@ void processRX (void* _this)
 		// Se determina si se está recibiendo alguna de las respuestas esperadas
 		for (j = 0; j < RN_RESPONSES_COUNT; j++)
 		{
-			if (this->responseIndex < rnResponsesLength[j])
+			if ( (this->possibleResponses & (1 << j)) != 0)
 			{
-				if (c == rnResponses[j][this->responseIndex])
+				// Todavía es una respuesta que puede llegar
+				if (this->responseIndex < rnResponsesLength[j])
 				{
-					this->responseIndex ++;
-
-					if (this->responseIndex == rnResponsesLength[j])
+					if (c == rnResponses[j][this->responseIndex])
 					{
-						// Llegó una respuesta
-						responseNumber = j;
-					}
+						this->responseIndex ++;
 
-					break;
+						if (this->responseIndex == rnResponsesLength[j])
+						{
+							// Llegó una respuesta
+							responseNumber = j;
+						}
+
+						break;
+					}
+					else
+					{
+						// La respuesta j-esima ya no puede llegar
+						this->possibleResponses &= ~(1 << j);
+					}
 				}
 			}
 		}
 
 		//  No está llegando ninguna respuesta.
 		if (j == RN_RESPONSES_COUNT)
+		{
 			this->responseIndex = 0;
+			this->possibleResponses = 0xFFFFFFFF;
+		}
 
 		if (responseNumber != -1)
 		{
@@ -669,6 +763,7 @@ void processRX (void* _this)
 					ev_emit(this->events, EV_OPEN_RECEIVED);
 					ev_emit(this->events, EV_RESP_RECEIVED);
 					this->tcpConnected = 1;
+					this->cmdMode = 0;			// Si se abre una conexión se sale del modo comando
 					break;
 
 				case RESP_CLOSE:
@@ -718,11 +813,20 @@ void processRX (void* _this)
 					this->authenticated = 0;
 					break;
 
+				case RESP_CONNECT_FAILED:
+					if (this->answerFilter & RESP_FILTER_CONNECT_FAILED)
+					{
+						ev_emit(this->events, EV_CONNECT_FAILED_RECEIVED);
+						ev_emit(this->events, EV_RESP_RECEIVED);
+					}
+					break;
+
 				default:
 					break;
 			}
 
 			this->responseIndex = 0;
+			this->possibleResponses = 0xFFFFFFFF;
 			responseNumber = -1;
 		}
 

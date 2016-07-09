@@ -35,6 +35,10 @@ void* gpioWPS;
 void* swWPS;
 void* gpioLeave;
 void* swLeave;
+void* gpioOpenTcp;
+void* swOpenTcp;
+void* gpioSend1Tcp;
+void* swSend1Tcp;
 
 
 void SysTick_Handler(void)
@@ -46,6 +50,8 @@ void SysTick_Handler(void)
 	ioDebounce_handler(swConfig);
 	ioDebounce_handler(swWPS);
 	ioDebounce_handler(swLeave);
+	ioDebounce_handler(swOpenTcp);
+	ioDebounce_handler(swSend1Tcp);
 }
 
 
@@ -108,6 +114,17 @@ int main(void)
     ioObject_init(gpioConfig);
     swLeave = cObject_new(ioDebounce, gpioLeave, IODIGITAL_LEVEL_HIGH, 300);
 
+    // Al presionarlo se conecta al socket 192.168.0.163 : 9871
+    gpioOpenTcp = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2,12);
+    ioObject_init(gpioOpenTcp);
+    swOpenTcp = cObject_new(ioDebounce, gpioOpenTcp, IODIGITAL_LEVEL_HIGH, 300);
+
+    // Al presionarlo se envía un mensaje por TCP
+    gpioSend1Tcp = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2,6);
+    ioObject_init(gpioSend1Tcp);
+    swSend1Tcp = cObject_new(ioDebounce, gpioSend1Tcp, IODIGITAL_LEVEL_HIGH, 300);
+
+
 
     SysTick_Config(SystemCoreClock / 1000);
 
@@ -135,6 +152,17 @@ int main(void)
 				if (ioRN1723_isAuthenticated(rn1723))
 					ioRN1723_leaveNetwork(rn1723);
 			}
+		}
+    	if (ioDebounce_getActiveEdge(swOpenTcp))
+		{
+			// El módulo debe estar desconectado de un socket
+			if (ioRN1723_isTCPConnected(rn1723) == 0)
+				ioRN1723_connectTCP(rn1723, "192.168.0.103", "9871");
+		}
+    	if (ioDebounce_getActiveEdge(swSend1Tcp))
+		{
+			// EL mensaje se va a enviar cuando esté conectado al socket.
+    		ioComm_writeBytes(rn1723, 10, "Hola mundo");
 		}
     }
 
