@@ -41,6 +41,8 @@ void* gpioCloseTcp;
 void* swCloseTcp;
 void* gpioSend1Tcp;
 void* swSend1Tcp;
+void* led1;
+void* led2;
 
 
 void SysTick_Handler(void)
@@ -72,8 +74,7 @@ void UART2_IRQHandler(void)
 
 int main(void)
 {
-	uint8_t bytes, bytesRead;
-	uint8_t buff[50];
+	uint8_t c;
 
     // Read clock settings and update SystemCoreClock variable
 	SystemCoreClockUpdate();
@@ -133,6 +134,12 @@ int main(void)
     swSend1Tcp = cObject_new(ioDebounce, gpioSend1Tcp, IODIGITAL_LEVEL_HIGH, 300);
 
 
+    led1 = cObject_new (ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 0, 21);
+    ioObject_init(led1);
+
+    led2 = cObject_new (ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 13);
+    ioObject_init(led2);
+
 
     SysTick_Config(SystemCoreClock / 1000);
 
@@ -178,6 +185,17 @@ int main(void)
 			// EL mensaje se va a enviar cuando esté conectado al socket.
     		ioComm_writeBytes(rn1723, 10, "Hola mundo");
 		}
+
+
+    	if (ioComm_dataAvailable(rn1723))
+    	{
+    		c = ioObject_read(rn1723);
+
+    		if (c == '1')
+    			ioDigital_toggle(led1);
+    		else if (c == '2')
+    			ioDigital_toggle(led2);
+    	}
     }
 
 

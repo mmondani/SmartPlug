@@ -136,18 +136,17 @@ uint32_t ioRN1723_isTCPConnected (void* _this);
  *
  * @param      _this   instancia de la clase ioRN1723.
  * @param      ip      string de la dirección IP del server SNTP.
- * @param      port    string del puerto del server SNTP.
  */
-void ioRN1723_setSNTPServer (void* _this, uint8_t* ip, uint8_t* port);
+void ioRN1723_setSNTPServer (void* _this, uint8_t* ip);
 
 
 /**
  * @brief      Configura la zona horaria.
  *
  * @param      _this   instancia de la clase ioRN1723.
- * @param      zone    zona horaria.
+ * @param      zone    zona horaria en formato string. Ejemplo: "3".
  */
-void ioRN1723_setTimeZone (void* _this, uint32_t zone);
+void ioRN1723_setTimeZone (void* _this, uint8_t* zone);
 
 
 /**

@@ -78,6 +78,9 @@ const uint8_t* cmdRunWPS = "run wps";
 const uint8_t* cmdLeave = "leave";
 const uint8_t* cmdOpen = "open";
 const uint8_t* cmdClose = "close";
+const uint8_t* cmdSetSNTPIP = "set time address";
+const uint8_t* cmdSetSNTPZone = "set time zone";
+const uint8_t* cmdTime = "time";
 
 
 #define CMD_WLAN_JOIN		cmdWLANJoin
@@ -89,6 +92,9 @@ const uint8_t* cmdClose = "close";
 #define CMD_LEAVE			cmdLeave
 #define CMD_OPEN			cmdOpen
 #define CMD_CLOSE			cmdClose
+#define CMD_SET_SNTP_IP		cmdSetSNTPIP
+#define CMD_SET_SNTP_ZONE	cmdSetSNTPZone
+#define CMD_TIME			cmdTime
 
 // ********************************************************************************
 
@@ -319,8 +325,14 @@ static uint32_t ioRN1723_disable (void* _this)
 static uint32_t ioRN1723_read (void* _this)
 {
 	struct ioRN1723* this = _this;
+	uint8_t data = 0;
 
-	return 0;
+	if (cBuffer_getPending(inBuffer(this)) > 0)
+	{
+		cBuffer_remove(inBuffer(this), &data);
+	}
+
+	return data;
 }
 
 
@@ -363,20 +375,38 @@ static uint32_t ioRN1723_writeBytes (void* _this, uint32_t len, uint8_t* data)
 static uint32_t ioRN1723_readBytes (void* _this, uint32_t len, uint8_t* data)
 {
 	struct ioRN1723* this = _this;
+	uint32_t bytes2read;
+	uint32_t i;
 
-	return 0;
+
+	bytes2read = cBuffer_getPending(inBuffer(this));
+	if (bytes2read > len)
+		bytes2read = len;
+
+	for (i = 0; i < bytes2read; i ++)
+	{
+		*data = (uint8_t)ioRN1723_read(this);
+		data++;
+	}
+
+
+	return bytes2read;
 }
 
 
 static uint32_t ioRN1723_freeSpace(void* _this)
 {
-	return 1;
+	struct ioRN1723* this = _this;
+
+	return cBuffer_getFreeSpace(outBuffer(this));
 }
 
 
 static uint32_t ioRN1723_dataAvailable (void* _this)
 {
-	return 0;
+	struct ioRN1723* this = _this;
+
+	return cBuffer_getPending(inBuffer(this));
 }
 
 
@@ -705,6 +735,32 @@ uint32_t ioRN1723_isTCPConnected (void* _this)
 	return (this->tcpConnected == 1);
 }
 
+
+void ioRN1723_setSNTPServer (void* _this, uint8_t* ip)
+{
+	struct ioRN1723* this = _this;
+
+	sendCmd(this, CMD_SET_SNTP_IP, ip, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+}
+
+
+void ioRN1723_setTimeZone (void* _this, uint8_t* zone)
+{
+	struct ioRN1723* this = _this;
+
+	sendCmd(this, CMD_SET_SNTP_ZONE, zone, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+}
+
+
+void ioRN1723_synchronizeTime (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+}
+
+
+
 // ********************************************************************************
 // ********************************************************************************
 
@@ -870,7 +926,8 @@ void processRX (void* _this)
 
 		if (this->tcpConnected == 1 && this->cmdMode == 0)
 		{
-
+			if (cBuffer_getFreeSpace(inBuffer(this)) > 0)
+				cBuffer_put(inBuffer(this), &c);
 		}
 	}
 }
