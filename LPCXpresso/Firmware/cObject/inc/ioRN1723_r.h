@@ -31,6 +31,7 @@ struct ioRN1723
 	void* inBuffer;					///< Buffer en donde se guardan los datos recibidos desde el módulo.
 	void* cmdBuffer;				///< Buffer en donde se guarda el comando a enviar al módulo hasta entrar en el modo comando.
 	void* timer;					///< Instancia de la clase @ref grp_cTimer usado para el timeout de las operaciones. Se debe proveer una base de tiempo de 1ms.
+	uint8_t param[25];				///< guarda temporalmente un parámetro de un comando.
 	uint32_t events;				///< Eventos que recibe la FSM.
 	uint32_t retries;				///< Cantidad de reintentos restantes para distintas operaciones.
 	uint32_t possibleResponses;		///< Cada bit i indicasi la i-esima respuesta es posible que llegue o no de acuerdo al parseo de lo recibido por la UART desde el módulo.

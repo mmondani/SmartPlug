@@ -79,22 +79,32 @@ const uint8_t* cmdLeave = "leave";
 const uint8_t* cmdOpen = "open";
 const uint8_t* cmdClose = "close";
 const uint8_t* cmdSetSNTPIP = "set time address";
-const uint8_t* cmdSetSNTPZone = "set time zone";
+const uint8_t* cmdSetTimeZone = "set time zone";
 const uint8_t* cmdTime = "time";
+const uint8_t* cmdSetHeartbeatPort = "set broadcast port";
+const uint8_t* cmdSetHeartbeatInterval = "set broadcast interval";
+const uint8_t* cmdSetTCPServerPort = "set ip localport";
+const uint8_t* cmdReboot = "reboot";
+const uint8_t* cmdSetDeviceID = "set opt device_id";
 
 
-#define CMD_WLAN_JOIN		cmdWLANJoin
-#define CMD_SYS_IOFUNC		cmdSysIOfunc
-#define CMD_CMD_MODE		cmdCmdMode
-#define CMD_EXIT			cmdExit
-#define CMD_SAVE			cmdSave
-#define CMD_RUN_WPS			cmdRunWPS
-#define CMD_LEAVE			cmdLeave
-#define CMD_OPEN			cmdOpen
-#define CMD_CLOSE			cmdClose
-#define CMD_SET_SNTP_IP		cmdSetSNTPIP
-#define CMD_SET_SNTP_ZONE	cmdSetSNTPZone
-#define CMD_TIME			cmdTime
+#define CMD_WLAN_JOIN				cmdWLANJoin
+#define CMD_SYS_IOFUNC				cmdSysIOfunc
+#define CMD_CMD_MODE				cmdCmdMode
+#define CMD_EXIT					cmdExit
+#define CMD_SAVE					cmdSave
+#define CMD_RUN_WPS					cmdRunWPS
+#define CMD_LEAVE					cmdLeave
+#define CMD_OPEN					cmdOpen
+#define CMD_CLOSE					cmdClose
+#define CMD_SET_SNTP_IP				cmdSetSNTPIP
+#define CMD_SET_TIME_ZONE			cmdSetTimeZone
+#define CMD_TIME					cmdTime
+#define CMD_SET_HEARTBEAT_PORT		cmdSetHeartbeatPort
+#define CMD_SET_HEARTBEAT_INTERVAL	cmdSetHeartbeatInterval
+#define CMD_SET_TCP_SERVER_PORT		cmdSetTCPServerPort
+#define CMD_REBOOT					cmdReboot
+#define CMD_SET_DEVICE_ID			cmdSetDeviceID
 
 // ********************************************************************************
 
@@ -202,7 +212,14 @@ enum {
 	FSM_WAIT4ANSWER = 0x400,
 	FSM_WPS_WAIT4REBOOT = 0x500,
 	FSM_LEAVE_NETWORK = 0x600,
-	FSM_CLOSE_TCP = 0x700
+	FSM_CLOSE_TCP = 0x700,
+	FSM_SET_SNTP_SERVER = 0x800,
+	FSM_SET_TIME_ZONE = 0x900,
+	FSM_SYNC_TIME = 0xA00,
+	FSM_SET_HEARTBEAT_PORT = 0xB00,
+	FSM_SET_HEARTBEAT_INTERVAL = 0xC00,
+	FSM_SET_TCP_SERVER_PORT = 0xD00,
+	FSM_SET_DEVICE_ID = 0xE00
 };
 
 enum {
@@ -214,6 +231,27 @@ enum {
 	LEAVE_NETWORK_EXIT = FSM_LEAVE_NETWORK | 2,
 	CLOSE_TCP_CMD = FSM_CLOSE_TCP | 1,
 	CLOSE_TCP_EXIT = FSM_CLOSE_TCP | 2,
+	SET_SNTP_SERVER_CMD = FSM_SET_SNTP_SERVER | 1,
+	SET_SNTP_SERVER_SAVE = FSM_SET_SNTP_SERVER | 2,
+	SET_SNTP_SERVER_EXIT = FSM_SET_SNTP_SERVER | 3,
+	SET_TIME_ZONE_CMD = FSM_SET_TIME_ZONE | 1,
+	SET_TIME_ZONE_SAVE = FSM_SET_TIME_ZONE | 2,
+	SET_TIME_ZONE_EXIT = FSM_SET_TIME_ZONE | 3,
+	SYNC_TIME_CMD = FSM_SYNC_TIME | 1,
+	SYNC_TIME_SAVE = FSM_SYNC_TIME | 2,
+	SYNC_TIME_EXIT = FSM_SYNC_TIME | 3,
+	SET_HEARTBEAT_PORT_CMD = FSM_SET_HEARTBEAT_PORT | 1,
+	SET_HEARTBEAT_PORT_SAVE = FSM_SET_HEARTBEAT_PORT | 2,
+	SET_HEARTBEAT_PORT_EXIT = FSM_SET_HEARTBEAT_PORT | 3,
+	SET_HEARTBEAT_INTERVAL_CMD = FSM_SET_HEARTBEAT_INTERVAL | 1,
+	SET_HEARTBEAT_INTERVAL_SAVE = FSM_SET_HEARTBEAT_INTERVAL | 2,
+	SET_HEARTBEAT_INTERVAL_EXIT = FSM_SET_HEARTBEAT_INTERVAL | 3,
+	SET_TCP_SERVER_PORT_CMD = FSM_SET_TCP_SERVER_PORT | 1,
+	SET_TCP_SERVER_PORT_SAVE = FSM_SET_TCP_SERVER_PORT | 2,
+	SET_TCP_SERVER_PORT_EXIT = FSM_SET_TCP_SERVER_PORT | 3,
+	SET_DEVICE_ID_CMD = FSM_SET_DEVICE_ID | 1,
+	SET_DEVICE_ID_SAVE = FSM_SET_DEVICE_ID | 2,
+	SET_DEVICE_ID_EXIT = FSM_SET_DEVICE_ID | 3
 };
 // ********************************************************************************
 
@@ -252,6 +290,7 @@ static void* ioRN1723_dtor (void* _this)
 	struct ioRN1723* this = _this;
 
 	cObject_delete(this->cmdBuffer);
+	cObject_delete(this->timer);
 
 	return _this;
 }
@@ -482,22 +521,25 @@ void ioRN1723_handler (void* _this)
 
 		case FSM_IDLE:
 
-			// Si está conectado por TCP y hay datos para enviar se los envía
-			if (ioRN1723_isTCPConnected(this))
-			{
-				if (cBuffer_getPending(outBuffer(this)) > 0)
-				{
-					if (ioComm_freeSpace(uart(this)) > 0)
-					{
-						cBuffer_remove(outBuffer(this), &data);
-						ioObject_write(uart(this), data);
-					}
-				}
-			}
-
 			if (this->fsm_sub_state != FSM_NO_SUBSTATE)
 			{
-				this->fsm_state = this->fsm_sub_state & 0xFF00;		// El subestado tiene información del estado al que pertenece.
+				// El subestado tiene información del estado al que pertenece.
+				this->fsm_state = this->fsm_sub_state & 0xFF00;
+			}
+			else
+			{
+				// Si está conectado por TCP y hay datos para enviar se los envía
+				if (ioRN1723_isTCPConnected(this) && (this->cmdMode == 0) )
+				{
+					if (cBuffer_getPending(outBuffer(this)) > 0)
+					{
+						if (ioComm_freeSpace(uart(this)) > 0)
+						{
+							cBuffer_remove(outBuffer(this), &data);
+							ioObject_write(uart(this), data);
+						}
+					}
+				}
 			}
 
 			break;
@@ -622,25 +664,200 @@ void ioRN1723_handler (void* _this)
 			}
 			break;
 
-			case FSM_CLOSE_TCP:
-				switch (this->fsm_sub_state)
-				{
-					case CLOSE_TCP_CMD:
-						sendCmd(this, CMD_CLOSE, "", RESP_FILTER_CLOSE, 2000);
-						this->fsm_sub_state = CLOSE_TCP_EXIT;
-						break;
+		case FSM_CLOSE_TCP:
+			switch (this->fsm_sub_state)
+			{
+				case CLOSE_TCP_CMD:
+					sendCmd(this, CMD_CLOSE, "", RESP_FILTER_CLOSE, 2000);
+					this->fsm_sub_state = CLOSE_TCP_EXIT;
+					break;
 
-					case CLOSE_TCP_EXIT:
-						sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
-						this->fsm_sub_state = FSM_NO_SUBSTATE;
-						break;
+				case CLOSE_TCP_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
 
-					default:
-						this->fsm_state = FSM_IDLE;
-						this->fsm_sub_state = FSM_NO_SUBSTATE;
-						break;
-				}
-				break;
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
+
+		case FSM_SET_SNTP_SERVER:
+			switch (this->fsm_sub_state)
+			{
+				case SET_SNTP_SERVER_CMD:
+					sendCmd(this, CMD_SET_SNTP_IP, this->param, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+					this->fsm_sub_state = SET_SNTP_SERVER_SAVE;
+					break;
+
+				case SET_SNTP_SERVER_SAVE:
+					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					this->fsm_sub_state = SET_SNTP_SERVER_EXIT;
+					break;
+
+				case SET_SNTP_SERVER_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
+
+		case FSM_SET_TIME_ZONE:
+			switch (this->fsm_sub_state)
+			{
+				case SET_TIME_ZONE_CMD:
+					sendCmd(this, CMD_SET_TIME_ZONE, this->param, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+					this->fsm_sub_state = SET_TIME_ZONE_SAVE;
+					break;
+
+				case SET_TIME_ZONE_SAVE:
+					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					this->fsm_sub_state = SET_TIME_ZONE_EXIT;
+					break;
+
+				case SET_TIME_ZONE_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
+
+		case FSM_SYNC_TIME:
+			switch (this->fsm_sub_state)
+			{
+				case SYNC_TIME_CMD:
+					sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+					this->fsm_sub_state = SYNC_TIME_SAVE;
+					break;
+
+				case SYNC_TIME_SAVE:
+					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					this->fsm_sub_state = SYNC_TIME_EXIT;
+					break;
+
+				case SYNC_TIME_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
+
+		case FSM_SET_HEARTBEAT_PORT:
+			switch (this->fsm_sub_state)
+			{
+				case SET_HEARTBEAT_PORT_CMD:
+					sendCmd(this, CMD_SET_HEARTBEAT_PORT, this->param, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+					this->fsm_sub_state = SET_HEARTBEAT_PORT_SAVE;
+					break;
+
+				case SET_HEARTBEAT_PORT_SAVE:
+					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					this->fsm_sub_state = SET_HEARTBEAT_PORT_EXIT;
+					break;
+
+				case SET_HEARTBEAT_PORT_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
+
+		case FSM_SET_HEARTBEAT_INTERVAL:
+			switch (this->fsm_sub_state)
+			{
+				case SET_HEARTBEAT_INTERVAL_CMD:
+					sendCmd(this, CMD_SET_HEARTBEAT_INTERVAL, this->param, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+					this->fsm_sub_state = SET_HEARTBEAT_INTERVAL_SAVE;
+					break;
+
+				case SET_HEARTBEAT_INTERVAL_SAVE:
+					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					this->fsm_sub_state = SET_HEARTBEAT_INTERVAL_EXIT;
+					break;
+
+				case SET_HEARTBEAT_INTERVAL_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
+
+		case FSM_SET_TCP_SERVER_PORT:
+			switch (this->fsm_sub_state)
+			{
+				case SET_TCP_SERVER_PORT_CMD:
+					sendCmd(this, CMD_SET_TCP_SERVER_PORT, this->param, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+					this->fsm_sub_state = SET_TCP_SERVER_PORT_SAVE;
+					break;
+
+				case SET_TCP_SERVER_PORT_SAVE:
+					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					this->fsm_sub_state = SET_TCP_SERVER_PORT_EXIT;
+					break;
+
+				case SET_TCP_SERVER_PORT_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
+
+		case FSM_SET_DEVICE_ID:
+			switch (this->fsm_sub_state)
+			{
+				case SET_DEVICE_ID_CMD:
+					sendCmd(this, CMD_SET_DEVICE_ID, this->param, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+					this->fsm_sub_state = SET_DEVICE_ID_SAVE;
+					break;
+
+				case SET_DEVICE_ID_SAVE:
+					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					this->fsm_sub_state = SET_DEVICE_ID_EXIT;
+					break;
+
+				case SET_DEVICE_ID_EXIT:
+					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
 
 		default:
 			this->fsm_state = FSM_IDLE;
@@ -655,7 +872,7 @@ uint32_t ioRN1723_isIdle (void* _this)
 {
 	struct ioRN1723* this = _this;
 
-	return (this->fsm_state == FSM_IDLE);
+	return ( (this->fsm_state == FSM_IDLE) && (this->fsm_sub_state = FSM_NO_SUBSTATE) );
 }
 
 
@@ -739,16 +956,30 @@ uint32_t ioRN1723_isTCPConnected (void* _this)
 void ioRN1723_setSNTPServer (void* _this, uint8_t* ip)
 {
 	struct ioRN1723* this = _this;
+	uint32_t i;
 
-	sendCmd(this, CMD_SET_SNTP_IP, ip, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+	for (i = 0; *ip != '\0'; i++, ip++)
+		this->param[i] = *ip;
+	this->param[i] = '\0';
+
+
+	this->fsm_state = FSM_SET_SNTP_SERVER;
+	this->fsm_sub_state = SET_SNTP_SERVER_CMD;
 }
 
 
 void ioRN1723_setTimeZone (void* _this, uint8_t* zone)
 {
 	struct ioRN1723* this = _this;
+	uint32_t i;
 
-	sendCmd(this, CMD_SET_SNTP_ZONE, zone, RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+	for (i = 0; *zone != '\0'; i++, zone++)
+		this->param[i] = *zone;
+	this->param[i] = '\0';
+
+
+	this->fsm_state = FSM_SET_TIME_ZONE;
+	this->fsm_sub_state = SET_TIME_ZONE_CMD;
 }
 
 
@@ -756,9 +987,82 @@ void ioRN1723_synchronizeTime (void* _this)
 {
 	struct ioRN1723* this = _this;
 
-	sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+	this->fsm_state = FSM_SYNC_TIME;
+	this->fsm_sub_state = SYNC_TIME_CMD;
 }
 
+
+void ioRN1723_getTime (void* _this, uint32_t hours, uint32_t minutes, uint32_t seconds)
+{
+
+}
+
+
+void ioRN1723_setHeartbeatPort (void* _this, uint8_t* port)
+{
+	struct ioRN1723* this = _this;
+	uint32_t i;
+
+	for (i = 0; *port != '\0'; i++, port++)
+		this->param[i] = *port;
+	this->param[i] = '\0';
+
+
+	this->fsm_state = FSM_SET_HEARTBEAT_PORT;
+	this->fsm_sub_state = SET_HEARTBEAT_PORT_CMD;
+}
+
+
+void ioRN1723_setHeartbeatInterval (void* _this, uint8_t* interval)
+{
+	struct ioRN1723* this = _this;
+	uint32_t i;
+
+	for (i = 0; *interval != '\0'; i++, interval++)
+		this->param[i] = *interval;
+	this->param[i] = '\0';
+
+
+	this->fsm_state = FSM_SET_HEARTBEAT_INTERVAL;
+	this->fsm_sub_state = SET_HEARTBEAT_INTERVAL_CMD;
+}
+
+
+void ioRN1723_setTCPServerPort (void* _this, uint8_t* port)
+{
+	struct ioRN1723* this = _this;
+	uint32_t i;
+
+	for (i = 0; *port != '\0'; i++, port++)
+		this->param[i] = *port;
+	this->param[i] = '\0';
+
+
+	this->fsm_state = FSM_SET_TCP_SERVER_PORT;
+	this->fsm_sub_state = SET_TCP_SERVER_PORT_CMD;
+}
+
+void ioRN1723_reboot (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	sendCmd(this, CMD_REBOOT, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 0);
+}
+
+
+void ioRN1723_setDeviceID (void* _this, uint8_t* id)
+{
+	struct ioRN1723* this = _this;
+	uint32_t i;
+
+	for (i = 0; *id != '\0'; i++, id++)
+		this->param[i] = *id;
+	this->param[i] = '\0';
+
+
+	this->fsm_state = FSM_SET_DEVICE_ID;
+	this->fsm_sub_state = SET_DEVICE_ID_CMD;
+}
 
 
 // ********************************************************************************
@@ -898,6 +1202,7 @@ void processRX (void* _this)
 				case RESP_READY:
 					ev_emit(this->events, EV_READY_RECEIVED);
 					ev_emit(this->events, EV_RESP_RECEIVED);
+					this->cmdMode = 0;
 					break;
 
 				case RESP_DEAUTH:
@@ -1006,7 +1311,9 @@ void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerF
 		this->answerFilter = answerFilter | RESP_FILTER_CMD;
 	}
 
-	cTimer_start(timer(this), timeout);
+	if (timeout > 0)
+		cTimer_start(timer(this), timeout);
+
 	this->fsm_state = FSM_WAIT4ANSWER;
 }
 

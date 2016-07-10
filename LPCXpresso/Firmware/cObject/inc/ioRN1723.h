@@ -202,8 +202,15 @@ void ioRN1723_setTCPServerPort (void* _this, uint8_t* port);
  *
  * @param      _this   instancia de la clase ioRN1723.
  */
-void ioRN1723_reboot (void* _this, uint8_t* port);
+void ioRN1723_reboot (void* _this);
 
+
+/**
+ * @brief      Resetea el módulo por software.
+ *
+ * @param      _this   instancia de la clase ioRN1723.
+ */
+void ioRN1723_setDeviceID (void* _this, uint8_t* id);
 
 
 ///@}

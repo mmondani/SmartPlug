@@ -74,7 +74,9 @@ void UART2_IRQHandler(void)
 
 int main(void)
 {
-	uint8_t c;
+	uint8_t c, index = 0;
+	uint8_t buff[50];
+	uint8_t nameComing = 0;
 
     // Read clock settings and update SystemCoreClock variable
 	SystemCoreClockUpdate();
@@ -191,10 +193,32 @@ int main(void)
     	{
     		c = ioObject_read(rn1723);
 
-    		if (c == '1')
+    		if (c == '1' && nameComing == 0)
     			ioDigital_toggle(led1);
-    		else if (c == '2')
+    		else if (c == '2' && nameComing == 0)
     			ioDigital_toggle(led2);
+
+    		if (c == '#')
+    		{
+      			if (nameComing == 0)
+      			{
+    				nameComing = 1;
+    				index = 0;
+      			}
+    			else
+    			{
+    				nameComing = 0;
+    				buff[index] = '\0';
+    				index = 0;
+    				ioRN1723_setDeviceID(rn1723, buff);
+    			}
+    		}
+
+    		if (c != '#' && nameComing == 1)
+    		{
+    			buff[index] = c;
+    			index ++;
+    		}
     	}
     }
 
