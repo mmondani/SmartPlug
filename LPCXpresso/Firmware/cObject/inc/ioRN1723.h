@@ -146,7 +146,7 @@ void ioRN1723_setSNTPServer (void* _this, uint8_t* ip);
  * @param      _this   instancia de la clase ioRN1723.
  * @param      zone    zona horaria en formato string. Ejemplo: "3".
  */
-void ioRN1723_setTimeZone (void* _this, uint8_t* zone);
+void ioRN1723_setTimeZone (void* _this, int8_t zone);
 
 
 /**
@@ -156,16 +156,34 @@ void ioRN1723_setTimeZone (void* _this, uint8_t* zone);
  */
 void ioRN1723_synchronizeTime (void* _this);
 
+/**
+ * @brief      Obtiene el valor actual del RTC del módulo WiFi.
+ *
+ * @param      _this   instancia de la clase ioRN1723.
+ */
+void ioRN1723_refreshLocalTime (void* _this);
+
 
 /**
- * @brief      Obtiene la hora actual del RTC interno del módulo WiFi.
+ * @brief      Parsea la hora recibida del módulo WiFi. Devuelve la hora en la zona horaria configurada. Debe ser llamada luego de ioRN1723_refreshLocalTime.
  *
  * @param      _this   instancia de la clase ioRN1723.
  * @param      hours   horas.
  * @param      minutes minutos.
  * @param      seconds segundos.
  */
-void ioRN1723_getTime (void* _this, uint32_t hours, uint32_t minutes, uint32_t seconds);
+void ioRN1723_getTime (void* _this, uint32_t *hours, uint32_t *minutes, uint32_t *seconds);
+
+/**
+ * @brief      Parsea la fecha recibida del módulo WiFi. Devuelve la fecha en la zona horaria configurada. Debe ser llamada luego de ioRN1723_refreshLocalTime.
+ *
+ * @param      _this   instancia de la clase ioRN1723.
+ * @param      day     		día.
+ * @param      month   		mes.
+ * @param      year    		año.
+ * @param	   day of week  día de la semana (Domingo: 0, Sábado: 6)
+ */
+void ioRN1723_getDate (void* _this, uint32_t *day, uint32_t *month, uint32_t *year, uint32_t* dayOfWeek);
 
 
 /**

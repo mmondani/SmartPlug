@@ -39,9 +39,13 @@ struct ioRN1723
 	uint32_t fsm_state;				///< Estado actual de la FSM del módulo.
 	uint32_t fsm_sub_state;			///< Sub-estado actual
 	uint32_t answerFilter;			///< Usado para filtrar las respuestas deseadas.
+	uint32_t lastRTC;				///< Indica el último valor del RTC que se obtuvo del NTP.
+	int8_t  timeZone;				///< Zona horaria usada por las funciones que deveuvlen la fecha y la hora actual. Es un número con signo.
+	uint8_t indexSerial;			///< Indice auxiliar usado en la recepción serial desde el módulo.
 	uint32_t tcpConnected:1;		///< Indica si hay conexión TCP abierta o no.
 	uint32_t authenticated:1;		///< Indica si está autenticado en una red WiFi o no.
 	uint32_t cmdMode:1;				///< Indica si está en modo comando o no.
+	uint32_t readingRTCValue:1;		///< Indica si se está recibiendo el valor del RTC desde el módulo o no.
 };
 
 // ********************************************************************************

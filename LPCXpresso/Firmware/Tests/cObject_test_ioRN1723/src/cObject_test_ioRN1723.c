@@ -41,6 +41,10 @@ void* gpioCloseTcp;
 void* swCloseTcp;
 void* gpioSend1Tcp;
 void* swSend1Tcp;
+void* gpioRefreshTime;
+void* swRefreshTime;
+void* gpioGetTime;
+void* swGetTime;
 void* led1;
 void* led2;
 
@@ -57,6 +61,8 @@ void SysTick_Handler(void)
 	ioDebounce_handler(swOpenTcp);
 	ioDebounce_handler(swCloseTcp);
 	ioDebounce_handler(swSend1Tcp);
+	ioDebounce_handler(swRefreshTime);
+	ioDebounce_handler(swGetTime);
 }
 
 
@@ -77,6 +83,7 @@ int main(void)
 	uint8_t c, index = 0;
 	uint8_t buff[50];
 	uint8_t nameComing = 0;
+	uint32_t horas, minutos, segundos, dia, mes, anio, dSemana;
 
     // Read clock settings and update SystemCoreClock variable
 	SystemCoreClockUpdate();
@@ -135,6 +142,16 @@ int main(void)
     ioObject_init(gpioSend1Tcp);
     swSend1Tcp = cObject_new(ioDebounce, gpioSend1Tcp, IODIGITAL_LEVEL_HIGH, 300);
 
+    // Al presionarlo se obtiene el tiempo actual
+    gpioRefreshTime = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2,7);
+    ioObject_init(gpioRefreshTime);
+    swRefreshTime = cObject_new(ioDebounce, gpioRefreshTime, IODIGITAL_LEVEL_HIGH, 300);
+
+    // Al presionarlo se parsea el tiempo y la fecha actual
+    gpioGetTime = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2,8);
+    ioObject_init(gpioGetTime);
+    swGetTime = cObject_new(ioDebounce, gpioGetTime, IODIGITAL_LEVEL_HIGH, 300);
+
 
     led1 = cObject_new (ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 0, 21);
     ioObject_init(led1);
@@ -143,6 +160,7 @@ int main(void)
     ioObject_init(led2);
 
 
+    // Cada 1 ms
     SysTick_Config(SystemCoreClock / 1000);
 
 
@@ -184,8 +202,18 @@ int main(void)
 		}
     	if (ioDebounce_getActiveEdge(swSend1Tcp))
 		{
-			// EL mensaje se va a enviar cuando esté conectado al socket.
+			// El mensaje se va a enviar cuando esté conectado al socket.
     		ioComm_writeBytes(rn1723, 10, "Hola mundo");
+		}
+    	if (ioDebounce_getActiveEdge(swRefreshTime))
+		{
+    		ioRN1723_refreshLocalTime(rn1723);
+		}
+    	if (ioDebounce_getActiveEdge(swGetTime))
+		{
+    		ioRN1723_getTime(rn1723, &horas, &minutos, &segundos);
+    		ioRN1723_getDate(rn1723, &dia, &mes, &anio, &dSemana);
+    		horas = horas;
 		}
 
 

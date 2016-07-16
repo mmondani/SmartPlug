@@ -8,7 +8,10 @@
 #include "ioRN1723.h"
 #include "ioRN1723_r.h"
 
+#include <stdlib.h>
+#include <time.h>
 #include "cTimer.h"
+
 
 
 static void* ioRN1723_ctor  (void* _this, va_list* va);
@@ -86,6 +89,8 @@ const uint8_t* cmdSetHeartbeatInterval = "set broadcast interval";
 const uint8_t* cmdSetTCPServerPort = "set ip localport";
 const uint8_t* cmdReboot = "reboot";
 const uint8_t* cmdSetDeviceID = "set opt device_id";
+const uint8_t* cmdShowTT = "show t t";
+const uint8_t* cmdSetTimeEnable = "set time enable";
 
 
 #define CMD_WLAN_JOIN				cmdWLANJoin
@@ -105,13 +110,15 @@ const uint8_t* cmdSetDeviceID = "set opt device_id";
 #define CMD_SET_TCP_SERVER_PORT		cmdSetTCPServerPort
 #define CMD_REBOOT					cmdReboot
 #define CMD_SET_DEVICE_ID			cmdSetDeviceID
+#define CMD_SHOW_T_T				cmdShowTT
+#define CMD_SET_TIME_ENABLE			cmdSetTimeEnable
 
 // ********************************************************************************
 
 // ********************************************************************************
 // Definiciones de las respuestas del módulo
 // ********************************************************************************
-#define RN_RESPONSES_COUNT		13
+#define RN_RESPONSES_COUNT		14
 uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"OK",
 												"ERR",
@@ -125,7 +132,8 @@ uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"WPS-FAILED",
 												"*READY*",
 												"DeAuth",
-												"Connect FAILED"
+												"Connect FAILED",
+												"RTC="
 };
 
 uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
@@ -141,7 +149,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 												10,
 												7,
 												6,
-												14
+												14,
+												4
 };
 
 #define RESP_OK						0
@@ -157,6 +166,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_READY					10
 #define	 RESP_DEAUTH				11
 #define	 RESP_CONNECT_FAILED		12
+#define	 RESP_RTC					13
 
 #define RESP_FILTER_OK					(1 << 0)
 #define RESP_FILTER_ERROR				(1 << 1)
@@ -171,6 +181,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_FILTER_READY				(1 << 10)
 #define	 RESP_FILTER_DEAUTH				(1 << 11)
 #define	 RESP_FILTER_CONNECT_FAILED		(1 << 12)
+#define	 RESP_FILTER_RTC				(1 << 13)
 
 // ********************************************************************************
 
@@ -192,6 +203,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define EV_READY_RECEIVED				0x00000800
 #define EV_DEAUTH_RECEIVED				0x00001000
 #define EV_CONNECT_FAILED_RECEIVED		0x00002000
+#define EV_RTC_RECEIVED					0x00004000
+
 
 #define ev_isTriggered(v,e)		(((v & e) == 0)? 0 : 1)
 #define ev_emit(v,e)			(v |= e)
@@ -219,14 +232,16 @@ enum {
 	FSM_SET_HEARTBEAT_PORT = 0xB00,
 	FSM_SET_HEARTBEAT_INTERVAL = 0xC00,
 	FSM_SET_TCP_SERVER_PORT = 0xD00,
-	FSM_SET_DEVICE_ID = 0xE00
+	FSM_SET_DEVICE_ID = 0xE00,
+	FSM_GET_TIME = 0xF00
 };
 
 enum {
 	CONFIG_WLAN_JOIN = FSM_CONFIG | 1,
 	CONFIG_IOFUNC = FSM_CONFIG | 2,
 	CONFIG_SAVE = FSM_CONFIG | 3,
-	CONFIG_EXIT = FSM_CONFIG | 4,
+	CONFIG_TIME_ENABLE = FSM_CONFIG | 4,
+	CONFIG_EXIT = FSM_CONFIG | 5,
 	LEAVE_NETWORK_CMD = FSM_LEAVE_NETWORK | 1,
 	LEAVE_NETWORK_EXIT = FSM_LEAVE_NETWORK | 2,
 	CLOSE_TCP_CMD = FSM_CLOSE_TCP | 1,
@@ -251,7 +266,9 @@ enum {
 	SET_TCP_SERVER_PORT_EXIT = FSM_SET_TCP_SERVER_PORT | 3,
 	SET_DEVICE_ID_CMD = FSM_SET_DEVICE_ID | 1,
 	SET_DEVICE_ID_SAVE = FSM_SET_DEVICE_ID | 2,
-	SET_DEVICE_ID_EXIT = FSM_SET_DEVICE_ID | 3
+	SET_DEVICE_ID_EXIT = FSM_SET_DEVICE_ID | 3,
+	GET_TIME_CMD = FSM_GET_TIME | 1,
+	GET_TIME_EXIT = FSM_GET_TIME | 2
 };
 // ********************************************************************************
 
@@ -279,6 +296,8 @@ static void* ioRN1723_ctor  (void* _this, va_list* va)
 	this->cmdMode = 0;
 	this->answerFilter = 0;
 	this->possibleResponses = 0xFFFFFFFF;
+	this->indexSerial = 0;
+	this->timeZone = -3;
 
 
 	return this;
@@ -499,11 +518,16 @@ void ioRN1723_handler (void* _this)
 
 					case CONFIG_IOFUNC:
 						sendCmd(this, CMD_SYS_IOFUNC, "0x50", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+						this->fsm_sub_state = CONFIG_TIME_ENABLE;
+						break;
+
+					case CONFIG_TIME_ENABLE:
+						sendCmd(this, CMD_SET_TIME_ENABLE, "1", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
 						this->fsm_sub_state = CONFIG_SAVE;
 						break;
 
 					case CONFIG_SAVE:
-						sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+						sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
 						this->fsm_sub_state = CONFIG_EXIT;
 						break;
 
@@ -618,6 +642,10 @@ void ioRN1723_handler (void* _this)
 					this->cmdMode = 1;			// Al no poder abrir una conexión, se queda en modo comando
 					this->fsm_state = FSM_IDLE;
 				}
+				else if (ev_isTriggered(this->events, EV_RTC_RECEIVED))
+				{
+					this->fsm_state = FSM_IDLE;
+				}
 				else if (ev_isTriggered(this->events, EV_ERR_RECEIVED))
 				{
 					// TODO: gestionar errores
@@ -653,7 +681,7 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case LEAVE_NETWORK_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -673,7 +701,7 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case CLOSE_TCP_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -693,12 +721,12 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case SET_SNTP_SERVER_SAVE:
-					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
 					this->fsm_sub_state = SET_SNTP_SERVER_EXIT;
 					break;
 
 				case SET_SNTP_SERVER_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -718,12 +746,12 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case SET_TIME_ZONE_SAVE:
-					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
 					this->fsm_sub_state = SET_TIME_ZONE_EXIT;
 					break;
 
 				case SET_TIME_ZONE_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -743,12 +771,12 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case SYNC_TIME_SAVE:
-					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
 					this->fsm_sub_state = SYNC_TIME_EXIT;
 					break;
 
 				case SYNC_TIME_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -768,12 +796,12 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case SET_HEARTBEAT_PORT_SAVE:
-					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
 					this->fsm_sub_state = SET_HEARTBEAT_PORT_EXIT;
 					break;
 
 				case SET_HEARTBEAT_PORT_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -793,12 +821,12 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case SET_HEARTBEAT_INTERVAL_SAVE:
-					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
 					this->fsm_sub_state = SET_HEARTBEAT_INTERVAL_EXIT;
 					break;
 
 				case SET_HEARTBEAT_INTERVAL_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -818,12 +846,12 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case SET_TCP_SERVER_PORT_SAVE:
-					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
 					this->fsm_sub_state = SET_TCP_SERVER_PORT_EXIT;
 					break;
 
 				case SET_TCP_SERVER_PORT_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -843,12 +871,32 @@ void ioRN1723_handler (void* _this)
 					break;
 
 				case SET_DEVICE_ID_SAVE:
-					sendCmd(this, cmdSave, "", RESP_FILTER_SAVE_OK, 2000);
+					sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
 					this->fsm_sub_state = SET_DEVICE_ID_EXIT;
 					break;
 
 				case SET_DEVICE_ID_EXIT:
-					sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+
+				default:
+					this->fsm_state = FSM_IDLE;
+					this->fsm_sub_state = FSM_NO_SUBSTATE;
+					break;
+			}
+			break;
+
+		case FSM_GET_TIME:
+			switch (this->fsm_sub_state)
+			{
+				case GET_TIME_CMD:
+					sendCmd(this, CMD_SHOW_T_T, "", RESP_FILTER_RTC, 2000);
+					this->fsm_sub_state = GET_TIME_EXIT;
+					break;
+
+				case GET_TIME_EXIT:
+					sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 					this->fsm_sub_state = FSM_NO_SUBSTATE;
 					break;
 
@@ -968,18 +1016,11 @@ void ioRN1723_setSNTPServer (void* _this, uint8_t* ip)
 }
 
 
-void ioRN1723_setTimeZone (void* _this, uint8_t* zone)
+void ioRN1723_setTimeZone (void* _this, int8_t zone)
 {
 	struct ioRN1723* this = _this;
-	uint32_t i;
 
-	for (i = 0; *zone != '\0'; i++, zone++)
-		this->param[i] = *zone;
-	this->param[i] = '\0';
-
-
-	this->fsm_state = FSM_SET_TIME_ZONE;
-	this->fsm_sub_state = SET_TIME_ZONE_CMD;
+	this->timeZone = zone;
 }
 
 
@@ -992,9 +1033,43 @@ void ioRN1723_synchronizeTime (void* _this)
 }
 
 
-void ioRN1723_getTime (void* _this, uint32_t hours, uint32_t minutes, uint32_t seconds)
+void ioRN1723_refreshLocalTime (void* _this)
 {
+	struct ioRN1723* this = _this;
 
+	this->fsm_state = FSM_GET_TIME;
+	this->fsm_sub_state = GET_TIME_CMD;
+}
+
+void ioRN1723_getTime (void* _this, uint32_t *hours, uint32_t *minutes, uint32_t *seconds)
+{
+	struct ioRN1723* this = _this;
+	struct tm* time;
+	uint32_t modifiedTime;
+
+	// Se cambia el valor del RTC a la zona horaria configurada.
+	modifiedTime = this->lastRTC + 3600 * this->timeZone;
+	time = gmtime(&modifiedTime);
+
+	*hours = time->tm_hour;
+	*minutes = time->tm_min;
+	*seconds = time->tm_sec;
+}
+
+void ioRN1723_getDate (void* _this, uint32_t *day, uint32_t *month, uint32_t *year, uint32_t* dayOfWeek)
+{
+	struct ioRN1723* this = _this;
+	struct tm* time;
+	uint32_t modifiedTime;
+
+	// Se cambia el valor del RTC a la zona horaria configurada.
+	modifiedTime = this->lastRTC + 3600 * this->timeZone;
+	time = gmtime(&modifiedTime);
+
+	*day = time->tm_mday;
+	*month= time->tm_mon + 1;
+	*year = time->tm_year + 1900;
+	*dayOfWeek = time->tm_wday;
 }
 
 
@@ -1219,6 +1294,15 @@ void processRX (void* _this)
 					}
 					break;
 
+				case RESP_RTC:
+					if (this->answerFilter & RESP_FILTER_RTC)
+					{
+						// No se genera el evento de respuesta recibida porque todavía falta que llegue el valor del RTC.
+						this->readingRTCValue = 1;
+						this->indexSerial = 0;
+					}
+					break;
+
 				default:
 					break;
 			}
@@ -1228,6 +1312,28 @@ void processRX (void* _this)
 			responseNumber = -1;
 		}
 
+		if (this->readingRTCValue == 1)
+		{
+			if (c != '=')
+			{
+				if ( (c >= '0') && (c <= '9') && (this->indexSerial < 24) )
+				{
+					this->param[this->indexSerial] = c;
+					this->indexSerial ++;
+				}
+				else
+				{
+					// Se terminó de recibir el RTC
+					this->param[this->indexSerial] = '\0';
+					this->readingRTCValue = 0;
+
+					this->lastRTC = atoi(this->param);
+
+					ev_emit(this->events, EV_RTC_RECEIVED);
+					ev_emit(this->events, EV_RESP_RECEIVED);
+				}
+			}
+		}
 
 		if (this->tcpConnected == 1 && this->cmdMode == 0)
 		{
