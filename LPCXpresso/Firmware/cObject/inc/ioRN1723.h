@@ -165,6 +165,14 @@ void ioRN1723_refreshLocalTime (void* _this);
 
 
 /**
+ * @brief      Indica si el valor actual del RTC es válido o no.
+ *
+ * @param      _this   instancia de la clase ioRN1723.
+ */
+uint32_t ioRN1723_isTimeValid (void* _this);
+
+
+/**
  * @brief      Parsea la hora recibida del módulo WiFi. Devuelve la hora en la zona horaria configurada. Debe ser llamada luego de ioRN1723_refreshLocalTime.
  *
  * @param      _this   instancia de la clase ioRN1723.
@@ -227,9 +235,17 @@ void ioRN1723_reboot (void* _this);
  * @brief      Resetea el módulo por software.
  *
  * @param      _this   instancia de la clase ioRN1723.
+ * @param      id      puntero al string del ID.
  */
 void ioRN1723_setDeviceID (void* _this, uint8_t* id);
 
+
+/**
+ * @brief      Indica si se produjo un timeout en algún comando o no.
+ *
+ * @param      _this   instancia de la clase ioRN1723.
+ */
+uint32_t ioRN1723_timeoutOcurred (void* _this);
 
 ///@}
 // ********************************************************************************

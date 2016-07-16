@@ -211,9 +211,12 @@ int main(void)
 		}
     	if (ioDebounce_getActiveEdge(swGetTime))
 		{
-    		ioRN1723_getTime(rn1723, &horas, &minutos, &segundos);
-    		ioRN1723_getDate(rn1723, &dia, &mes, &anio, &dSemana);
-    		horas = horas;
+    		if (ioRN1723_isTimeValid(rn1723))
+			{
+				ioRN1723_getTime(rn1723, &horas, &minutos, &segundos);
+				ioRN1723_getDate(rn1723, &dia, &mes, &anio, &dSemana);
+				horas = horas;
+			}
 		}
 
 

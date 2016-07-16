@@ -46,6 +46,8 @@ struct ioRN1723
 	uint32_t authenticated:1;		///< Indica si está autenticado en una red WiFi o no.
 	uint32_t cmdMode:1;				///< Indica si está en modo comando o no.
 	uint32_t readingRTCValue:1;		///< Indica si se está recibiendo el valor del RTC desde el módulo o no.
+	uint32_t timeOut:1;				///< Indica si se produjo un timeout en algún comando o no.
+	uint32_t invalidRTC:1;			///< Indica si el RTC actual es válido o no.
 };
 
 // ********************************************************************************

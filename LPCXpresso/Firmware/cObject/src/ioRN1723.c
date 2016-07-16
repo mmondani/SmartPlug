@@ -118,7 +118,7 @@ const uint8_t* cmdSetTimeEnable = "set time enable";
 // ********************************************************************************
 // Definiciones de las respuestas del módulo
 // ********************************************************************************
-#define RN_RESPONSES_COUNT		14
+#define RN_RESPONSES_COUNT		16
 uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"OK",
 												"ERR",
@@ -133,7 +133,9 @@ uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"*READY*",
 												"DeAuth",
 												"Connect FAILED",
-												"RTC="
+												"RTC=",
+												"Disconn from",
+												"Time NOT SET"
 };
 
 uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
@@ -150,7 +152,9 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 												7,
 												6,
 												14,
-												4
+												4,
+												12,
+												12
 };
 
 #define RESP_OK						0
@@ -167,6 +171,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_DEAUTH				11
 #define	 RESP_CONNECT_FAILED		12
 #define	 RESP_RTC					13
+#define	 RESP_DISCONN_FROM			14
+#define	 RESP_TIME_NOT_SET			15
 
 #define RESP_FILTER_OK					(1 << 0)
 #define RESP_FILTER_ERROR				(1 << 1)
@@ -182,6 +188,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_FILTER_DEAUTH				(1 << 11)
 #define	 RESP_FILTER_CONNECT_FAILED		(1 << 12)
 #define	 RESP_FILTER_RTC				(1 << 13)
+#define	 RESP_FILTER_DISCONN_FROM		(1 << 14)
+#define	 RESP_FILTER_TIME_NOT_SET		(1 << 15)
 
 // ********************************************************************************
 
@@ -204,7 +212,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define EV_DEAUTH_RECEIVED				0x00001000
 #define EV_CONNECT_FAILED_RECEIVED		0x00002000
 #define EV_RTC_RECEIVED					0x00004000
-
+#define EV_DISCONN_RECEIVED				0x00008000
 
 #define ev_isTriggered(v,e)		(((v & e) == 0)? 0 : 1)
 #define ev_emit(v,e)			(v |= e)
@@ -298,6 +306,7 @@ static void* ioRN1723_ctor  (void* _this, va_list* va)
 	this->possibleResponses = 0xFFFFFFFF;
 	this->indexSerial = 0;
 	this->timeZone = -3;
+	this->invalidRTC = 1;
 
 
 	return this;
@@ -578,6 +587,7 @@ void ioRN1723_handler (void* _this)
 				}
 				else if (ev_isTriggered(this->events, EV_CMD_RECEIVED))
 				{
+					this->timeOut = 0;
 					this->cmdMode = 1;
 
 					// Se entró en el modo de comando, se envía el comando que está en cmdBuffer
@@ -660,6 +670,7 @@ void ioRN1723_handler (void* _this)
 					ioObject_write(gpioReset(this), 0);
 					this->fsm_state = FSM_WAIT4READY;
 					this->cmdMode = 0;
+					this->timeOut = 1;
 				}
 			}
 
@@ -891,7 +902,7 @@ void ioRN1723_handler (void* _this)
 			switch (this->fsm_sub_state)
 			{
 				case GET_TIME_CMD:
-					sendCmd(this, CMD_SHOW_T_T, "", RESP_FILTER_RTC, 2000);
+					sendCmd(this, CMD_SHOW_T_T, "", RESP_FILTER_RTC | RESP_FILTER_TIME_NOT_SET, 2000);
 					this->fsm_sub_state = GET_TIME_EXIT;
 					break;
 
@@ -1041,6 +1052,13 @@ void ioRN1723_refreshLocalTime (void* _this)
 	this->fsm_sub_state = GET_TIME_CMD;
 }
 
+uint32_t ioRN1723_isTimeValid (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	return (this->invalidRTC == 0);
+}
+
 void ioRN1723_getTime (void* _this, uint32_t *hours, uint32_t *minutes, uint32_t *seconds)
 {
 	struct ioRN1723* this = _this;
@@ -1137,6 +1155,14 @@ void ioRN1723_setDeviceID (void* _this, uint8_t* id)
 
 	this->fsm_state = FSM_SET_DEVICE_ID;
 	this->fsm_sub_state = SET_DEVICE_ID_CMD;
+}
+
+
+uint32_t ioRN1723_timeoutOcurred (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	return (this->timeOut == 1);
 }
 
 
@@ -1300,8 +1326,30 @@ void processRX (void* _this)
 						// No se genera el evento de respuesta recibida porque todavía falta que llegue el valor del RTC.
 						this->readingRTCValue = 1;
 						this->indexSerial = 0;
+						this->invalidRTC = 0;
+
+						ev_emit(this->events, EV_RTC_RECEIVED);
+						ev_emit(this->events, EV_RESP_RECEIVED);
 					}
 					break;
+
+				case RESP_TIME_NOT_SET:
+					if (this->answerFilter & RESP_FILTER_TIME_NOT_SET)
+					{
+						// No se pudo obtener la hora del server NTP.
+						this->invalidRTC = 1;
+
+						ev_emit(this->events, EV_RTC_RECEIVED);
+						ev_emit(this->events, EV_RESP_RECEIVED);
+					}
+					break;
+
+				case RESP_DISCONN_FROM:
+					ev_emit(this->events, EV_DISCONN_RECEIVED);
+					ev_emit(this->events, EV_RESP_RECEIVED);
+					this->authenticated = 0;
+					break;
+
 
 				default:
 					break;
