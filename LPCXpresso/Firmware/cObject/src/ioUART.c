@@ -293,9 +293,11 @@ static uint32_t ioUART_readBytes (void* _this, uint32_t len, uint8_t* data)
 
 	if (cBuffer_getPending(this->rxQueue))
 	{
-		cBuffer_remove(this->rxQueue, &ch);
-		*(data+bytesRead) = ch;
-		bytesRead ++;
+		for (bytesRead = 0; bytesRead < cBuffer_getPending(this->rxQueue); bytesRead++)
+		{
+			cBuffer_remove(this->rxQueue, &ch);
+			*(data+bytesRead) = ch;
+		}
 	}
 
 	return bytesRead;
