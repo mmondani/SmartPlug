@@ -8,6 +8,8 @@
 #include "ioCS5490.h"
 #include "ioCS5490_r.h"
 
+#include "ioUART.h"
+
 
 static void* ioCS5490_ctor  (void* _this, va_list* va);
 static void* ioCS5490_dtor (void* _this);
@@ -89,6 +91,118 @@ static void* ioCS5490_copy (void* _this, void* _src)
 
 
 
+void ioCS5490_init (void* _this)
+{
+
+}
 
 
+void ioCS5490_registerWrite (void* _this, uint8_t reg, uint32_t value)
+{
+	struct ioCS5490* this = _this;
+	uint8_t aux;
+
+	aux = 0b01000000 | reg;
+	ioObject_write(uart(this), aux);
+
+	aux = value & 0xff;
+	ioObject_write(uart(this), aux);
+
+	aux = (value >> 8) & 0xff;
+	ioObject_write(uart(this), aux);
+
+	aux = (value >> 16) & 0xff;
+	ioObject_write(uart(this), aux);
+}
+
+
+uint32_t ioCS4390_registerRead (void* _this, uint8_t reg)
+{
+	struct ioCS5490* this = _this;
+	uint8_t aux;
+	uint32_t data;
+
+
+	aux = 0b00000000 | reg;
+	ioObject_write(uart(this), aux);
+
+	while(ioComm_dataAvailable(uart(this)) < 1);
+	aux = ioObject_read(uart(this));
+	*((uint8_t*)&data + 0) = aux;
+
+	while(ioComm_dataAvailable(uart(this)) < 1);
+	aux = ioObject_read(uart(this));
+	*((uint8_t*)&data + 1) = aux;
+
+	while(ioComm_dataAvailable(uart(this)) < 1);
+	aux = ioObject_read(uart(this));
+	*((uint8_t*)&data + 2) = aux;
+
+
+	return data;
+}
+
+
+void ioCS4390_pageSelect (void* _this, uint8_t page)
+{
+	struct ioCS5490* this = _this;
+
+	ioObject_write(uart(this), page);
+}
+
+
+void ioCS4390_instructionWrite (void* _this, uint8_t instruction)
+{
+	struct ioCS5490* this = _this;
+
+	ioObject_write(uart(this), instruction);
+}
+
+
+float ioCS5490_signedFract2Float (uint32_t value, uint32_t m, uint32_t n)
+{
+	uint32_t resolution = 1L << (m + n + 1);	// 2^(n)
+	uint32_t fullRange = 1L << (m + n + 1);		// 2^(m+n+1)
+	uint32_t halfRange = 1L << (n + m);			// 2^(n+m)
+	float decimalValue = 0.0;
+
+
+	if (value >= halfRange)
+		value -= fullRange;
+
+	decimalValue = ( (float) value ) / ( (float) resolution );
+
+	return decimalValue;
+}
+
+
+float ioCS5490_unsignedFract2Float (uint32_t value, uint32_t m, uint32_t n)
+{
+	uint32_t resolution = 1L << n;		// 2^(n)
+	float decimalValue = 0.0;
+
+	decimalValue = ( (float) value ) / ( (float) resolution );
+
+	return decimalValue;
+}
+
+
+uint32_t ioCS5490_signedFloat2Fract (float value, uint32_t m, uint32_t n)
+{
+	uint32_t resolution = 1L << n;				// 2^(n)
+	uint32_t fullRange = 1L << (m + n + 1);		// 2^(m+n+1)
+	uint32_t fractionValue = 0;
+
+	if (value < 0.0)
+	{
+		fractionValue = (-1.0) * (value * resolution);
+		fractionValue = fullRange - fractionValue;
+	}
+	else
+	{
+		fractionValue = value * resolution;
+	}
+
+	return fractionValue;
+}
 
