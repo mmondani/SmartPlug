@@ -28,12 +28,18 @@
  * @brief Nombre de la clase.
  * @details La forma de instanciar esta clase es la siguiente:
  * @code
- * void* cs5490 = cObject_new(ioCS5490, uart, gpioReset, gpioDO)
+ * void* cs5490 = cObject_new(ioCS5490, uart, gpioReset, gpioDO, wordRate, vMax, iMax, iCal, constant, minLoad)
  * @endcode
  * @param ioCS5490 		nombre de la clase a instanciar.
  * @param uart			instancia de la clase @ref grp_ioUART con el que se comunica con el CS5490. Debe estar configurada en modo bloqueante. Baud-rate: 600.
  * @param gpioReset		instancia de la clase @ref grp_ioDigital que maneja el pin RESET del CS5490. Debe estar configurado como salida.
- * @param gpioDO		Instancia de la clase @ref grp_ioDigital que maneja el pin DO del CS5490. Debe estar configurado como entrada, alto-activa.
+ * @param gpioDO		instancia de la clase @ref grp_ioDigital que maneja el pin DO del CS5490. Debe estar configurado como entrada, alto-activa.
+ * @param wordRate      cantidad de palabras por segundo generadas por el CS5490.
+ * @param vMax			tensión máxima del medidor.
+ * @param iMax			corriente máxima del medidor.
+ * @param iCal			corriente de calibración.
+ * @param constant		constante del medidor. Pulsos por kWh.
+ * @param minLoad		carga mínima del medidor.
  */
 extern const void* ioCS5490;
 
@@ -153,7 +159,7 @@ enum ioCS5490_Pages {
  *
  * @param      _this  instancia de la clase ioCS5490.
  */
-void ioCS5490_init (void* _this);
+void ioCS5490_init (void* _this, uint32_t vDCOffset, uint32_t iDCOffset, uint32_t vGain, uint32_t iGain);
 
 
 /**
@@ -174,7 +180,7 @@ void ioCS5490_registerWrite (void* _this, uint8_t reg, uint32_t value);
  *
  * @param      valor del registro leído.
  */
-uint32_t ioCS4390_registerRead (void* _this, uint8_t reg);
+uint32_t ioCS5490_registerRead (void* _this, uint8_t reg);
 
 
 /**
@@ -183,7 +189,7 @@ uint32_t ioCS4390_registerRead (void* _this, uint8_t reg);
  * @param      _this  instancia de la clase ioCS5490.
  * @param      page   página de registros. Ver @ref ioCS5490_Pages.
  */
-void ioCS4390_pageSelect (void* _this, uint8_t page);
+void ioCS5490_pageSelect (void* _this, uint8_t page);
 
 
 /**
@@ -192,7 +198,7 @@ void ioCS4390_pageSelect (void* _this, uint8_t page);
  * @param      _this  		 instancia de la clase ioCS5490.
  * @param      instruction   instrucción a ejecutar. Ver @ref ioCS5490_Instructions.
  */
-void ioCS4390_instructionWrite (void* _this, uint8_t instruction);
+void ioCS5490_instructionWrite (void* _this, uint8_t instruction);
 
 
 /**

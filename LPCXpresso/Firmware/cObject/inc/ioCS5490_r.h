@@ -27,6 +27,15 @@ struct ioCS5490
 	void* uart;					///< Instancia de la clase @ref grp_ioUART con el que se comunica con el CS5490. Debe estar configurada en modo bloqueante. Baud-rate: 600.
 	void* gpioReset;			///< Instancia de la clase @ref grp_ioDigital que maneja el pin RESET del CS5490. Debe estar configurado como salida.
 	void* gpioDO;				///< Instancia de la clase @ref grp_ioDigital que maneja el pin DO del CS5490. Debe estar configurado como entrada, alto-activa.
+	float outputWordRate;		///< Cantidad de palabras por segundo generadas por el CS5490.
+	float vMax;					///< Tensión máxima del medidor.
+	float iMax;					///< Corriente máxima del medidor.
+	float iCal;					///< Corriente de calibración.
+	float scale;				///< 0,6 * iCal / iMax
+	float maxPower;				///< vMax * iCal
+	float powerScale;			///< 0,6 * scale
+	float meterConstant;		///< Constante del medidor. Pulsos por kWh.
+	float minimumLoad;			///< Carga mínima del medidor.
 };
 
 // ********************************************************************************

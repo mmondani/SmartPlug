@@ -9,6 +9,7 @@
 #include "ioCS5490_r.h"
 
 #include "ioUART.h"
+#include "cTimer.h"
 
 
 static void* ioCS5490_ctor  (void* _this, va_list* va);
@@ -34,6 +35,16 @@ const void* ioCS5490 = &_ioCS5490;
 // ********************************************************************************
 
 
+// ********************************************************************************
+// Funciones privadas de la clase ioCS5490
+// ********************************************************************************
+void blocking_delay (void* timer, uint32_t interval);
+
+// ********************************************************************************
+
+
+
+
 
 static void* ioCS5490_ctor  (void* _this, va_list* va)
 {
@@ -42,6 +53,17 @@ static void* ioCS5490_ctor  (void* _this, va_list* va)
 	this->uart = va_arg(*va, void*);
 	this->gpioReset = va_arg(*va, void*);
 	this->gpioDO = va_arg(*va, void*);
+	this->outputWordRate = va_arg(*va, float);
+	this->vMax = va_arg(*va, float);
+	this->iMax = va_arg(*va, float);
+	this->iCal = va_arg(*va, float);
+	this->meterConstant = va_arg(*va, float);
+	this->minimumLoad = va_arg(*va, float);
+
+	this->scale = 0,6 * this->iCal / this->iMax;
+	this->maxPower = this->vMax * this->iCal;
+	this->powerScale = 0,6 * this->scale;
+
 
 	// Se pone en 1 el pin de RESET para sacar del reset al CS5490
 	ioObject_write(gpioReset(this), 1);
@@ -91,9 +113,118 @@ static void* ioCS5490_copy (void* _this, void* _src)
 
 
 
-void ioCS5490_init (void* _this)
+void ioCS5490_init (void* _this, uint32_t vDCOffset, uint32_t iDCOffset, uint32_t vGain, uint32_t iGain)
 {
+	struct ioCS5490* this = _this;
+	void* timer;
+	uint32_t aux1;
+	float auxFloat;
 
+
+	timer = cObject_new(cTimer);
+
+	// Se resetea el CS5490
+	ioObject_write(gpioReset(this), 0);
+	blocking_delay(timer, 1000);
+	ioObject_write(gpioReset(this), 1);
+
+
+	ioCS5490_instructionWrite(this, IOCS5490_INS_SOFTWARE_RESET);
+	blocking_delay(timer, 200);
+
+
+	// Se resetea el CS5490
+	ioObject_write(gpioReset(this), 0);
+	blocking_delay(timer, 1000);
+	ioObject_write(gpioReset(this), 1);
+
+
+	ioCS5490_instructionWrite(this, IOCS5490_INS_SOFTWARE_RESET);
+	blocking_delay(timer, 200);
+
+
+	ioCS5490_pageSelect(this, IOCS5490_PAGE_0);
+
+
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_STATUS0);
+	ioCS5490_registerWrite(this, IOCS5490_REG_STATUS0, 0b111001010101010101111101);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_STATUS0);
+
+
+	ioCS5490_pageSelect(this, IOCS5490_PAGE_18);
+
+
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_SCALE);
+	aux1 = ioCS5490_signedFloat2Fract(this->scale, 0, 23);
+	ioCS5490_registerWrite(this, IOCS5490_REG_SCALE, aux1);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_SCALE);
+
+
+	// Calibración
+	blocking_delay(timer, 250);
+	ioCS5490_pageSelect(this, IOCS5490_PAGE_16);
+
+	blocking_delay(timer, 250);
+	ioCS5490_registerWrite(this, IOCS5490_REG_V_DCOFF, vDCOffset);
+
+	blocking_delay(timer, 250);
+	ioCS5490_registerWrite(this, IOCS5490_REG_I_DCOFF, iDCOffset);
+
+	blocking_delay(timer, 250);
+	ioCS5490_registerWrite(this, IOCS5490_REG_V_GAIN, vGain);
+
+	blocking_delay(timer, 250);
+	ioCS5490_registerWrite(this, IOCS5490_REG_I_GAIN, iGain);
+
+	blocking_delay(timer, 250);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_LOAD_MIN);
+	auxFloat = this->minimumLoad * this->powerScale / this->maxPower;
+	aux1 = ioCS5490_signedFloat2Fract(auxFloat, 0 ,23);
+	ioCS5490_registerWrite(this, IOCS5490_REG_LOAD_MIN, aux1);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_LOAD_MIN);
+
+
+	// Configuración de los Energy Pulses
+	blocking_delay(timer, 250);
+	ioCS5490_pageSelect(this, IOCS5490_PAGE_0);
+
+
+	ioCS5490_registerWrite(this, IOCS5490_REG_PULSEWIDTH, 0x080010);
+	blocking_delay(timer, 250);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_PULSEWIDTH);
+
+
+	ioCS5490_pageSelect(this, IOCS5490_PAGE_18);
+
+	ioCS5490_registerWrite(this, IOCS5490_REG_PULSERATE, 0x4BDA12);
+	blocking_delay(timer, 250);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_PULSERATE);
+
+
+	ioCS5490_pageSelect(this, IOCS5490_PAGE_0);
+
+	// Los pulsos se generan con la P_Avg
+	ioCS5490_registerWrite(this, IOCS5490_REG_PULSECTRL, 0x000000);
+	blocking_delay(timer, 250);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_PULSECTRL);
+
+
+	// Se activa el EPG
+	ioCS5490_registerWrite(this, IOCS5490_REG_CONFIG1, 0x10EEEE);
+	blocking_delay(timer, 250);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_CONFIG1);
+
+	blocking_delay(timer, 500);
+
+	// EPG conectado al DO
+	ioCS5490_registerWrite(this, IOCS5490_REG_CONFIG1, 0x10EEE0);
+	blocking_delay(timer, 250);
+	aux1 = ioCS5490_registerRead(this, IOCS5490_REG_CONFIG1);
+
+
+
+	// Comienzan las conversiones
+	ioCS5490_instructionWrite(this, IOCS5490_INS_CONTINUOUS_CONV);
 }
 
 
@@ -116,7 +247,7 @@ void ioCS5490_registerWrite (void* _this, uint8_t reg, uint32_t value)
 }
 
 
-uint32_t ioCS4390_registerRead (void* _this, uint8_t reg)
+uint32_t ioCS5490_registerRead (void* _this, uint8_t reg)
 {
 	struct ioCS5490* this = _this;
 	uint8_t aux;
@@ -143,7 +274,7 @@ uint32_t ioCS4390_registerRead (void* _this, uint8_t reg)
 }
 
 
-void ioCS4390_pageSelect (void* _this, uint8_t page)
+void ioCS5490_pageSelect (void* _this, uint8_t page)
 {
 	struct ioCS5490* this = _this;
 
@@ -151,7 +282,7 @@ void ioCS4390_pageSelect (void* _this, uint8_t page)
 }
 
 
-void ioCS4390_instructionWrite (void* _this, uint8_t instruction)
+void ioCS5490_instructionWrite (void* _this, uint8_t instruction)
 {
 	struct ioCS5490* this = _this;
 
@@ -206,3 +337,11 @@ uint32_t ioCS5490_signedFloat2Fract (float value, uint32_t m, uint32_t n)
 	return fractionValue;
 }
 
+
+
+
+void blocking_delay (void* timer, uint32_t interval)
+{
+	cTimer_start(timer, interval);
+	while (!cTimer_hasExpired(timer));
+}
