@@ -34,7 +34,7 @@
  * @param uart			instancia de la clase @ref grp_ioUART con el que se comunica con el CS5490. Debe estar configurada en modo bloqueante. Baud-rate: 600.
  * @param gpioReset		instancia de la clase @ref grp_ioDigital que maneja el pin RESET del CS5490. Debe estar configurado como salida.
  * @param gpioDO		instancia de la clase @ref grp_ioDigital que maneja el pin DO del CS5490. Debe estar configurado como entrada, alto-activa.
- * @param wordRate      cantidad de palabras por segundo generadas por el CS5490.
+ * @param wordRate		cantidad de muestras por segundo que toma el CS5490 internamente.
  * @param vMax			tensión máxima del medidor.
  * @param iMax			corriente máxima del medidor.
  * @param iCal			corriente de calibración.
@@ -199,6 +199,66 @@ void ioCS5490_pageSelect (void* _this, uint8_t page);
  * @param      instruction   instrucción a ejecutar. Ver @ref ioCS5490_Instructions.
  */
 void ioCS5490_instructionWrite (void* _this, uint8_t instruction);
+
+
+/**
+ * @brief      Retorna el valor de la corriente de calibración.
+ *
+ * @param      _this  		 instancia de la clase ioCS5490.
+ *
+ * @return     valor de la corriente de calibracion.
+ */
+float ioCS5490_getIcalibration (void* _this);
+
+
+/**
+ * @brief      Retorna el scale del CS5490.
+ *
+ * @param      _this  		 instancia de la clase ioCS5490.
+ *
+ * @return     valor del scale.
+ */
+float ioCS5490_getMeterScale (void* _this);
+
+
+/**
+ * @brief      Retorna la tensión máxima del CS5490.
+ *
+ * @param      _this  		 instancia de la clase ioCS5490.
+ *
+ * @return     valor de la tensión máxima.
+ */
+float ioCS5490_getVmax (void* _this);
+
+
+/**
+ * @brief      Retorna la potencia máxima del CS5490.
+ *
+ * @param      _this  		 instancia de la clase ioCS5490.
+ *
+ * @return     valor de la potencia máxima.
+ */
+float ioCS5490_getMaxPower (void* _this);
+
+
+/**
+ * @brief      Retorna el scale de la potencia del CS5490.
+ *
+ * @param      _this  		 instancia de la clase ioCS5490.
+ *
+ * @return     valor del scale de potencia.
+ */
+float ioCS5490_getPowerScale (void* _this);
+
+
+/**
+ * @brief      Retorna el word rate del CS5490
+ *
+ * @param      _this  		 instancia de la clase ioCS5490.
+ *
+ * @return     valor del word rate.
+ */
+float ioCS5490_getWordRate (void* _this);
 
 
 /**

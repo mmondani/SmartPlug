@@ -400,3 +400,24 @@ void ioUART_enableRx (void* _this)
 {
 
 }
+
+
+uint32_t ioUART_writeString (void* _this, uint8_t* str)
+{
+	struct ioUART* this = _this;
+	uint32_t writtenBytes = 0;
+	uint32_t ret;
+
+	while (*str != '\0')
+	{
+		ret = ioUART_write(this, *str);
+
+		if (ret != 0)
+			break;
+
+		writtenBytes++;
+		str++;
+	}
+
+	return writtenBytes;
+}

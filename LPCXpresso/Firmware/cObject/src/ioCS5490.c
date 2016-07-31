@@ -53,7 +53,7 @@ static void* ioCS5490_ctor  (void* _this, va_list* va)
 	this->uart = va_arg(*va, void*);
 	this->gpioReset = va_arg(*va, void*);
 	this->gpioDO = va_arg(*va, void*);
-	this->outputWordRate = va_arg(*va, float);
+	this->wordRate = va_arg(*va, float);
 	this->vMax = va_arg(*va, float);
 	this->iMax = va_arg(*va, float);
 	this->iCal = va_arg(*va, float);
@@ -287,6 +287,54 @@ void ioCS5490_instructionWrite (void* _this, uint8_t instruction)
 	struct ioCS5490* this = _this;
 
 	ioObject_write(uart(this), instruction);
+}
+
+
+float ioCS5490_getIcalibration (void* _this)
+{
+	struct ioCS5490* this = _this;
+
+	return this->iCal;
+}
+
+
+float ioCS5490_getMeterScale (void* _this)
+{
+	struct ioCS5490* this = _this;
+
+	return this->scale;
+}
+
+
+float ioCS5490_getVmax (void* _this)
+{
+	struct ioCS5490* this = _this;
+
+	return this->vMax;
+}
+
+
+float ioCS5490_getMaxPower (void* _this)
+{
+	struct ioCS5490* this = _this;
+
+	return this->maxPower;
+}
+
+
+float ioCS5490_getPowerScale (void* _this)
+{
+	struct ioCS5490* this = _this;
+
+	return this->powerScale;
+}
+
+
+float ioCS5490_getWordRate (void* _this)
+{
+	struct ioCS5490* this = _this;
+
+	return this->wordRate;
 }
 
 

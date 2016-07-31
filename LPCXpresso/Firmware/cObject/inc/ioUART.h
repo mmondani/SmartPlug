@@ -207,6 +207,17 @@ void ioUART_disableRx (void* _this);
  */
 void ioUART_enableRx (void* _this);
 
+
+/**
+ * @brief      Envía un string por la UART.
+ *
+ * @param      _this  instancia de la clase ioUART.
+ * @param	   str    arreglo de uint8_t terminado en '\0'.
+ *
+ * @return	   cantidad de bytes escritos.
+ */
+uint32_t ioUART_writeString (void* _this, uint8_t* str);
+
 ///@}
 // ********************************************************************************
 
