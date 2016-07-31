@@ -52,6 +52,7 @@ extern const void* ioUART;
  * Enumeración con las posibles velocidades para la UART.
  */
 enum ioUART_BR{
+	   IOUART_BR_600 = 600,			    			///< 600 bauds
 	   IOUART_BR_2400 = 2400,						///< 2400 bauds
 	   IOUART_BR_4800 = 4800,						///< 4800 bauds
 	   IOUART_BR_9600 = 9600,						///< 9600 bauds
@@ -68,7 +69,7 @@ enum ioUART_Data{
 	    IOUART_DATA_5BIT = UART_LCR_WLEN5,			///< 5 bits
 	    IOUART_DATA_6BIT = UART_LCR_WLEN6,			///< 6 bits
 		IOUART_DATA_7BIT = UART_LCR_WLEN7,			///< 7 bits
-		IOUART_DATA_8BIT = UART_LCR_WLEN8,			///< 8 bits
+		IOUART_DATA_8BIT = UART_LCR_WLEN8			///< 8 bits
 };
 
 

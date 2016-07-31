@@ -36,6 +36,7 @@ void* gpioB;
 void* pushA;
 void* pushB;
 void* timer;
+void* refreshTimer;
 
 
 enum {FSM_WAITING_PUSH = 0, FSM_OFFSET_CALIBRATION, FSM_WAITING_RETURN, FSM_GAIN_CALIBRATION, FSM_V_GAIN_CALIBRATION, FSM_I_GAIN_CALIBRATION};
@@ -99,9 +100,10 @@ int main(void)
     SystemCoreClockUpdate();
 
 
+
     initMemHeap();
 
-    uart1 = cObject_new(ioUART, LPC_UART3, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 20);
+    uart1 = cObject_new(ioUART, LPC_UART1, IOUART_BR_600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 20);
     ioObject_init(uart1);
     ioComm_intEnable(uart1, IOUART_INT_TX);
     ioComm_intEnable(uart1, IOUART_INT_RX);
@@ -111,7 +113,7 @@ int main(void)
     NVIC_EnableIRQ(UART1_IRQn);
 
 
-    uart3 = cObject_new(ioUART, LPC_UART3, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 100, 10);
+    uart3 = cObject_new(ioUART, LPC_UART3, IOUART_BR_115200, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 10);
     ioObject_init(uart3);
     ioComm_intEnable(uart3, IOUART_INT_TX);
     ioComm_intEnable(uart3, IOUART_INT_RX);
@@ -127,11 +129,6 @@ int main(void)
     gpioDO = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2, 0);
     ioObject_init(gpioDO);
 
-
-    cs5490 = cObject_new (ioCS5490, uart1, gpioReset, gpioDO, 4000.0, 220.0, 5.0, 1,75, 5000.0, 8.0);
-    ioCS5490_init(cs5490, 0, 0, 1, 1);
-
-
     gpioA = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0, 3);
     ioObject_init(gpioA);
     pushA = cObject_new(ioDebounce, gpioA, IODIGITAL_LEVEL_HIGH, 40);
@@ -141,22 +138,27 @@ int main(void)
     pushB = cObject_new(ioDebounce, gpioB, IODIGITAL_LEVEL_HIGH, 40);
 
 
-    timer = cObject_new(cTimer);
-
-
-
     SysTick_Config(SystemCoreClock / 1000);
 
 
+    cs5490 = cObject_new (ioCS5490, uart1, gpioReset, gpioDO, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
+    ioCS5490_init(cs5490, 0, 0, 1, 1);
 
 
+
+
+    timer = cObject_new(cTimer);
+    refreshTimer = cObject_new(cTimer);
+
+
+    cTimer_start(refreshTimer, 1000);
 
     while(1)
     {
-    	if (ioDebounce_getActiveEdge(gpioA))
+    	if (ioDebounce_getActiveEdge(pushA))
     		evPushA = 1;
 
-    	if (ioDebounce_getActiveEdge(gpioB))
+    	if (ioDebounce_getActiveEdge(pushB))
     		evPushB = 1;
     	//-----------------------------------------------------------------
 
@@ -188,41 +190,89 @@ int main(void)
     			}
     			else
     			{
-    				ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
-    				temperatura = ioCS5490_registerRead(cs5490, IOCS5490_REG_T_REG);
-    				muestras = ioCS5490_registerRead(cs5490, IOCS5490_REG_TIME);
-    				irms = ioCS5490_registerRead(cs5490, IOCS5490_REG_I_RMS);
-    				vrms = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_RMS);
-    				potencia_activa = ioCS5490_registerRead(cs5490, IOCS5490_REG_P_AVG);
-    				potencia_reactiva = ioCS5490_registerRead(cs5490, IOCS5490_REG_Q_AVG);
-    				potencia_aparente = ioCS5490_registerRead(cs5490, IOCS5490_REG_S_REG);
-    				factor_potencia = ioCS5490_registerRead(cs5490, IOCS5490_REG_PF);
-    				epsilon = ioCS5490_registerRead(cs5490, IOCS5490_REG_EPSILON);
-    				i_offset = ioCS5490_registerRead(cs5490, IOCS5490_REG_I_DCOFF);
-    				v_offset = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_DCOFF);
-    				i_ganancia = ioCS5490_registerRead(cs5490, IOCS5490_REG_I_GAIN);
-    				v_ganancia = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_GAIN);
-    				settle = ioCS5490_registerRead(cs5490, IOCS5490_REG_T_SETTLE);
+    				if (cTimer_hasExpired(refreshTimer))
+    				{
+    					cTimer_start(refreshTimer, 1000);
 
-    				ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_18);
-    				escala = ioCS5490_registerRead(cs5490, IOCS5490_REG_SCALE);
+						term_clear(uart3);
+						term_home(uart3);
+
+						ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+						temperatura = ioCS5490_registerRead(cs5490, IOCS5490_REG_T_REG);
+						muestras = ioCS5490_registerRead(cs5490, IOCS5490_REG_TIME);
+						irms = ioCS5490_registerRead(cs5490, IOCS5490_REG_I_RMS);
+						vrms = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_RMS);
+						potencia_activa = ioCS5490_registerRead(cs5490, IOCS5490_REG_P_AVG);
+						potencia_reactiva = ioCS5490_registerRead(cs5490, IOCS5490_REG_Q_AVG);
+						potencia_aparente = ioCS5490_registerRead(cs5490, IOCS5490_REG_S_REG);
+						factor_potencia = ioCS5490_registerRead(cs5490, IOCS5490_REG_PF);
+						epsilon = ioCS5490_registerRead(cs5490, IOCS5490_REG_EPSILON);
+						i_offset = ioCS5490_registerRead(cs5490, IOCS5490_REG_I_DCOFF);
+						v_offset = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_DCOFF);
+						i_ganancia = ioCS5490_registerRead(cs5490, IOCS5490_REG_I_GAIN);
+						v_ganancia = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_GAIN);
+						settle = ioCS5490_registerRead(cs5490, IOCS5490_REG_T_SETTLE);
+
+						ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_18);
+						escala = ioCS5490_registerRead(cs5490, IOCS5490_REG_SCALE);
 
 
-    				conversion = ioCS5490_signedFract2Float(temperatura, 7, 16);
-    				sprintf(buff, "Temperatura: %f\n\r", conversion);
-					ioUART_writeString(uart3, buff);
-					sprintf(buff, "Muestras: %lX\n\r", muestras);
-					ioUART_writeString(uart3, buff);
+						conversion = ioCS5490_signedFract2Float(temperatura, 7, 16);
+						sprintf(buff, "Temperatura: %f\n\r", conversion);
+						ioUART_writeString(uart3, buff);
+						sprintf(buff, "Muestras: %lX\n\r", muestras);
+						ioUART_writeString(uart3, buff);
 
-					conversion = ioCS5490_unsignedFract2Float(irms, 0, 24);
-					irms_linea = conversion * ioCS5490_getIcalibration(cs5490) / ioCS5490_getMeterScale(cs5490);
-					sprintf(buff, "IRMS: %f\t\t%f\n\r", conversion, irms_linea);
-					ioUART_writeString(uart3, buff);
+						conversion = ioCS5490_unsignedFract2Float(irms, 0, 24);
+						irms_linea = conversion * ioCS5490_getIcalibration(cs5490) / ioCS5490_getMeterScale(cs5490);
+						sprintf(buff, "IRMS: %f\t\t%f\n\r", conversion, irms_linea);
+						ioUART_writeString(uart3, buff);
 
-					conversion = ioCS5490_unsignedFract2Float(vrms, 0, 24);
-					vrms_linea = conversion * ioCS5490_getVmax(cs5490) / 0.6;
-					sprintf(buff, "IRMS: %f\t\t%f\n\r", conversion, vrms_linea);
-					ioUART_writeString(uart3, buff);
+						conversion = ioCS5490_unsignedFract2Float(vrms, 0, 24);
+						vrms_linea = conversion * ioCS5490_getVmax(cs5490) / 0.6;
+						sprintf(buff, "VRMS: %f\t\t%f\n\r", conversion, vrms_linea);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_signedFract2Float(potencia_activa_linea, 0, 23);
+						potencia_activa_linea = conversion * ioCS5490_getMaxPower(cs5490) / ioCS5490_getPowerScale(cs5490);
+						sprintf(buff, "Potencia activa: %f\t\t%f\n\r", conversion, potencia_activa_linea);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_signedFract2Float(potencia_reactiva, 0, 23);
+						potencia_reactiva_linea = conversion * ioCS5490_getMaxPower(cs5490) / ioCS5490_getPowerScale(cs5490);
+						sprintf(buff, "Potencia reactiva: %f\t\t%f\n\r", conversion, potencia_reactiva_linea);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_signedFract2Float(potencia_aparente, 0, 23);
+						potencia_aparente_linea = conversion * ioCS5490_getMaxPower(cs5490) / ioCS5490_getPowerScale(cs5490);
+						sprintf(buff, "Potencia aparente: %f\t\t%f\n\r", conversion, potencia_aparente_linea);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_signedFract2Float(factor_potencia, 0, 23);
+						sprintf(buff, "Factor de potencia: %f\n\r", conversion);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_signedFract2Float(epsilon, 0, 23);
+						frecuencia_linea = conversion * ioCS5490_getWordRate(cs5490);
+						sprintf(buff, "Frecuencia linea: %f\t\t%f\n\r", conversion, frecuencia_linea);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_signedFract2Float(i_offset, 0, 23);
+						sprintf(buff, "I DC Offset: %f\n\r", conversion);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_signedFract2Float(v_offset, 0, 23);
+						sprintf(buff, "V DC Offset: %f\n\r", conversion);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_unsignedFract2Float(i_ganancia, 2, 22);
+						sprintf(buff, "I Ganancia: %f\n\r", conversion);
+						ioUART_writeString(uart3, buff);
+
+						conversion = ioCS5490_unsignedFract2Float(v_ganancia, 2, 22);
+						sprintf(buff, "V Ganancia: %f\n\r", conversion);
+						ioUART_writeString(uart3, buff);
+    				}
     			}
     			break;
 

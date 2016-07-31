@@ -64,14 +64,14 @@
 								<option id="com.crt.advproject.link.gcc.multicore.master.userobjs.362642567" name="Slave Objects (not visible)" superClass="com.crt.advproject.link.gcc.multicore.master.userobjs" valueType="userObjs"/>
 								<option id="com.crt.advproject.link.arch.428107068" name="Architecture" superClass="com.crt.advproject.link.arch" value="com.crt.advproject.link.target.cm3" valueType="enumerated"/>
 								<option id="com.crt.advproject.link.thumb.139266550" name="Thumb mode" superClass="com.crt.advproject.link.thumb" value="true" valueType="boolean"/>
-								<option id="com.crt.advproject.link.script.1735904098" name="Linker script" superClass="com.crt.advproject.link.script" value="&quot;cObject_test_ioDigital_Debug.ld&quot;" valueType="string"/>
+								<option id="com.crt.advproject.link.script.1735904098" name="Linker script" superClass="com.crt.advproject.link.script" value="&quot;cObject_test_ioCS5490_Debug.ld&quot;" valueType="string"/>
 								<option id="com.crt.advproject.link.manage.1225345680" name="Manage linker script" superClass="com.crt.advproject.link.manage" value="true" valueType="boolean"/>
 								<option id="gnu.c.link.option.nostdlibs.189240736" name="No startup or default libs (-nostdlib)" superClass="gnu.c.link.option.nostdlibs" value="true" valueType="boolean"/>
 								<option id="gnu.c.link.option.other.671816088" name="Other options (-Xlinker [option])" superClass="gnu.c.link.option.other" valueType="stringList">
 									<listOptionValue builtIn="false" value="-Map=&quot;${BuildArtifactFileBaseName}.map&quot;"/>
 									<listOptionValue builtIn="false" value="--gc-sections"/>
 								</option>
-								<option id="com.crt.advproject.link.gcc.hdrlib.532934955" name="Library" superClass="com.crt.advproject.link.gcc.hdrlib" value="com.crt.advproject.gcc.link.hdrlib.codered.none" valueType="enumerated"/>
+								<option id="com.crt.advproject.link.gcc.hdrlib.532934955" name="Library" superClass="com.crt.advproject.link.gcc.hdrlib" value="com.crt.advproject.gcc.link.hdrlib.codered.nohost" valueType="enumerated"/>
 								<option id="gnu.c.link.option.libs.1511218968" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="cObject"/>
 									<listOptionValue builtIn="false" value="lpc_chip_175x_6x"/>

@@ -53,16 +53,16 @@ static void* ioCS5490_ctor  (void* _this, va_list* va)
 	this->uart = va_arg(*va, void*);
 	this->gpioReset = va_arg(*va, void*);
 	this->gpioDO = va_arg(*va, void*);
-	this->wordRate = va_arg(*va, float);
-	this->vMax = va_arg(*va, float);
-	this->iMax = va_arg(*va, float);
-	this->iCal = va_arg(*va, float);
-	this->meterConstant = va_arg(*va, float);
-	this->minimumLoad = va_arg(*va, float);
+	this->wordRate = va_arg(*va, double);
+	this->vMax = va_arg(*va, double);
+	this->iMax = va_arg(*va, double);
+	this->iCal = va_arg(*va, double);
+	this->meterConstant = va_arg(*va, double);
+	this->minimumLoad = va_arg(*va, double);
 
-	this->scale = 0,6 * this->iCal / this->iMax;
+	this->scale = 0.6 * this->iCal / this->iMax;
 	this->maxPower = this->vMax * this->iCal;
-	this->powerScale = 0,6 * this->scale;
+	this->powerScale = 0.6 * this->scale;
 
 
 	// Se pone en 1 el pin de RESET para sacar del reset al CS5490
@@ -250,25 +250,26 @@ void ioCS5490_registerWrite (void* _this, uint8_t reg, uint32_t value)
 uint32_t ioCS5490_registerRead (void* _this, uint8_t reg)
 {
 	struct ioCS5490* this = _this;
-	uint8_t aux;
+	uint8_t aux1, aux2, aux3;
 	uint32_t data;
 
 
-	aux = 0b00000000 | reg;
-	ioObject_write(uart(this), aux);
+	aux1 = 0b00000000 | reg;
+	ioObject_write(uart(this), aux1);
 
 	while(ioComm_dataAvailable(uart(this)) < 1);
-	aux = ioObject_read(uart(this));
-	*((uint8_t*)&data + 0) = aux;
+	aux1 = ioObject_read(uart(this));
+	//*((uint8_t*)&data + 0) = aux;
 
 	while(ioComm_dataAvailable(uart(this)) < 1);
-	aux = ioObject_read(uart(this));
-	*((uint8_t*)&data + 1) = aux;
+	aux2 = ioObject_read(uart(this));
+	//*((uint8_t*)&data + 1) = aux;
 
 	while(ioComm_dataAvailable(uart(this)) < 1);
-	aux = ioObject_read(uart(this));
-	*((uint8_t*)&data + 2) = aux;
+	aux3 = ioObject_read(uart(this));
+	//*((uint8_t*)&data + 2) = aux;
 
+	data = (aux1 << 16) | (aux2 << 8) | (aux3);
 
 	return data;
 }
