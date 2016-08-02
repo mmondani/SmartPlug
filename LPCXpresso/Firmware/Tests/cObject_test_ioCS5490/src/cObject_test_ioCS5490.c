@@ -70,7 +70,7 @@ void UART3_IRQHandler(void)
 	}
 }
 
-void UART1_IRQHandler(void)
+void UART2_IRQHandler(void)
 {
 	if (ioComm_getInt(uart1, IOUART_INT_ID_TX))
 	{
@@ -103,14 +103,14 @@ int main(void)
 
     initMemHeap();
 
-    uart1 = cObject_new(ioUART, LPC_UART1, IOUART_BR_600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 20);
+    uart1 = cObject_new(ioUART, LPC_UART2, IOUART_BR_600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 20);
     ioObject_init(uart1);
     ioComm_intEnable(uart1, IOUART_INT_TX);
     ioComm_intEnable(uart1, IOUART_INT_RX);
     ioUART_configFIFO(uart1, IOUART_FIFO_LEVEL0);
 
-    NVIC_SetPriority(UART1_IRQn, 1);
-    NVIC_EnableIRQ(UART1_IRQn);
+    NVIC_SetPriority(UART2_IRQn, 1);
+    NVIC_EnableIRQ(UART2_IRQn);
 
 
     uart3 = cObject_new(ioUART, LPC_UART3, IOUART_BR_115200, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 10);
@@ -149,6 +149,7 @@ int main(void)
 
     timer = cObject_new(cTimer);
     refreshTimer = cObject_new(cTimer);
+
 
 
     cTimer_start(refreshTimer, 1000);
@@ -192,10 +193,7 @@ int main(void)
     			{
     				if (cTimer_hasExpired(refreshTimer))
     				{
-    					cTimer_start(refreshTimer, 1000);
-
-						term_clear(uart3);
-						term_home(uart3);
+    					cTimer_start(refreshTimer, 2000);
 
 						ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
 						temperatura = ioCS5490_registerRead(cs5490, IOCS5490_REG_T_REG);
@@ -216,6 +214,9 @@ int main(void)
 						ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_18);
 						escala = ioCS5490_registerRead(cs5490, IOCS5490_REG_SCALE);
 
+
+						term_clear(uart3);
+						term_home(uart3);
 
 						conversion = ioCS5490_signedFract2Float(temperatura, 7, 16);
 						sprintf(buff, "Temperatura: %f\n\r", conversion);

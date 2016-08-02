@@ -253,6 +253,7 @@ uint32_t ioCS5490_registerRead (void* _this, uint8_t reg)
 	uint8_t aux1, aux2, aux3;
 	uint32_t data;
 
+	ioUART_flushRx(uart(this));
 
 	aux1 = 0b00000000 | reg;
 	ioObject_write(uart(this), aux1);
@@ -269,7 +270,7 @@ uint32_t ioCS5490_registerRead (void* _this, uint8_t reg)
 	aux3 = ioObject_read(uart(this));
 	//*((uint8_t*)&data + 2) = aux;
 
-	data = (aux1 << 16) | (aux2 << 8) | (aux3);
+	data = (aux3 << 16) | (aux2 << 8) | (aux1);
 
 	return data;
 }

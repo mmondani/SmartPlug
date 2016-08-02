@@ -231,7 +231,8 @@ static uint32_t ioUART_write (void* _this, uint32_t data)
 			res = 1;
 	}
 	else
-		Chip_UART_SendByte(periphMem(this), data8);
+		Chip_UART_SendBlocking(periphMem(this), (void*)&data8, 1);
+		//Chip_UART_SendByte(periphMem(this), data8);
 
 
 	return res;
@@ -420,4 +421,12 @@ uint32_t ioUART_writeString (void* _this, uint8_t* str)
 	}
 
 	return writtenBytes;
+}
+
+
+uint32_t ioUART_flushRx (void* _this)
+{
+	struct ioUART* this = _this;
+
+	cBuffer_clear(this->rxQueue);
 }

@@ -219,6 +219,14 @@ void ioUART_enableRx (void* _this);
  */
 uint32_t ioUART_writeString (void* _this, uint8_t* str);
 
+
+/**
+ * @brief      Limpia el buffer de recepción.
+ *
+ * @param      _this  instancia de la clase ioUART.
+ */
+uint32_t ioUART_flushRx (void* _this);
+
 ///@}
 // ********************************************************************************
 

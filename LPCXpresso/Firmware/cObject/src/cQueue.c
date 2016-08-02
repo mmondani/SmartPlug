@@ -148,8 +148,15 @@ static void* cQueue_remove (void* _this, void* _object)
 
 static void* cQueue_clear (void* _this)
 {
+	struct cQueue* this = _this;
+
 	// Se llama a la implementación de clear de la clase que hereda
-	return ((const struct cBuffer*) cStaticBuffer)->clear(_this);
+	((const struct cBuffer*) cStaticBuffer)->clear(_this);
+
+	this->ptrIn = 0;
+	this->ptrOut = 0;
+
+	return this;
 }
 
 

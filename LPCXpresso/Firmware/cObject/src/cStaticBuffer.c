@@ -134,7 +134,7 @@ static void* cStaticBuffer_clear (void* _this)
 
 
 	memset(this->buffer, 0, this->len * this->objectSize);
-
+	this->count = 0;
 
 	return this;
 }
