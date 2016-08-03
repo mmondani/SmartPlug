@@ -270,7 +270,7 @@ float ioCS5490_getWordRate (void* _this);
  *
  * @return     valor float resultante de la conversión.
  */
-float ioCS5490_signedFract2Float (uint32_t value, uint32_t m, uint32_t n);
+float ioCS5490_signedFract2Float (int32_t value, uint32_t m, uint32_t n);
 
 
 /**
@@ -294,7 +294,7 @@ float ioCS5490_unsignedFract2Float (uint32_t value, uint32_t m, uint32_t n);
  *
  * @return     valor en punto fijo resultante de la conversión.
  */
-uint32_t ioCS5490_signedFloat2Fract (float value, uint32_t m, uint32_t n);
+int32_t ioCS5490_signedFloat2Fract (float value, uint32_t m, uint32_t n);
 
 
 

@@ -70,7 +70,7 @@ void UART3_IRQHandler(void)
 	}
 }
 
-void UART2_IRQHandler(void)
+void UART1_IRQHandler(void)
 {
 	if (ioComm_getInt(uart1, IOUART_INT_ID_TX))
 	{
@@ -103,14 +103,14 @@ int main(void)
 
     initMemHeap();
 
-    uart1 = cObject_new(ioUART, LPC_UART2, IOUART_BR_600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 20);
+    uart1 = cObject_new(ioUART, LPC_UART1, IOUART_BR_600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 20);
     ioObject_init(uart1);
     ioComm_intEnable(uart1, IOUART_INT_TX);
     ioComm_intEnable(uart1, IOUART_INT_RX);
     ioUART_configFIFO(uart1, IOUART_FIFO_LEVEL0);
 
-    NVIC_SetPriority(UART2_IRQn, 1);
-    NVIC_EnableIRQ(UART2_IRQn);
+    NVIC_SetPriority(UART1_IRQn, 1);
+    NVIC_EnableIRQ(UART1_IRQn);
 
 
     uart3 = cObject_new(ioUART, LPC_UART3, IOUART_BR_115200, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 10);
@@ -150,7 +150,7 @@ int main(void)
     timer = cObject_new(cTimer);
     refreshTimer = cObject_new(cTimer);
 
-
+    ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CONTINUOUS_CONV);
 
     cTimer_start(refreshTimer, 1000);
 
@@ -234,7 +234,7 @@ int main(void)
 						sprintf(buff, "VRMS: %f\t\t%f\n\r", conversion, vrms_linea);
 						ioUART_writeString(uart3, buff);
 
-						conversion = ioCS5490_signedFract2Float(potencia_activa_linea, 0, 23);
+						conversion = ioCS5490_signedFract2Float(potencia_activa, 0, 23);
 						potencia_activa_linea = conversion * ioCS5490_getMaxPower(cs5490) / ioCS5490_getPowerScale(cs5490);
 						sprintf(buff, "Potencia activa: %f\t\t%f\n\r", conversion, potencia_activa_linea);
 						ioUART_writeString(uart3, buff);
@@ -279,6 +279,12 @@ int main(void)
 
 
     		case FSM_OFFSET_CALIBRATION:
+    			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+    			ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_DCOFF, 0);
+    			ioCS5490_registerWrite(cs5490, IOCS5490_REG_I_DCOFF, 0);
+    			ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_GAIN, 0x400000);
+    			ioCS5490_registerWrite(cs5490, IOCS5490_REG_I_GAIN, 0x400000);
+
     			ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CAL_DC_OFFSET_I);
     			cTimer_start(timer, 3000);
     			while (!cTimer_hasExpired(timer));
@@ -315,6 +321,8 @@ int main(void)
     				sprintf(buff, "Push B -> Calibracion Ganancia");
 					ioUART_writeString(uart3, buff);
 
+					ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CONTINUOUS_CONV);
+
 					state = FSM_WAITING_PUSH;
     			}
     			break;
@@ -345,6 +353,9 @@ int main(void)
 
 
     		case FSM_V_GAIN_CALIBRATION:
+    			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+    			ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_GAIN, 0x400000);
+
     			ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CAL_GAIN_V);
     			cTimer_start(timer, 15000);
     			while (!cTimer_hasExpired(timer));
@@ -361,6 +372,9 @@ int main(void)
 
 
     		case FSM_I_GAIN_CALIBRATION:
+    			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+    			ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_GAIN, 0x400000);
+
     			ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CAL_GAIN_I);
     			cTimer_start(timer, 15000);
     			while (!cTimer_hasExpired(timer));

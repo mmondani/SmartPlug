@@ -340,9 +340,9 @@ float ioCS5490_getWordRate (void* _this)
 }
 
 
-float ioCS5490_signedFract2Float (uint32_t value, uint32_t m, uint32_t n)
+float ioCS5490_signedFract2Float (int32_t value, uint32_t m, uint32_t n)
 {
-	uint32_t resolution = 1L << (m + n + 1);	// 2^(n)
+	uint32_t resolution = 1L << (n);	// 2^(n)
 	uint32_t fullRange = 1L << (m + n + 1);		// 2^(m+n+1)
 	uint32_t halfRange = 1L << (n + m);			// 2^(n+m)
 	float decimalValue = 0.0;
@@ -368,11 +368,11 @@ float ioCS5490_unsignedFract2Float (uint32_t value, uint32_t m, uint32_t n)
 }
 
 
-uint32_t ioCS5490_signedFloat2Fract (float value, uint32_t m, uint32_t n)
+int32_t ioCS5490_signedFloat2Fract (float value, uint32_t m, uint32_t n)
 {
 	uint32_t resolution = 1L << n;				// 2^(n)
 	uint32_t fullRange = 1L << (m + n + 1);		// 2^(m+n+1)
-	uint32_t fractionValue = 0;
+	int32_t fractionValue = 0;
 
 	if (value < 0.0)
 	{
