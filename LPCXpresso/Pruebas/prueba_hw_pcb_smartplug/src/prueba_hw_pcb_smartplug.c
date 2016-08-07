@@ -1,6 +1,6 @@
 /*
 ===============================================================================
- Name        : cObject_test_ioDigital.c
+ Name        : prueba_hw_pcb_smartplug.c
  Author      : $(author)
  Version     :
  Copyright   : $(copyright)
@@ -8,31 +8,44 @@
 ===============================================================================
 */
 
-#if defined (__USE_LPCOPEN)
-#if defined(NO_BOARD_LIB)
+
 #include "chip.h"
-#else
-#include "board.h"
-#endif
-#endif
+
 
 #include <cr_section_macros.h>
+#include <stdio.h>
+
 #include "memAlloc.h"
 #include "cObject.h"
 #include "ioDigital.h"
 #include "ioDebounce.h"
 #include "ioUART.h"
+#include "ioInternalRTC.h"
+
 
 void* pinLedVerde;
 void* pinLedRojo;
 void* pinSwitch;
 void* debounceSwitch;
 void* uartDebug;
+void* rtc;
+
+uint32_t tickCount;
 
 
 void SysTick_Handler(void)
 {
 	ioDebounce_handler(debounceSwitch);
+
+	tickCount ++;
+	if (tickCount >= 10)
+	{
+		// Cada 1 seg
+		tickCount = 0;
+
+		ioDigital_toggle(pinLedVerde);
+		ioDigital_toggle(pinLedRojo);
+	}
 }
 
 
@@ -50,7 +63,8 @@ void UART1_IRQHandler(void)
 
 
 int main(void) {
-	uint32_t edges = 0;
+	rtc_time_t fullTime;
+	uint8_t buff[50];
 
 
     // Read clock settings and update SystemCoreClock variable
@@ -80,6 +94,22 @@ int main(void) {
     NVIC_SetPriority(UART1_IRQn, 1);
     NVIC_EnableIRQ(UART1_IRQn);
 
+    rtc = cObject_new(ioInternalRTC, LPC_RTC);
+    ioObject_init(rtc);
+
+
+    fullTime.second = 0;
+    fullTime.minute = 50;
+    fullTime.hour = 12;
+    fullTime.dayOfMonth = 7;
+    fullTime.dayOfWeek = 0;			// Domingo
+    fullTime.month = 8;
+    fullTime.year = 2016;
+
+    ioRTC_setFullTime(rtc, &fullTime);
+
+    ioObject_enable(rtc);
+
 
     SysTick_Config(SystemCoreClock / 100);
 
@@ -90,14 +120,12 @@ int main(void) {
     {
     	if (ioDebounce_getActiveEdge(debounceSwitch))
     	{
-    		ioDigital_toggle(pinLedVerde);
-    		ioDigital_toggle(pinLedRojo);
+    		ioRTC_getFullTime(rtc, &fullTime);
 
-    		if (ioObject_read(pinLedRojo) == 1)
-    			ioUART_writeString(uartDebug, "Led Rojo Encendido\n\r");
-
-    		if (ioObject_read(pinLedVerde) == 1)
-    		    ioUART_writeString(uartDebug, "Led Verde Encendido\n\r");
+    		sprintf(buff, "%.2d:%.2d:%.2d  -  %.2d/%.2d/%.4d  - %.1d\n\r", fullTime.hour, fullTime.minute, fullTime.second,
+    																		fullTime.dayOfMonth, fullTime.month, fullTime.year,
+																			fullTime.dayOfWeek);
+    		ioUART_writeString(uartDebug, buff);
     	}
     }
 

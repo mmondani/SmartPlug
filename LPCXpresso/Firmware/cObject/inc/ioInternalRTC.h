@@ -28,10 +28,10 @@
  * @code
  * void* rtc = cObject_new(ioInternalRTC, periphMem)
  * @endcode
- * @param ioGPIO 			nombre de la clase a instanciar.
+ * @param ioInternalRTC		nombre de la clase a instanciar.
  * @param periphMem			dirección base de memoria del periférico.
  */
-extern const void* ioGPIO;
+extern const void* ioInternalRTC;
 
 // ********************************************************************************
 
