@@ -142,7 +142,7 @@ int main(void)
 
 
     cs5490 = cObject_new (ioCS5490, uart1, gpioReset, gpioDO, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
-    ioCS5490_init(cs5490, 0, 0, 1, 1);
+    ioCS5490_init(cs5490, 0, 0, 0x400000, 0x400000);
 
 
 
@@ -153,6 +153,13 @@ int main(void)
     ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CONTINUOUS_CONV);
 
     cTimer_start(refreshTimer, 1000);
+
+    // Se inicializa la ganancia y el offset.
+	ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+	ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_DCOFF, 0xFE5657);
+	ioCS5490_registerWrite(cs5490, IOCS5490_REG_I_DCOFF, 0xFFE0FB);
+	ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_GAIN, 0x3C7AE1);
+	ioCS5490_registerWrite(cs5490, IOCS5490_REG_I_GAIN, 0x741857);
 
     while(1)
     {
