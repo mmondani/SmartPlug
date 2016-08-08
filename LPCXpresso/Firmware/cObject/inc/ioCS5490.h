@@ -28,12 +28,11 @@
  * @brief Nombre de la clase.
  * @details La forma de instanciar esta clase es la siguiente:
  * @code
- * void* cs5490 = cObject_new(ioCS5490, uart, gpioReset, gpioDO, wordRate, vMax, iMax, iCal, constant, minLoad)
+ * void* cs5490 = cObject_new(ioCS5490, uart, gpioReset, wordRate, vMax, iMax, iCal, constant, minLoad)
  * @endcode
  * @param ioCS5490 		nombre de la clase a instanciar.
  * @param uart			instancia de la clase @ref grp_ioUART con el que se comunica con el CS5490. Debe estar configurada en modo bloqueante. Baud-rate: 600.
  * @param gpioReset		instancia de la clase @ref grp_ioDigital que maneja el pin RESET del CS5490. Debe estar configurado como salida.
- * @param gpioDO		instancia de la clase @ref grp_ioDigital que maneja el pin DO del CS5490. Debe estar configurado como entrada, alto-activa.
  * @param wordRate		cantidad de muestras por segundo que toma el CS5490 internamente.
  * @param vMax			tensión máxima del medidor.
  * @param iMax			corriente máxima del medidor.

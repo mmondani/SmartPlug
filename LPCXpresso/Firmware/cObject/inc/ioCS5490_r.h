@@ -26,7 +26,6 @@ struct ioCS5490
 	const void* class;			///< Puntero a la interfaz @ref grp_cObject.
 	void* uart;					///< Instancia de la clase @ref grp_ioUART con el que se comunica con el CS5490. Debe estar configurada en modo bloqueante. Baud-rate: 600.
 	void* gpioReset;			///< Instancia de la clase @ref grp_ioDigital que maneja el pin RESET del CS5490. Debe estar configurado como salida.
-	void* gpioDO;				///< Instancia de la clase @ref grp_ioDigital que maneja el pin DO del CS5490. Debe estar configurado como entrada, alto-activa.
 	float wordRate;				///< Cantidad de muestras por segundo que toma el CS5490 internamente.
 	float vMax;					///< Tensión máxima del medidor.
 	float iMax;					///< Corriente máxima del medidor.
@@ -50,11 +49,9 @@ struct ioCS5490
 */
 #define uart(p)						(((const struct ioCS5490*)p)->uart)
 #define gpioReset(p)				(((const struct ioCS5490*)p)->gpioReset)
-#define gpioDO(p)					(((const struct ioCS5490*)p)->gpioDO)
 
 #define set_uart(p, v)				(((struct ioCS5490*)p)->uart = (v))
 #define set_gpioReset(p, v)			(((struct ioCS5490*)p)->gpioReset = (v))
-#define set_gpioDO(p, v)			(((struct ioCS5490*)p)->gpioDO = (v))
 
 ///@}
 // ********************************************************************************

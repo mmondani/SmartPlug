@@ -52,7 +52,6 @@ static void* ioCS5490_ctor  (void* _this, va_list* va)
 
 	this->uart = va_arg(*va, void*);
 	this->gpioReset = va_arg(*va, void*);
-	this->gpioDO = va_arg(*va, void*);
 	this->wordRate = va_arg(*va, double);
 	this->vMax = va_arg(*va, double);
 	this->iMax = va_arg(*va, double);
@@ -86,8 +85,7 @@ static uint32_t ioCS5490_differ (void* _this, void* _dst)
 	struct ioCS5490* this = _this;
 	struct ioCS5490* dst = _dst;
 
-	return ( (cObject_differ(uart(this), uart(dst))) || (cObject_differ(gpioReset(this), gpioReset(dst))) ||
-			(cObject_differ(gpioDO(this), gpioDO(dst))) );
+	return ( (cObject_differ(uart(this), uart(dst))) || (cObject_differ(gpioReset(this), gpioReset(dst))) );
 }
 
 
@@ -104,7 +102,6 @@ static void* ioCS5490_copy (void* _this, void* _src)
 
 	cObject_copy(uart(this), uart(src));
 	cObject_copy(gpioReset(this), gpioReset(src));
-	cObject_copy(gpioDO(this), gpioDO(src));
 
 
 	return this;

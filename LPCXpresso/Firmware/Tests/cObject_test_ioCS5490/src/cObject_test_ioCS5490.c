@@ -141,7 +141,7 @@ int main(void)
     SysTick_Config(SystemCoreClock / 1000);
 
 
-    cs5490 = cObject_new (ioCS5490, uart1, gpioReset, gpioDO, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
+    cs5490 = cObject_new (ioCS5490, uart1, gpioReset, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
     ioCS5490_init(cs5490, 0, 0, 0x400000, 0x400000);
 
 
