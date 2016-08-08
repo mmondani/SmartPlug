@@ -38,6 +38,8 @@ void* pushB;
 void* timer;
 void* refreshTimer;
 
+uint32_t pulsos = 0;
+
 
 enum {FSM_WAITING_PUSH = 0, FSM_OFFSET_CALIBRATION, FSM_WAITING_RETURN, FSM_GAIN_CALIBRATION, FSM_V_GAIN_CALIBRATION, FSM_I_GAIN_CALIBRATION};
 uint32_t state = FSM_WAITING_PUSH;
@@ -82,7 +84,11 @@ void UART1_IRQHandler(void)
 	}
 }
 
-
+void EINT3_IRQHandler(void)
+{
+	Chip_GPIOINT_ClearIntStatus(LPC_GPIOINT, GPIOINT_PORT2, 1 << 0);
+	pulsos++;
+}
 
 
 int main(void)
@@ -126,9 +132,6 @@ int main(void)
     gpioReset = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 1);
     ioObject_init(gpioReset);
 
-    gpioDO = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2, 0);
-    ioObject_init(gpioDO);
-
     gpioA = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0, 3);
     ioObject_init(gpioA);
     pushA = cObject_new(ioDebounce, gpioA, IODIGITAL_LEVEL_HIGH, 40);
@@ -136,6 +139,13 @@ int main(void)
     gpioB = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0, 27);
     ioObject_init(gpioB);
     pushB = cObject_new(ioDebounce, gpioB, IODIGITAL_LEVEL_HIGH, 40);
+
+    gpioDO = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 2, 0);
+    ioObject_init(gpioDO);
+    Chip_GPIOINT_SetIntFalling(LPC_GPIOINT, GPIOINT_PORT2, 1 << 0);
+    NVIC_ClearPendingIRQ(EINT3_IRQn);
+    NVIC_EnableIRQ(EINT3_IRQn);
+
 
 
     SysTick_Config(SystemCoreClock / 1000);
@@ -160,6 +170,8 @@ int main(void)
 	ioCS5490_registerWrite(cs5490, IOCS5490_REG_I_DCOFF, 0xFFE0FB);
 	ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_GAIN, 0x3C7AE1);
 	ioCS5490_registerWrite(cs5490, IOCS5490_REG_I_GAIN, 0x741857);
+
+
 
     while(1)
     {
@@ -279,6 +291,9 @@ int main(void)
 
 						conversion = ioCS5490_unsignedFract2Float(v_ganancia, 2, 22);
 						sprintf(buff, "V Ganancia: %f\n\r", conversion);
+						ioUART_writeString(uart3, buff);
+
+						sprintf(buff, "Pulsos: %d\n\r", pulsos);
 						ioUART_writeString(uart3, buff);
     				}
     			}
