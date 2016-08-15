@@ -434,8 +434,6 @@ static uint32_t ioRN1723_writeBytes (void* _this, uint32_t len, uint8_t* data)
 	}
 
 
-	this->fsm_state = FSM_IDLE;
-
 	return i;
 }
 
@@ -567,16 +565,18 @@ void ioRN1723_handler (void* _this)
 			}
 			else
 			{
-				// Si está conectado por TCP y hay datos para enviar se los envía
+				// Si está conectado por TCP y hay datos para enviar, se los envía
 				if (ioRN1723_isTCPConnected(this) && (this->cmdMode == 0) )
 				{
-					if (cBuffer_getPending(outBuffer(this)) > 0)
+					while (cBuffer_getPending(outBuffer(this)) > 0)
 					{
 						if (ioComm_freeSpace(uart(this)) > 0)
 						{
 							cBuffer_remove(outBuffer(this), &data);
 							ioObject_write(uart(this), data);
 						}
+						else
+							break;
 					}
 				}
 			}
