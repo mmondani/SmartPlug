@@ -227,21 +227,22 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 
 enum {
 	FSM_WAIT4READY = 0x000,
-	FSM_CONFIG = 0x100,
-	FSM_IDLE = 0x200,
-	FSM_SENDING_CMD = 0x300,
-	FSM_WAIT4ANSWER = 0x400,
-	FSM_WPS_WAIT4REBOOT = 0x500,
-	FSM_LEAVE_NETWORK = 0x600,
-	FSM_CLOSE_TCP = 0x700,
-	FSM_SET_SNTP_SERVER = 0x800,
-	FSM_SET_TIME_ZONE = 0x900,
-	FSM_SYNC_TIME = 0xA00,
-	FSM_SET_HEARTBEAT_PORT = 0xB00,
-	FSM_SET_HEARTBEAT_INTERVAL = 0xC00,
-	FSM_SET_TCP_SERVER_PORT = 0xD00,
-	FSM_SET_DEVICE_ID = 0xE00,
-	FSM_GET_TIME = 0xF00
+	FSM_WAIT4AUTHENTICATED = 0x100,
+	FSM_CONFIG = 0x200,
+	FSM_IDLE = 0x300,
+	FSM_SENDING_CMD = 0x400,
+	FSM_WAIT4ANSWER = 0x500,
+	FSM_WPS_WAIT4REBOOT = 0x600,
+	FSM_LEAVE_NETWORK = 0x700,
+	FSM_CLOSE_TCP = 0x800,
+	FSM_SET_SNTP_SERVER = 0x900,
+	FSM_SET_TIME_ZONE = 0xA00,
+	FSM_SYNC_TIME = 0xB00,
+	FSM_SET_HEARTBEAT_PORT = 0xC00,
+	FSM_SET_HEARTBEAT_INTERVAL = 0xD00,
+	FSM_SET_TCP_SERVER_PORT = 0xE00,
+	FSM_SET_DEVICE_ID = 0xF00,
+	FSM_GET_TIME = 0x1000
 };
 
 enum {
@@ -482,6 +483,7 @@ static void ioRN1723_intEnable (void* _this, uint32_t mask)
 }
 
 
+
 static void ioRN1723_intDisable (void* _this, uint32_t mask)
 {
 
@@ -511,6 +513,24 @@ void ioRN1723_handler (void* _this)
 		case FSM_WAIT4READY:
 			if (ev_isTriggered(this->events, EV_READY_RECEIVED))
 			{
+				this->fsm_state = FSM_WAIT4AUTHENTICATED;
+
+				// Timeout para determinar si se asoció a una red o no.
+				cTimer_start(timer(this), 2000);
+			}
+
+			break;
+
+		case FSM_WAIT4AUTHENTICATED:
+			if (ev_isTriggered(this->events, EV_ASSOCIATED_RECEIVED))
+			{
+				// Se asoció a una red WiFi
+				this->fsm_state = FSM_IDLE;
+			}
+			else
+			if (cTimer_hasExpired(timer(this)))
+			{
+				// No está asociado a una red WiFi.
 				this->fsm_state = FSM_IDLE;
 			}
 
@@ -545,7 +565,7 @@ void ioRN1723_handler (void* _this)
 						break;
 
 					case CONFIG_EXIT:
-						sendCmd(this, cmdExit, "", RESP_FILTER_EXIT, 2000);
+						sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
 						this->fsm_sub_state = FSM_NO_SUBSTATE;
 						break;
 
