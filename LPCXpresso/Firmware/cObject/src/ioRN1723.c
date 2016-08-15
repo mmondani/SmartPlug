@@ -1050,6 +1050,8 @@ void ioRN1723_refreshLocalTime (void* _this)
 
 	this->fsm_state = FSM_GET_TIME;
 	this->fsm_sub_state = GET_TIME_CMD;
+
+	this->invalidRTC = 1;
 }
 
 uint32_t ioRN1723_isTimeValid (void* _this)
@@ -1059,7 +1061,7 @@ uint32_t ioRN1723_isTimeValid (void* _this)
 	return (this->invalidRTC == 0);
 }
 
-void ioRN1723_getTime (void* _this, uint32_t *hours, uint32_t *minutes, uint32_t *seconds)
+void ioRN1723_getTime (void* _this, rtc_time_t* fullTime)
 {
 	struct ioRN1723* this = _this;
 	struct tm* time;
@@ -1069,26 +1071,15 @@ void ioRN1723_getTime (void* _this, uint32_t *hours, uint32_t *minutes, uint32_t
 	modifiedTime = this->lastRTC + 3600 * this->timeZone;
 	time = gmtime(&modifiedTime);
 
-	*hours = time->tm_hour;
-	*minutes = time->tm_min;
-	*seconds = time->tm_sec;
+	fullTime->hour = time->tm_hour;
+	fullTime->minute = time->tm_min;
+	fullTime->second = time->tm_sec;
+	fullTime->dayOfMonth = time->tm_mday;
+	fullTime->month = time->tm_mon + 1;
+	fullTime->year = time->tm_year + 1900;
+	fullTime->dayOfWeek = time->tm_wday;
 }
 
-void ioRN1723_getDate (void* _this, uint32_t *day, uint32_t *month, uint32_t *year, uint32_t* dayOfWeek)
-{
-	struct ioRN1723* this = _this;
-	struct tm* time;
-	uint32_t modifiedTime;
-
-	// Se cambia el valor del RTC a la zona horaria configurada.
-	modifiedTime = this->lastRTC + 3600 * this->timeZone;
-	time = gmtime(&modifiedTime);
-
-	*day = time->tm_mday;
-	*month= time->tm_mon + 1;
-	*year = time->tm_year + 1900;
-	*dayOfWeek = time->tm_wday;
-}
 
 
 void ioRN1723_setHeartbeatPort (void* _this, uint8_t* port)
@@ -1326,10 +1317,7 @@ void processRX (void* _this)
 						// No se genera el evento de respuesta recibida porque todavía falta que llegue el valor del RTC.
 						this->readingRTCValue = 1;
 						this->indexSerial = 0;
-						this->invalidRTC = 0;
-
-						ev_emit(this->events, EV_RTC_RECEIVED);
-						ev_emit(this->events, EV_RESP_RECEIVED);
+						this->invalidRTC = 1;
 					}
 					break;
 
@@ -1376,6 +1364,8 @@ void processRX (void* _this)
 					this->readingRTCValue = 0;
 
 					this->lastRTC = atoi(this->param);
+
+					this->invalidRTC = 0;
 
 					ev_emit(this->events, EV_RTC_RECEIVED);
 					ev_emit(this->events, EV_RESP_RECEIVED);
