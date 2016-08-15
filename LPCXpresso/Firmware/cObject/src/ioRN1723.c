@@ -249,7 +249,8 @@ enum {
 	CONFIG_IOFUNC = FSM_CONFIG | 2,
 	CONFIG_SAVE = FSM_CONFIG | 3,
 	CONFIG_TIME_ENABLE = FSM_CONFIG | 4,
-	CONFIG_EXIT = FSM_CONFIG | 5,
+	CONFIG_TIME = FSM_CONFIG | 5,
+	CONFIG_EXIT = FSM_CONFIG | 6,
 	LEAVE_NETWORK_CMD = FSM_LEAVE_NETWORK | 1,
 	LEAVE_NETWORK_EXIT = FSM_LEAVE_NETWORK | 2,
 	CLOSE_TCP_CMD = FSM_CLOSE_TCP | 1,
@@ -537,6 +538,11 @@ void ioRN1723_handler (void* _this)
 
 					case CONFIG_SAVE:
 						sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
+						this->fsm_sub_state = CONFIG_TIME;
+						break;
+
+					case CONFIG_TIME:
+						sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
 						this->fsm_sub_state = CONFIG_EXIT;
 						break;
 
@@ -1457,6 +1463,8 @@ void sendCmd (void* _this, const uint8_t* cmd, uint8_t* params, uint32_t answerF
 
 	if (timeout > 0)
 		cTimer_start(timer(this), timeout);
+	else
+		cTimer_stop(timer(this));
 
 	this->fsm_state = FSM_WAIT4ANSWER;
 }
