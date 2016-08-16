@@ -78,6 +78,7 @@ const uint8_t* cmdCmdMode = "$$$";
 const uint8_t* cmdExit = "exit";
 const uint8_t* cmdSave = "save";
 const uint8_t* cmdRunWPS = "run wps";
+const uint8_t* cmdRunWebApp = "run web_app";
 const uint8_t* cmdLeave = "leave";
 const uint8_t* cmdOpen = "open";
 const uint8_t* cmdClose = "close";
@@ -99,6 +100,7 @@ const uint8_t* cmdSetTimeEnable = "set time enable";
 #define CMD_EXIT					cmdExit
 #define CMD_SAVE					cmdSave
 #define CMD_RUN_WPS					cmdRunWPS
+#define CMD_RUN_WEB_APP				cmdRunWebApp
 #define CMD_LEAVE					cmdLeave
 #define CMD_OPEN					cmdOpen
 #define CMD_CLOSE					cmdClose
@@ -118,7 +120,7 @@ const uint8_t* cmdSetTimeEnable = "set time enable";
 // ********************************************************************************
 // Definiciones de las respuestas del módulo
 // ********************************************************************************
-#define RN_RESPONSES_COUNT		16
+#define RN_RESPONSES_COUNT		17
 uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"OK",
 												"ERR",
@@ -135,7 +137,8 @@ uint8_t* rnResponses[RN_RESPONSES_COUNT] = {
 												"Connect FAILED",
 												"RTC=",
 												"Disconn from",
-												"Time NOT SET"
+												"Time NOT SET",
+												"Disabling AP mode"
 };
 
 uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
@@ -154,7 +157,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 												14,
 												4,
 												12,
-												12
+												17,
+
 };
 
 #define RESP_OK						0
@@ -173,6 +177,7 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_RTC					13
 #define	 RESP_DISCONN_FROM			14
 #define	 RESP_TIME_NOT_SET			15
+#define	 RESP_DISABLING_AP_MODE		16
 
 #define RESP_FILTER_OK					(1 << 0)
 #define RESP_FILTER_ERROR				(1 << 1)
@@ -190,6 +195,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define	 RESP_FILTER_RTC				(1 << 13)
 #define	 RESP_FILTER_DISCONN_FROM		(1 << 14)
 #define	 RESP_FILTER_TIME_NOT_SET		(1 << 15)
+#define	 RESP_FILTER_DISABLING_AP_MODE	(1 << 16)
+
 
 // ********************************************************************************
 
@@ -213,6 +220,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 #define EV_CONNECT_FAILED_RECEIVED		0x00002000
 #define EV_RTC_RECEIVED					0x00004000
 #define EV_DISCONN_RECEIVED				0x00008000
+#define EV_DIS_AP_MODE_RECEIVED			0x00010000
+
 
 #define ev_isTriggered(v,e)		(((v & e) == 0)? 0 : 1)
 #define ev_emit(v,e)			(v |= e)
@@ -682,6 +691,10 @@ void ioRN1723_handler (void* _this)
 				{
 					this->fsm_state = FSM_IDLE;
 				}
+				else if (ev_isTriggered(this->events, EV_DIS_AP_MODE_RECEIVED))
+				{
+					this->fsm_state = FSM_IDLE;
+				}
 				else if (ev_isTriggered(this->events, EV_ERR_RECEIVED))
 				{
 					// TODO: gestionar errores
@@ -973,7 +986,10 @@ void ioRN1723_runWPS (void* _this, uint32_t retries)
 
 void ioRN1723_runConfigWebServer (void* _this)
 {
+	struct ioRN1723* this = _this;
 
+	// 1,5 minutos para dar por terminado el proceso.
+	sendCmd(this, CMD_RUN_WEB_APP, "", RESP_FILTER_DISABLING_AP_MODE, 90000);
 }
 
 
@@ -1354,6 +1370,15 @@ void processRX (void* _this)
 						this->invalidRTC = 1;
 
 						ev_emit(this->events, EV_RTC_RECEIVED);
+						ev_emit(this->events, EV_RESP_RECEIVED);
+					}
+					break;
+
+				case RESP_DISABLING_AP_MODE:
+					if (this->answerFilter & RESP_FILTER_DISABLING_AP_MODE)
+					{
+						// Se terminó el web server para configurar una red WiFi.
+						ev_emit(this->events, EV_DIS_AP_MODE_RECEIVED);
 						ev_emit(this->events, EV_RESP_RECEIVED);
 					}
 					break;
