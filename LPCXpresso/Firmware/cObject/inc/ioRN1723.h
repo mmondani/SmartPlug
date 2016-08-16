@@ -235,6 +235,14 @@ void ioRN1723_setDeviceID (void* _this, uint8_t* id);
  */
 uint32_t ioRN1723_timeoutOcurred (void* _this);
 
+
+/**
+ * @brief      Indica la cantidad de bytes que faltan por enviar en la conexión TCP.
+ *
+ * @param      _this   instancia de la clase ioRN1723.
+ */
+uint32_t ioRN1723_getDataPendingToSend (void* _this);
+
 ///@}
 // ********************************************************************************
 

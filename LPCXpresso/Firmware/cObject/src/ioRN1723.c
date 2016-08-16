@@ -1199,6 +1199,14 @@ uint32_t ioRN1723_timeoutOcurred (void* _this)
 }
 
 
+uint32_t ioRN1723_getDataPendingToSend (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	return cBuffer_getPending(outBuffer(this));
+}
+
+
 // ********************************************************************************
 // ********************************************************************************
 

@@ -23,6 +23,8 @@
 #include "ioInternalRTC.h"
 #include "ioCS5490.h"
 #include "cTimer.h"
+#include "ioRN1723.h"
+#include "cQueue.h"
 
 
 void* pinLedVerde;
@@ -36,6 +38,15 @@ void* gpioReset;
 void* uartCS5490;
 void* cs5490;
 void* refreshTimer;
+void* rn1723;
+void* gpioResetRN1723;
+void* uartRN1723;
+void* inBuffer;
+void* outBuffer;
+void* rn1723InitTimer;
+void* tcpConnTimer;
+
+
 
 uint32_t tickCount;
 uint32_t pulsos;
@@ -50,6 +61,8 @@ void term_home (void* uart);
 void SysTick_Handler(void)
 {
 	cTimer_handler();
+
+	ioRN1723_handler(rn1723);
 
 	ioDebounce_handler(debounceSwitch);
 
@@ -74,6 +87,19 @@ void UART1_IRQHandler(void)
 	else if(ioComm_getInt(uartDebug, IOUART_INT_ID_RX))
 	{
 		ioUART_rxHandler(uartDebug);
+	}
+}
+
+
+void UART2_IRQHandler(void)
+{
+	if (ioComm_getInt(uartRN1723, IOUART_INT_ID_TX))
+	{
+		ioUART_txHandler(uartRN1723);
+	}
+	else if(ioComm_getInt(uartRN1723, IOUART_INT_ID_RX))
+	{
+		ioUART_rxHandler(uartRN1723);
 	}
 }
 
@@ -107,6 +133,7 @@ int main(void) {
 	uint32_t i_offset, v_offset, i_ganancia, v_ganancia, factor_potencia, escala, epsilon, settle;
 	float conversion, irms_linea, vrms_linea, potencia_activa_linea, potencia_reactiva_linea, frecuencia_linea;
 	float potencia_aparente_linea;
+	uint32_t sendTCPData;
 
 
     // Read clock settings and update SystemCoreClock variable
@@ -192,8 +219,37 @@ int main(void) {
     // =================================================
 
 
+    // ===================== [RN1723] =====================
+    gpioResetRN1723 = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 2);
+    ioObject_init(gpioResetRN1723);
+
+
+    uartRN1723 = cObject_new(ioUART, LPC_UART2, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 50, 50);
+    ioObject_init(uartRN1723);
+    ioComm_intEnable(uartRN1723, IOUART_INT_TX);
+    ioComm_intEnable(uartRN1723, IOUART_INT_RX);
+    ioUART_configFIFO(uartRN1723, IOUART_FIFO_LEVEL0);
+
+    NVIC_SetPriority(UART2_IRQn, 1);
+    NVIC_EnableIRQ(UART2_IRQn);
+
+
+    inBuffer = cObject_new(cQueue, 10, sizeof(uint8_t));
+    outBuffer = cObject_new(cQueue, 10, sizeof(uint8_t));
+
+
+    rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer);
+    // =====================================================
+
+
     refreshTimer = cObject_new(cTimer);
     cTimer_start(refreshTimer, 1000);
+
+    rn1723InitTimer = cObject_new(cTimer);
+    cTimer_start(rn1723InitTimer, 1000);
+
+    tcpConnTimer = cObject_new(cTimer);
+    cTimer_start(tcpConnTimer, 7000);
 
     ioObject_write(pinLedVerde, 1);
     ioObject_write(pinLedRojo, 0);
@@ -201,6 +257,48 @@ int main(void) {
 
     while(1)
     {
+    	if (cTimer_hasExpired(rn1723InitTimer))
+		{
+    		// Intenta inicializar el módulo RN1723
+    		if (ioRN1723_isIdle(rn1723))
+    		{
+    		    ioObject_init(rn1723);
+    		    cTimer_stop(rn1723InitTimer);
+    		}
+    		else
+    			cTimer_start(rn1723InitTimer, 1000);
+		}
+
+
+    	if (cTimer_hasExpired(tcpConnTimer))
+    	{
+    		if (ioRN1723_isIdle(rn1723))
+    		{
+    			ioRN1723_connectTCP(rn1723, "192.168.0.103", "9871");
+    			cTimer_start(rn1723InitTimer, 7000);
+    			sendTCPData = 1;
+    		}
+    		else
+    			cTimer_start(rn1723InitTimer, 1000);
+
+    	}
+
+    	if (ioRN1723_isTCPConnected(rn1723))
+    	{
+    		if (sendTCPData == 1)
+    		{
+				ioComm_writeBytes(rn1723, 4, "Hola");
+				sendTCPData = 0;
+    		}
+
+    		if (ioRN1723_getDataPendingToSend(rn1723) == 0)
+    		{
+    			ioRN1723_disconnectTCP(rn1723);
+    		}
+    	}
+
+
+
     	if (ioDebounce_getActiveEdge(debounceSwitch))
     	{
     		ioRTC_getFullTime(rtc, &fullTime);

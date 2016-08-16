@@ -23,6 +23,7 @@
 #include "ioRN1723.h"
 #include "ioDebounce.h"
 #include "cTimer.h"
+#include "rtc_time_t_r.h"
 
 void* uart2;
 void* rn1723;
@@ -83,7 +84,8 @@ int main(void)
 	uint8_t c, index = 0;
 	uint8_t buff[50];
 	uint8_t nameComing = 0;
-	uint32_t horas, minutos, segundos, dia, mes, anio, dSemana;
+	rtc_time_t fullTime;
+
 
     // Read clock settings and update SystemCoreClock variable
 	SystemCoreClockUpdate();
@@ -213,9 +215,7 @@ int main(void)
 		{
     		if (ioRN1723_isTimeValid(rn1723))
 			{
-				ioRN1723_getTime(rn1723, &horas, &minutos, &segundos);
-				ioRN1723_getDate(rn1723, &dia, &mes, &anio, &dSemana);
-				horas = horas;
+				ioRN1723_getTime(rn1723, &fullTime);
 			}
 		}
 
