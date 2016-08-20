@@ -25,7 +25,8 @@
 #include "cTimer.h"
 #include "ioRN1723.h"
 #include "cQueue.h"
-
+#include "ioSPI.h"
+#include "ioEE25LCxxx.h"
 
 void* pinLedVerde;
 void* pinLedRojo;
@@ -47,6 +48,10 @@ void* outBuffer;
 void* rn1723InitTimer;
 void* tcpConnTimer;
 void* tcpConnCloseTimer;
+void* pinSSelEE;
+void* spiPort1;
+void* ee25LC256;
+void* writeEEPROMTimer;
 
 
 
@@ -138,6 +143,7 @@ int main(void) {
 	float conversion, irms_linea, vrms_linea, potencia_activa_linea, potencia_reactiva_linea, frecuencia_linea;
 	float potencia_aparente_linea;
 	uint32_t sendTCPData, sendDisconnect;
+	uint32_t intWrite, intRead;
 
 
     // Read clock settings and update SystemCoreClock variable
@@ -166,6 +172,22 @@ int main(void) {
     // ===================== [RELAY] =====================
 	pinRelay = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 7);
 	ioObject_init(pinRelay);
+	// =====================================================
+
+    // ===================== [25LC256] =====================
+	pinSSelEE = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 0, 5);
+	ioObject_init(pinSSelEE);
+
+    spiPort1 = cObject_new(ioSPI, LPC_SSP1, 1000000, IOSPI_DATA_8BITS, IOSPI_CLOCKMODE_MODE0, IOSPI_SPIMODE_MASTER);
+    ioObject_init(spiPort1);
+
+    ee25LC256 = cObject_new(ioEE25LCxxx, spiPort1, pinSSelEE, IOEE25LCXXX_SIZE_256K);
+
+    ioEE25LCxxx_setWriteEnable(ee25LC256);
+    ioEE25LCxxx_writeStatus(ee25LC256, 0x00);
+
+    writeEEPROMTimer = cObject_new(cTimer);
+    cTimer_start(writeEEPROMTimer, 3000);
 	// =====================================================
 
 
@@ -274,6 +296,23 @@ int main(void) {
 
     while(1)
     {
+    	if (cTimer_hasExpired(writeEEPROMTimer))
+    	{
+    		cTimer_stop(writeEEPROMTimer);
+
+    		intWrite = 112147;
+			ioEE25LCxxx_setWriteEnable(ee25LC256);
+			ioEE25LCxxx_writeData(ee25LC256, 0x05, (uint8_t*)&intWrite, sizeof(uint32_t));
+			ioEE25LCxxx_busyPolling(ee25LC256);
+			ioEE25LCxxx_readData(ee25LC256, 0x05, (uint8_t*)&intRead, sizeof(uint32_t));
+
+			term_clear(uartDebug);
+			term_home(uartDebug);
+
+			sprintf(buff, "EEPROM: %d - %d\n\r", intWrite, intRead);
+			ioUART_writeString(uartDebug, buff);
+    	}
+
     	// Inicializa el módulo luego de vencido el timer rn1723InitTimer. Si no está en estado IDLE, espera otro segundo.
     	if (cTimer_hasExpired(rn1723InitTimer))
 		{

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define MEM_HEAP_SIZE		1024		// Dimensión del Heap en bytes
+#define MEM_HEAP_SIZE		2048		// Dimensión del Heap en bytes
 
 
 // ********************************************************************************
