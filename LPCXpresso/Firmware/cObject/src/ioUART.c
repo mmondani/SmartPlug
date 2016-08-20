@@ -424,9 +424,25 @@ uint32_t ioUART_writeString (void* _this, uint8_t* str)
 }
 
 
-uint32_t ioUART_flushRx (void* _this)
+void ioUART_flushRx (void* _this)
 {
 	struct ioUART* this = _this;
 
 	cBuffer_clear(this->rxQueue);
+}
+
+
+void ioUART_flushTx (void* _this)
+{
+	struct ioUART* this = _this;
+
+	cBuffer_clear(this->txQueue);
+}
+
+
+uint32_t ioUART_pendingToSend (void* _this)
+{
+	struct ioUART* this = _this;
+
+	return (cBuffer_getPending(this->txQueue));
 }

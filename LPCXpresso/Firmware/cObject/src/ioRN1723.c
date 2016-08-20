@@ -549,32 +549,32 @@ void ioRN1723_handler (void* _this)
 				switch(this->fsm_sub_state)
 				{
 					case CONFIG_WLAN_JOIN:
-						sendCmd(this, CMD_WLAN_JOIN, "1", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+						sendCmd(this, CMD_WLAN_JOIN, "1", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
 						this->fsm_sub_state = CONFIG_IOFUNC;
 						break;
 
 					case CONFIG_IOFUNC:
-						sendCmd(this, CMD_SYS_IOFUNC, "0x50", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+						sendCmd(this, CMD_SYS_IOFUNC, "0x50", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
 						this->fsm_sub_state = CONFIG_TIME_ENABLE;
 						break;
 
 					case CONFIG_TIME_ENABLE:
-						sendCmd(this, CMD_SET_TIME_ENABLE, "1", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+						sendCmd(this, CMD_SET_TIME_ENABLE, "1", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
 						this->fsm_sub_state = CONFIG_SAVE;
 						break;
 
 					case CONFIG_SAVE:
-						sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 2000);
+						sendCmd(this, CMD_SAVE, "", RESP_FILTER_SAVE_OK, 4000);
 						this->fsm_sub_state = CONFIG_TIME;
 						break;
 
 					case CONFIG_TIME:
-						sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+						sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
 						this->fsm_sub_state = CONFIG_EXIT;
 						break;
 
 					case CONFIG_EXIT:
-						sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 2000);
+						sendCmd(this, CMD_EXIT, "", RESP_FILTER_EXIT, 4000);
 						this->fsm_sub_state = FSM_NO_SUBSTATE;
 						break;
 
@@ -707,6 +707,9 @@ void ioRN1723_handler (void* _this)
 					// Se produjo un timeout esperando una respueta.
 					// Se resetea el módulo para tratar de salvarlo.
 					ioObject_write(gpioReset(this), 0);
+					ioUART_flushTx(uart(this));
+					cBuffer_clear(cmdBuffer(this));
+
 					this->fsm_state = FSM_WAIT4READY;
 					this->cmdMode = 0;
 					this->timeOut = 1;
@@ -989,7 +992,7 @@ void ioRN1723_runConfigWebServer (void* _this)
 	struct ioRN1723* this = _this;
 
 	// 1,5 minutos para dar por terminado el proceso.
-	sendCmd(this, CMD_RUN_WEB_APP, "", RESP_FILTER_DISABLING_AP_MODE, 90000);
+	sendCmd(this, CMD_RUN_WEB_APP, "", RESP_FILTER_DISABLING_AP_MODE, 180000);
 }
 
 
@@ -1203,7 +1206,7 @@ uint32_t ioRN1723_getDataPendingToSend (void* _this)
 {
 	struct ioRN1723* this = _this;
 
-	return cBuffer_getPending(outBuffer(this));
+	return ioUART_pendingToSend(uart(this));
 }
 
 

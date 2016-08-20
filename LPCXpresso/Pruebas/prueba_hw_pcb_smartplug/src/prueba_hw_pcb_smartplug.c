@@ -30,6 +30,7 @@
 void* pinLedVerde;
 void* pinLedRojo;
 void* pinSwitch;
+void* pinRelay;
 void* debounceSwitch;
 void* uartDebug;
 void* rtc;
@@ -45,6 +46,7 @@ void* inBuffer;
 void* outBuffer;
 void* rn1723InitTimer;
 void* tcpConnTimer;
+void* tcpConnCloseTimer;
 
 
 
@@ -74,6 +76,8 @@ void SysTick_Handler(void)
 
 		ioDigital_toggle(pinLedVerde);
 		ioDigital_toggle(pinLedRojo);
+
+		ioDigital_toggle(pinRelay);
 	}
 }
 
@@ -133,11 +137,11 @@ int main(void) {
 	uint32_t i_offset, v_offset, i_ganancia, v_ganancia, factor_potencia, escala, epsilon, settle;
 	float conversion, irms_linea, vrms_linea, potencia_activa_linea, potencia_reactiva_linea, frecuencia_linea;
 	float potencia_aparente_linea;
-	uint32_t sendTCPData;
+	uint32_t sendTCPData, sendDisconnect;
 
 
     // Read clock settings and update SystemCoreClock variable
-    SystemCoreClockUpdate();
+	SystemCoreClockUpdate();
 
 
     initMemHeap();
@@ -159,6 +163,11 @@ int main(void) {
     debounceSwitch = cObject_new(ioDebounce, pinSwitch, IODIGITAL_LEVEL_HIGH, 40);
     // =====================================================
 
+    // ===================== [RELAY] =====================
+	pinRelay = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 7);
+	ioObject_init(pinRelay);
+	// =====================================================
+
 
     // ===================== [UART DEBUG] =====================
     uartDebug = cObject_new(ioUART, LPC_UART1, IOUART_BR_115200, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_BLOCKING, 2, 10);
@@ -169,6 +178,29 @@ int main(void) {
 
     NVIC_SetPriority(UART1_IRQn, 1);
     NVIC_EnableIRQ(UART1_IRQn);
+    // =====================================================
+
+
+    // ===================== [RN1723] =====================
+    gpioResetRN1723 = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 2);
+    ioObject_init(gpioResetRN1723);
+
+
+    uartRN1723 = cObject_new(ioUART, LPC_UART2, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 50, 50);
+    ioObject_init(uartRN1723);
+    ioComm_intEnable(uartRN1723, IOUART_INT_TX);
+    ioComm_intEnable(uartRN1723, IOUART_INT_RX);
+    ioUART_configFIFO(uartRN1723, IOUART_FIFO_LEVEL0);
+
+    NVIC_SetPriority(UART2_IRQn, 1);
+    NVIC_EnableIRQ(UART2_IRQn);
+
+
+    inBuffer = cObject_new(cQueue, 10, sizeof(uint8_t));
+    outBuffer = cObject_new(cQueue, 10, sizeof(uint8_t));
+
+
+    rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer);
     // =====================================================
 
 
@@ -203,7 +235,6 @@ int main(void) {
 
 	// ===================== [RTC] =====================
     rtc = cObject_new(ioInternalRTC, LPC_RTC);
-    ioObject_init(rtc);
 
 
     fullTime.second = 0;
@@ -215,31 +246,13 @@ int main(void) {
     fullTime.year = 2016;
 
     ioRTC_setFullTime(rtc, &fullTime);
+
+    ioObject_init(rtc);
     ioObject_enable(rtc);
     // =================================================
 
 
-    // ===================== [RN1723] =====================
-    gpioResetRN1723 = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 2);
-    ioObject_init(gpioResetRN1723);
 
-
-    uartRN1723 = cObject_new(ioUART, LPC_UART2, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 50, 50);
-    ioObject_init(uartRN1723);
-    ioComm_intEnable(uartRN1723, IOUART_INT_TX);
-    ioComm_intEnable(uartRN1723, IOUART_INT_RX);
-    ioUART_configFIFO(uartRN1723, IOUART_FIFO_LEVEL0);
-
-    NVIC_SetPriority(UART2_IRQn, 1);
-    NVIC_EnableIRQ(UART2_IRQn);
-
-
-    inBuffer = cObject_new(cQueue, 10, sizeof(uint8_t));
-    outBuffer = cObject_new(cQueue, 10, sizeof(uint8_t));
-
-
-    rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer);
-    // =====================================================
 
 
     refreshTimer = cObject_new(cTimer);
@@ -251,12 +264,17 @@ int main(void) {
     tcpConnTimer = cObject_new(cTimer);
     cTimer_start(tcpConnTimer, 7000);
 
+    tcpConnCloseTimer = cObject_new(cTimer);
+
     ioObject_write(pinLedVerde, 1);
     ioObject_write(pinLedRojo, 0);
+
+    ioObject_write(pinRelay, 0);
 
 
     while(1)
     {
+    	// Inicializa el módulo luego de vencido el timer rn1723InitTimer. Si no está en estado IDLE, espera otro segundo.
     	if (cTimer_hasExpired(rn1723InitTimer))
 		{
     		// Intenta inicializar el módulo RN1723
@@ -270,46 +288,58 @@ int main(void) {
 		}
 
 
+    	// Cada 7 segundos se conecta al socket indicado y envía "Hola".
     	if (cTimer_hasExpired(tcpConnTimer))
     	{
-    		if (ioRN1723_isIdle(rn1723))
+    		if (ioRN1723_isAuthenticated(rn1723))
     		{
-    			ioRN1723_connectTCP(rn1723, "192.168.0.103", "9871");
-    			cTimer_start(rn1723InitTimer, 7000);
-    			sendTCPData = 1;
+				if (ioRN1723_isIdle(rn1723))
+				{
+					ioRN1723_connectTCP(rn1723, "192.168.0.101", "9871");
+					cTimer_start(tcpConnTimer, 7000);
+					sendTCPData = 1;
+				}
+				else
+					cTimer_start(rn1723InitTimer, 1000);
     		}
-    		else
-    			cTimer_start(rn1723InitTimer, 1000);
 
     	}
 
-    	if (ioRN1723_isTCPConnected(rn1723))
+    	// Envía el mensaje "Hola" si está conectado al socket.
+    	if (ioRN1723_isAuthenticated(rn1723) && ioRN1723_isTCPConnected(rn1723))
     	{
     		if (sendTCPData == 1)
     		{
 				ioComm_writeBytes(rn1723, 4, "Hola");
 				sendTCPData = 0;
+				cTimer_start(tcpConnCloseTimer, 1000);
     		}
 
+
+    	}
+
+    	// Luego de 1 segundo cierra la conexión si no hay más datos pendientes.
+    	if (cTimer_hasExpired(tcpConnCloseTimer))
+    	{
     		if (ioRN1723_getDataPendingToSend(rn1723) == 0)
     		{
-    			ioRN1723_disconnectTCP(rn1723);
+    			cTimer_stop(tcpConnCloseTimer);
+    			if (ioRN1723_isIdle(rn1723))
+    				ioRN1723_disconnectTCP(rn1723);
+    			else
+    				cTimer_start(tcpConnCloseTimer, 200);
     		}
+    		else
+    			cTimer_start(tcpConnCloseTimer, 200);
     	}
 
 
 
     	if (ioDebounce_getActiveEdge(debounceSwitch))
     	{
-    		ioRTC_getFullTime(rtc, &fullTime);
-
-			term_clear(uartDebug);
-			term_home(uartDebug);
-
-    		sprintf(buff, "%.2d:%.2d:%.2d  -  %.2d/%.2d/%.4d  - %.1d\n\r", fullTime.hour, fullTime.minute, fullTime.second,
-    																		fullTime.dayOfMonth, fullTime.month, fullTime.year,
-																			fullTime.dayOfWeek);
-    		ioUART_writeString(uartDebug, buff);
+    		// Inicia el proceso de WPS
+    		if (ioRN1723_isIdle(rn1723))
+				ioRN1723_runWPS(rn1723, 3);
     	}
 
 

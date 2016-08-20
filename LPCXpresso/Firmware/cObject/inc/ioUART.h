@@ -225,7 +225,25 @@ uint32_t ioUART_writeString (void* _this, uint8_t* str);
  *
  * @param      _this  instancia de la clase ioUART.
  */
-uint32_t ioUART_flushRx (void* _this);
+void ioUART_flushRx (void* _this);
+
+
+/**
+ * @brief      Limpia el buffer de transmisión.
+ *
+ * @param      _this  instancia de la clase ioUART.
+ */
+void ioUART_flushTx (void* _this);
+
+
+/**
+ * @brief      Indica cuántos bytes están pendientes de ser enviados.
+ *
+ * @param      _this  instancia de la clase ioUART.
+ *
+ * @return	   cantidad de bytes a ser enviados.
+ */
+uint32_t ioUART_pendingToSend (void* _this);
 
 ///@}
 // ********************************************************************************
