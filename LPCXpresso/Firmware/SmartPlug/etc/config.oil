@@ -1,0 +1,100 @@
+OSEK OSEK {
+
+OS	ExampleOS {
+    STATUS = EXTENDED;
+    ERRORHOOK = TRUE;
+    PRETASKHOOK = FALSE;
+	POSTTASKHOOK = FALSE;
+	STARTUPHOOK = FALSE;
+	SHUTDOWNHOOK = FALSE;
+	USERESSCHEDULER = FALSE;
+	MEMMAP = FALSE;
+};
+
+APPMODE = AppMode1;
+
+EVENT = evSw1;
+EVENT = evSw2;
+EVENT = evSw3;
+EVENT = evRxMsg;
+
+RESOURCE = resUART3;
+
+TASK TaskInit {
+    PRIORITY = 1;
+    ACTIVATION = 1;
+    AUTOSTART = TRUE {
+        APPMODE = AppMode1;
+    }
+    STACK = 300;
+    TYPE = BASIC;
+    SCHEDULE = NON;
+}
+
+TASK InputManager {
+    PRIORITY = 10;
+    ACTIVATION = 1;
+    STACK = 512;
+    TYPE = EXTENDED;
+    SCHEDULE = FULL;
+    EVENT = evSw1;
+    EVENT = evSw2;
+    EVENT = evSw3;
+    EVENT = evRxMsg;
+}
+
+TASK Sender1 {
+    PRIORITY = 5;
+    ACTIVATION = 1;
+    STACK = 512;
+    TYPE = EXTENDED;
+    SCHEDULE = FULL;
+    EVENT = evSw1;
+    EVENT = evSw2;
+    RESOURCE = resUART3;
+}
+
+TASK Sender2 {
+    PRIORITY = 5;
+    ACTIVATION = 1;
+    STACK = 512;
+    TYPE = EXTENDED;
+    SCHEDULE = FULL;
+    EVENT = evSw2;
+    EVENT = evSw3;
+    RESOURCE = resUART3;
+}
+
+TASK EchoTask {
+    PRIORITY = 5;
+    ACTIVATION = 1;
+    STACK = 512;
+    TYPE = EXTENDED;
+    SCHEDULE = FULL;
+    EVENT = evRxMsg;
+    RESOURCE = resUART3;
+}
+
+
+ISR UART3_handler {
+	CATEGORY = 2;
+	INTERRUPT = UART3;
+	PRIORITY = 0;
+}
+
+ALARM ActivateInputManager {
+    COUNTER = HardwareCounter;
+    ACTION = ACTIVATETASK {
+        TASK = InputManager;
+    }
+}
+
+
+COUNTER HardwareCounter {
+   MAXALLOWEDVALUE = 60000000;
+   TICKSPERBASE = 1;
+   MINCYCLE = 1;
+   TYPE = HARDWARE;
+};
+
+};
