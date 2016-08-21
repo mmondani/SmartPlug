@@ -52,7 +52,7 @@ void taskRTC_init (void)
 
 
     // La tarea taskRTC se va a ejecutar cada 200 ms.
-    SetRelAlarm(alarmRunTaskRTC, 200, 100);
+    SetRelAlarm(alarmRunTaskRTC, 100, 200);
 }
 
 

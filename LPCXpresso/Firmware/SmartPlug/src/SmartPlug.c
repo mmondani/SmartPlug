@@ -59,6 +59,7 @@ TASK(TaskInit)
 	taskSwitch_init();
 	taskLeds_init();
 	taskRTC_init();
+	taskMeter_init(0);
 	taskSmartPlug_init(0);
 
 

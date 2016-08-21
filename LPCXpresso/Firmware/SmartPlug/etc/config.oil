@@ -125,6 +125,36 @@ ISR UART1_handler {
 }
 
 
+TASK taskMeter {
+    PRIORITY = 2;
+    ACTIVATION = 1;
+    STACK = 800;
+    TYPE = BASIC;
+    SCHEDULE = FULL;
+    RESOURCE = resRTC;
+    RESOURCE = resLog;
+}
+
+ALARM alarmRunTaskMeter {
+    COUNTER = HardwareCounter;
+    ACTION = ACTIVATETASK {
+        TASK = taskMeter;
+    }
+}
+
+ISR UART3_handler {
+	CATEGORY = 2;
+	INTERRUPT = UART3;
+	PRIORITY = 0;
+}
+
+ISR EINT3_handler {
+	CATEGORY = 2;
+	INTERRUPT = EINT3;
+	PRIORITY = 0;
+}
+
+
 
 COUNTER HardwareCounter {
    MAXALLOWEDVALUE = 60000000;

@@ -7,6 +7,7 @@
 
 #include "taskLeds.h"
 #include "taskRTC.h"
+#include "taskMeter.h"
 #include "moduleLog.h"
 
 
@@ -27,6 +28,7 @@ void taskSmartPlug_init (void* _eeprom)
 TASK(taskSmartPlug)
 {
 	rtc_time_t fullTime;
+	float value;
 	EventMaskType events;
 
     fullTime.second = 0;

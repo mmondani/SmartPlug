@@ -39,7 +39,7 @@ void taskSwitch_init (void)
 
 
 	// Se va a llamar a taskSwitch cada 20 ms
-	SetRelAlarm(alarmRunTaskSwitch, 20, 10);
+	SetRelAlarm(alarmRunTaskSwitch, 10, 20);
 }
 
 

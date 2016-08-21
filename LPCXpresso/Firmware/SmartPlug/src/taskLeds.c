@@ -53,7 +53,7 @@ void taskLeds_init (void)
 
 
     // Se va a llamar a taskLeds cada 10 ms
-    SetRelAlarm(alarmRunTaskLeds, 10, 5);
+    SetRelAlarm(alarmRunTaskLeds, 5, 10);
 }
 
 

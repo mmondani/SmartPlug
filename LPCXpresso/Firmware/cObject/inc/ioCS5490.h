@@ -261,6 +261,16 @@ float ioCS5490_getWordRate (void* _this);
 
 
 /**
+ * @brief      Retorna la constante de medidor configurada en el CS5490.
+ *
+ * @param      _this  		 instancia de la clase ioCS5490.
+ *
+ * @return     valor de la constante del medidor.
+ */
+float ioCS5490_getMeterConstant (void* _this);
+
+
+/**
  * @brief      Convierte un número en formato Qm.n con signo a float.Cantidad de bits del número: m+n+1.
  *
  * @param      value   número a convertir a float.

@@ -337,6 +337,14 @@ float ioCS5490_getWordRate (void* _this)
 }
 
 
+float ioCS5490_getMeterConstant (void* _this)
+{
+	struct ioCS5490* this = _this;
+
+	return this->meterConstant;
+}
+
+
 float ioCS5490_signedFract2Float (int32_t value, uint32_t m, uint32_t n)
 {
 	uint32_t resolution = 1L << (n);	// 2^(n)
