@@ -24,9 +24,7 @@ void taskTimer_init (void)
 
 TASK (taskTimer)
 {
-	/*
 	cTimer_handler();
 
-*/
 	TerminateTask();
 }

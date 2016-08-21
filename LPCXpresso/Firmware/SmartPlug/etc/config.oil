@@ -75,7 +75,7 @@ ALARM alarmRunTaskLeds {
 TASK taskTimer {
     PRIORITY = 1;
     ACTIVATION = 1;
-    STACK = 50;
+    STACK = 100;
     TYPE = BASIC;
     SCHEDULE = FULL;
 }

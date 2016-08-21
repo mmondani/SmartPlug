@@ -114,7 +114,6 @@ void taskLeds_blinkLed (uint32_t ledID, uint32_t tOn, uint32_t tOff)
 
 TASK(taskLeds)
 {
-	/*
 	// *****************************************************************************************
 	// FSM led verde
 	switch (stateGreen)
@@ -178,6 +177,6 @@ TASK(taskLeds)
 	}
 	// *****************************************************************************************
 
-*/
+
 	TerminateTask();
 }
