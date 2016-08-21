@@ -56,10 +56,11 @@ void ErrorHook(void)
 
 TASK(TaskInit)
 {
-	taskSmartPlug_init(0);
 	taskTimer_init();
 	taskSwitch_init();
 	taskLeds_init();
+	taskRTC_init();
+	taskSmartPlug_init(0);
 
 
 

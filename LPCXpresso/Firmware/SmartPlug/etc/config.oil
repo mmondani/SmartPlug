@@ -15,6 +15,12 @@ APPMODE = AppMode1;
 
 EVENT = evSwitch;
 EVENT = evSwitch_5sec;
+EVENT = evRTC_1min;
+EVENT = evRTC_1hour;
+EVENT = evRTC_1day;
+
+RESOURCE = resRTC;
+
 
 
 TASK TaskInit {
@@ -54,6 +60,10 @@ TASK taskSmartPlug {
     SCHEDULE = FULL;
     EVENT = evSwitch;
     EVENT = evSwitch_5sec;
+    EVENT = evRTC_1min;
+    EVENT = evRTC_1hour;
+    EVENT = evRTC_1day;
+    RESOURCE = resRTC;
 }
 
 TASK taskLeds {
@@ -84,6 +94,25 @@ ALARM alarmRunTaskTimer {
     COUNTER = HardwareCounter;
     ACTION = ACTIVATETASK {
         TASK = taskTimer;
+    }
+}
+
+TASK taskRTC {
+    PRIORITY = 7;
+    ACTIVATION = 1;
+    STACK = 300;
+    TYPE = EXTENDED;
+    SCHEDULE = FULL;
+    EVENT = evRTC_1min;
+    EVENT = evRTC_1hour;
+    EVENT = evRTC_1day;
+    RESOURCE = resRTC;
+}
+
+ALARM alarmRunTaskRTC {
+    COUNTER = HardwareCounter;
+    ACTION = ACTIVATETASK {
+        TASK = taskRTC;
     }
 }
 

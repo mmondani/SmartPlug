@@ -30,14 +30,13 @@ void taskLeds_init (void);
 /**
  * @brief      Configura la señalización de uno de los leds.
  *
- * @details    La longitud no está dada en bytes, el tamaño del objeto almacenado es la unidad.
- *  		   Si se tapa un tOn y un tOff distintos de cero, el led va a destellar. Si se pasa
+ * @details    Si se pasa un tOn y un tOff distintos de cero, el led va a destellar. Si se pasa
  *  		   tOn == 0 y tOff != 0, el led se va a apagar. Si se pasa tOn != 0 y tOff == 0, el
  *  		   led se va a encender.
  *
  * @param      ledID  ID del led que se quiere configurar. Ver @ref ledID_t.
- * 			   tOn    tiempo, en milisegundos, que debe permanecer encendido el led.
- * 			   tOff   tiempo, en milisegundos, que debe permanecer apagado el led.
+ * @param	   tOn    tiempo, en milisegundos, que debe permanecer encendido el led.
+ * @param	   tOff   tiempo, en milisegundos, que debe permanecer apagado el led.
  */
 void taskLeds_blinkLed (uint32_t ledID, uint32_t tOn, uint32_t tOff);
 
