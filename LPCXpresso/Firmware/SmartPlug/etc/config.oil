@@ -17,7 +17,15 @@ EVENT = evSwitch;
 EVENT = evSwitch_5sec;
 EVENT = evRTC_1min;
 EVENT = evRTC_1hour;
-EVENT = evRTC_1day;
+EVENT = evAuthenticated;
+EVENT = evDeAuthenticated;
+EVENT = evNewConn;
+EVENT = evCloseConn;
+EVENT = evRelayOn;
+EVENT = evRelayOff;
+EVENT = evResetEnergy;
+EVENT = evChangeOnOffTime;
+EVENT = evResetMeasurements;
 
 RESOURCE = resRTC;
 RESOURCE = resLog;
@@ -63,6 +71,15 @@ TASK taskSmartPlug {
     EVENT = evRTC_1min;
     EVENT = evRTC_1hour;
     EVENT = evRTC_1day;
+    EVENT = evAuthenticated;
+	EVENT = evDeAuthenticated;
+	EVENT = evNewConn;
+	EVENT = evCloseConn;
+	EVENT = evRelayOn;
+	EVENT = evRelayOff;
+	EVENT = evResetEnergy;
+	EVENT = evChangeOnOffTime;
+	EVENT = evResetMeasurements;
     RESOURCE = resRTC;
     RESOURCE = resLog;
 }
@@ -154,6 +171,38 @@ ISR EINT3_handler {
 	PRIORITY = 0;
 }
 
+
+TASK taskWiFi {
+    PRIORITY = 3;
+    ACTIVATION = 1;
+    STACK = 800;
+    TYPE = EXTENDED;
+    SCHEDULE = FULL;
+    EVENT = evAuthenticated;
+	EVENT = evDeAuthenticated;
+	EVENT = evNewConn;
+	EVENT = evCloseConn;
+	EVENT = evRelayOn;
+	EVENT = evRelayOff;
+	EVENT = evResetEnergy;
+	EVENT = evChangeOnOffTime;
+	EVENT = evResetMeasurements;
+    RESOURCE = resRTC;
+    RESOURCE = resLog;
+}
+
+ALARM alarmRunTaskWiFi {
+    COUNTER = HardwareCounter;
+    ACTION = ACTIVATETASK {
+        TASK = taskWiFi;
+    }
+}
+
+ISR UART2_handler {
+	CATEGORY = 2;
+	INTERRUPT = UART2;
+	PRIORITY = 0;
+}
 
 
 COUNTER HardwareCounter {
