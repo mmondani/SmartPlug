@@ -13,12 +13,9 @@ OS	ExampleOS {
 
 APPMODE = AppMode1;
 
-EVENT = evSw1;
-EVENT = evSw2;
-EVENT = evSw3;
-EVENT = evRxMsg;
+EVENT = evSwitch;
+EVENT = evSwitch_5sec;
 
-RESOURCE = resUART3;
 
 TASK TaskInit {
     PRIORITY = 1;
@@ -31,62 +28,32 @@ TASK TaskInit {
     SCHEDULE = NON;
 }
 
-TASK InputManager {
-    PRIORITY = 10;
+TASK taskSwitch {
+    PRIORITY = 4;
     ACTIVATION = 1;
-    STACK = 512;
+    STACK = 300;
     TYPE = EXTENDED;
     SCHEDULE = FULL;
-    EVENT = evSw1;
-    EVENT = evSw2;
-    EVENT = evSw3;
-    EVENT = evRxMsg;
+    EVENT = evSwitch;
+    EVENT = evSwitch_5sec;
 }
 
-TASK Sender1 {
-    PRIORITY = 5;
-    ACTIVATION = 1;
-    STACK = 512;
-    TYPE = EXTENDED;
-    SCHEDULE = FULL;
-    EVENT = evSw1;
-    EVENT = evSw2;
-    RESOURCE = resUART3;
-}
-
-TASK Sender2 {
-    PRIORITY = 5;
-    ACTIVATION = 1;
-    STACK = 512;
-    TYPE = EXTENDED;
-    SCHEDULE = FULL;
-    EVENT = evSw2;
-    EVENT = evSw3;
-    RESOURCE = resUART3;
-}
-
-TASK EchoTask {
-    PRIORITY = 5;
-    ACTIVATION = 1;
-    STACK = 512;
-    TYPE = EXTENDED;
-    SCHEDULE = FULL;
-    EVENT = evRxMsg;
-    RESOURCE = resUART3;
-}
-
-
-ISR UART3_handler {
-	CATEGORY = 2;
-	INTERRUPT = UART3;
-	PRIORITY = 0;
-}
-
-ALARM ActivateInputManager {
+ALARM alarmRunTaskSwitch {
     COUNTER = HardwareCounter;
     ACTION = ACTIVATETASK {
-        TASK = InputManager;
+        TASK = taskSwitch;
     }
+}
+
+
+TASK taskSmartPlug {
+    PRIORITY = 2;
+    ACTIVATION = 1;
+    STACK = 300;
+    TYPE = EXTENDED;
+    SCHEDULE = FULL;
+    EVENT = evSwitch;
+    EVENT = evSwitch_5sec;
 }
 
 
