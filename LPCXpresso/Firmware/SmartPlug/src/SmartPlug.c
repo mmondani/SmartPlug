@@ -23,7 +23,9 @@
 #include "taskSwitch.h"
 #include "taskLeds.h"
 #include "taskTimer.h"
+#include "taskRTC.h"
 #include "taskSmartPlug.h"
+#include "moduleLog.h"
 
 
 
@@ -48,14 +50,11 @@ int main(void)
 }
 
 
-void ErrorHook(void)
-{
-	/* kernel panic :( */
-	ShutdownOS(0);
-}
+
 
 TASK(TaskInit)
 {
+	moduleLog_init();
 	taskTimer_init();
 	taskSwitch_init();
 	taskLeds_init();

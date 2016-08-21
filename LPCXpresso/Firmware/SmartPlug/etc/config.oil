@@ -2,7 +2,7 @@ OSEK OSEK {
 
 OS	ExampleOS {
     STATUS = EXTENDED;
-    ERRORHOOK = TRUE;
+    ERRORHOOK = FALSE;
     PRETASKHOOK = FALSE;
 	POSTTASKHOOK = FALSE;
 	STARTUPHOOK = FALSE;
@@ -20,7 +20,7 @@ EVENT = evRTC_1hour;
 EVENT = evRTC_1day;
 
 RESOURCE = resRTC;
-
+RESOURCE = resLog;
 
 
 TASK TaskInit {
@@ -53,9 +53,9 @@ ALARM alarmRunTaskSwitch {
 
 
 TASK taskSmartPlug {
-    PRIORITY = 2;
+    PRIORITY = 6;
     ACTIVATION = 1;
-    STACK = 300;
+    STACK = 500;
     TYPE = EXTENDED;
     SCHEDULE = FULL;
     EVENT = evSwitch;
@@ -64,10 +64,11 @@ TASK taskSmartPlug {
     EVENT = evRTC_1hour;
     EVENT = evRTC_1day;
     RESOURCE = resRTC;
+    RESOURCE = resLog;
 }
 
 TASK taskLeds {
-    PRIORITY = 8;
+    PRIORITY = 3;
     ACTIVATION = 1;
     STACK = 400;
     TYPE = BASIC;
@@ -83,7 +84,7 @@ ALARM alarmRunTaskLeds {
 
 
 TASK taskTimer {
-    PRIORITY = 1;
+    PRIORITY = 10;
     ACTIVATION = 1;
     STACK = 100;
     TYPE = BASIC;
@@ -98,7 +99,7 @@ ALARM alarmRunTaskTimer {
 }
 
 TASK taskRTC {
-    PRIORITY = 7;
+    PRIORITY = 8;
     ACTIVATION = 1;
     STACK = 300;
     TYPE = EXTENDED;
@@ -114,6 +115,13 @@ ALARM alarmRunTaskRTC {
     ACTION = ACTIVATETASK {
         TASK = taskRTC;
     }
+}
+
+
+ISR UART1_handler {
+	CATEGORY = 2;
+	INTERRUPT = UART1;
+	PRIORITY = 0;
 }
 
 

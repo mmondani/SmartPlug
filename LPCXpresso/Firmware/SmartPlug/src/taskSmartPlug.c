@@ -7,6 +7,8 @@
 
 #include "taskLeds.h"
 #include "taskRTC.h"
+#include "moduleLog.h"
+
 
 static void* eeprom;
 
@@ -46,18 +48,31 @@ TASK(taskSmartPlug)
 		{
 			taskLeds_blinkLed(LED_ID_GREEN, 250, 500);
 			taskLeds_blinkLed(LED_ID_RED, 0, 1);
+			moduleLog_log("evSwitch");
 		}
 
 		if (events & evSwitch_5sec)
 		{
 			taskLeds_blinkLed(LED_ID_RED, 500, 250);
 			taskLeds_blinkLed(LED_ID_GREEN, 0, 1);
+			moduleLog_log("evSwitch_5sec");
 		}
 
 		if (events & evRTC_1min)
 		{
 			taskLeds_blinkLed(LED_ID_RED, 500, 250);
 			taskLeds_blinkLed(LED_ID_GREEN, 0, 1);
+			moduleLog_log("evRTC_1min");
+		}
+
+		if (events & evRTC_1hour)
+		{
+			moduleLog_log("evRTC_1hour");
+		}
+
+		if (events & evRTC_1day)
+		{
+			moduleLog_log("evRTC_1day");
 		}
 	}
 

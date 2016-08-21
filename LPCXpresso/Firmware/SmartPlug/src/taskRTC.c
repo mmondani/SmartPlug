@@ -74,7 +74,7 @@ void taskRTC_getTime (rtc_time_t* fullTime)
 	{
 		GetResource(resRTC);
 
-		ioRTC_getFullTime(rtc, &fullTime);
+		ioRTC_getFullTime(rtc, fullTime);
 
 		ReleaseResource(resRTC);
 	}

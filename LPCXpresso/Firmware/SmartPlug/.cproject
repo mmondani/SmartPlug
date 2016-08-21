@@ -60,7 +60,7 @@
 							<tool id="com.crt.advproject.link.cpp.exe.debug.731041784" name="MCU C++ Linker" superClass="com.crt.advproject.link.cpp.exe.debug"/>
 							<tool id="com.crt.advproject.link.exe.debug.1804459440" name="MCU Linker" superClass="com.crt.advproject.link.exe.debug">
 								<option id="com.crt.advproject.link.gcc.multicore.master.userobjs.999571324" name="Slave Objects (not visible)" superClass="com.crt.advproject.link.gcc.multicore.master.userobjs" valueType="userObjs"/>
-								<option id="com.crt.advproject.link.gcc.hdrlib.1567808386" name="Library" superClass="com.crt.advproject.link.gcc.hdrlib" value="com.crt.advproject.gcc.link.hdrlib.codered.semihost" valueType="enumerated"/>
+								<option id="com.crt.advproject.link.gcc.hdrlib.1567808386" name="Library" superClass="com.crt.advproject.link.gcc.hdrlib" value="com.crt.advproject.gcc.link.hdrlib.codered.nohost" valueType="enumerated"/>
 								<option id="gnu.c.link.option.libs.2076135089" name="Libraries (-l)" superClass="gnu.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="cObject"/>
 									<listOptionValue builtIn="false" value="lpc_board_nxp_lpcxpresso_1769"/>
@@ -79,7 +79,7 @@
 								<option id="com.crt.advproject.link.thumb.457351583" name="Thumb mode" superClass="com.crt.advproject.link.thumb" value="true" valueType="boolean"/>
 								<option id="gnu.c.link.option.nostdlibs.1056033015" name="No startup or default libs (-nostdlib)" superClass="gnu.c.link.option.nostdlibs" value="true" valueType="boolean"/>
 								<option id="com.crt.advproject.link.manage.1224144451" name="Manage linker script" superClass="com.crt.advproject.link.manage" value="true" valueType="boolean"/>
-								<option id="com.crt.advproject.link.script.1540969560" name="Linker script" superClass="com.crt.advproject.link.script" value="app_osek_gpio_uart_Debug.ld" valueType="string"/>
+								<option id="com.crt.advproject.link.script.1540969560" name="Linker script" superClass="com.crt.advproject.link.script" value="SmartPlug_Debug.ld" valueType="string"/>
 								<option id="gnu.c.link.option.other.52818495" name="Other options (-Xlinker [option])" superClass="gnu.c.link.option.other" valueType="stringList">
 									<listOptionValue builtIn="false" value="-Map=&quot;${BuildArtifactFileBaseName}.map&quot;"/>
 									<listOptionValue builtIn="false" value="--gc-sections"/>
