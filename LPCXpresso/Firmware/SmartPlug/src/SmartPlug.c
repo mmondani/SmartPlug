@@ -21,6 +21,8 @@
 #include "cObject.h"
 
 #include "taskSwitch.h"
+#include "taskLeds.h"
+#include "taskTimer.h"
 #include "taskSmartPlug.h"
 
 
@@ -30,6 +32,8 @@ int main(void)
 {
 	// Lee las configuraciones del clock y actualiza la variable SystemCoreClock
 	SystemCoreClockUpdate();
+
+
 	initMemHeap();
 
 
@@ -38,6 +42,7 @@ int main(void)
 
     // No debe llegar hasta acá
     while(1);
+
 
     return 0 ;
 }
@@ -51,8 +56,10 @@ void ErrorHook(void)
 
 TASK(TaskInit)
 {
-	taskSwitch_init();
 	taskSmartPlug_init(0);
+	taskTimer_init();
+	taskSwitch_init();
+	taskLeds_init();
 
 
 

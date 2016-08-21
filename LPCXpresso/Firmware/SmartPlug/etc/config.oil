@@ -56,6 +56,38 @@ TASK taskSmartPlug {
     EVENT = evSwitch_5sec;
 }
 
+TASK taskLeds {
+    PRIORITY = 8;
+    ACTIVATION = 1;
+    STACK = 400;
+    TYPE = BASIC;
+    SCHEDULE = FULL;
+}
+
+ALARM alarmRunTaskLeds {
+    COUNTER = HardwareCounter;
+    ACTION = ACTIVATETASK {
+        TASK = taskLeds;
+    }
+}
+
+
+TASK taskTimer {
+    PRIORITY = 1;
+    ACTIVATION = 1;
+    STACK = 50;
+    TYPE = BASIC;
+    SCHEDULE = FULL;
+}
+
+ALARM alarmRunTaskTimer {
+    COUNTER = HardwareCounter;
+    ACTION = ACTIVATETASK {
+        TASK = taskTimer;
+    }
+}
+
+
 
 COUNTER HardwareCounter {
    MAXALLOWEDVALUE = 60000000;

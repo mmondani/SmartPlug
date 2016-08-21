@@ -5,21 +5,15 @@
 #include "memAlloc.h"
 #include "ioDigital.h"
 
+#include "taskLeds.h"
+
 
 static void* eeprom;
-static void* ledVerde;
-static void* ledRojo;
 
 
 void taskSmartPlug_init (void* _eeprom)
 {
 	eeprom = _eeprom;
-
-	ledVerde = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 0, 21);
-    ioObject_init(ledVerde);
-
-    ledRojo = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 13);
-    ioObject_init(ledRojo);
 
 
 	ActivateTask(taskSmartPlug);
@@ -37,12 +31,14 @@ TASK(taskSmartPlug)
 
 		if (events & evSwitch)
 		{
-			ioDigital_toggle(ledVerde);
+			taskLeds_blinkLed(LED_ID_GREEN, 250, 500);
+			taskLeds_blinkLed(LED_ID_RED, 0, 1);
 		}
 
 		if (events & evSwitch_5sec)
 		{
-			ioDigital_toggle(ledRojo);
+			taskLeds_blinkLed(LED_ID_RED, 500, 250);
+			taskLeds_blinkLed(LED_ID_GREEN, 0, 1);
 		}
 	}
 

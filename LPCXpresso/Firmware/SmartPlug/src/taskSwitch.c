@@ -1,3 +1,11 @@
+/**
+ * @file taskSwitch.c
+ * @author Mariano Mondani
+ *
+ * @brief Implementación de la tarea taskSwitch
+ */
+
+
 #include "taskSwitch.h"
 #include "chip.h"
 #include "os.h"
