@@ -11,30 +11,38 @@
 #include "cObject.h"
 #include "memAlloc.h"
 #include "ioDigital.h"
+#include "cTimer.h";
 #include "ioRN1723.h"
 #include "ioUART.h"
 #include "cQueue.h"
 
+#include "moduleLog.h"
+#include "taskRTC.h"
 
-void* eeprom;
-void* rn1723;
-void* gpioResetRN1723;
-void* uartRN1723;
-void* inBuffer;
-void* outBuffer;
 
-enum {State_Create = 0, State_Waiting4Ready, State_Init, State_Idle, State_SynchronizeTime,
+static void* eeprom;
+static void* rn1723 = 0;
+static void* gpioResetRN1723;
+static void* uartRN1723;
+static void* inBuffer;
+static void* outBuffer;
+static void* timerSynchronizeTime;
+static void* timerTimeout;
+
+
+enum {State_Create = 0, State_Waiting4Ready, State_Init, State_Idle, State_SynchronizeTime, State_GetNewTime,
        State_WaitFrameStart1, State_WaitFrameStart2, State_WaitFrameLength, State_WaitCommand,
        State_NodeCommand, State_WaitFrameEnd1, State_WaitFrameEnd2, State_WaitRegister,
        State_ReadEEPROM, State_SendGetResponse, State_WaitValue, State_WriteEEPROM,
        State_EraseEEPROM, State_WaitingWPS, State_WaitingWebServer};
-uint32_t state = State_Create;
-uint8_t stateIn = 0, stateOut = 0;
-uint8_t executeWPS = 0;
-uint8_t executeWebServer = 0;
+static uint32_t state = State_Create;
+static uint8_t stateIn = 0, stateOut = 0;
+static uint8_t executeWPS = 0;
+static uint8_t executeWebServer = 0;
+
 
 // Cambia de estado en la FSM.
-void gotoState (uin32_t newState);
+void gotoState (uint32_t newState);
 
 
 
@@ -81,7 +89,11 @@ void taskLeds_isTPCConnected (void)
 
 TASK(taskWiFi)
 {
-	cTimer_handler();
+	rtc_time_t fullTime;
+
+
+	if (rn1723 != 0)
+	ioRN1723_handler(rn1723);
 
 	switch (state)
 	{
@@ -93,8 +105,31 @@ TASK(taskWiFi)
 
             }
             //**********************************************************************************************
+            gpioResetRN1723 = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 2);
+            ioObject_init(gpioResetRN1723);
 
 
+            uartRN1723 = cObject_new(ioUART, LPC_UART2, IOUART_BR_9600, IOUART_DATA_8BIT, IOUART_PAR_NONE, IOUART_STOP_1BIT, IOUART_MODE_NON_BLOCKING, 80, 80);
+            ioObject_init(uartRN1723);
+            ioComm_intEnable(uartRN1723, IOUART_INT_TX);
+            ioComm_intEnable(uartRN1723, IOUART_INT_RX);
+            ioUART_configFIFO(uartRN1723, IOUART_FIFO_LEVEL0);
+
+            NVIC_SetPriority(UART2_IRQn, 1);
+            NVIC_EnableIRQ(UART2_IRQn);
+
+
+            inBuffer = cObject_new(cQueue, 50, sizeof(uint8_t));
+            outBuffer = cObject_new(cQueue, 160, sizeof(uint8_t));
+
+
+            rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer);
+
+            timerSynchronizeTime = cObject_new(cTimer);
+            timerTimeout = cObject_new(cTimer);
+
+
+            gotoState(State_Waiting4Ready);
             //**********************************************************************************************
             if (stateOut)
             {
@@ -111,8 +146,8 @@ TASK(taskWiFi)
 
             }
             //**********************************************************************************************
-
-
+            if (ioRN1723_isIdle(rn1723) == 1)
+            	gotoState(State_Init);
             //**********************************************************************************************
             if (stateOut)
             {
@@ -127,15 +162,27 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                ioObject_init(rn1723);
             }
             //**********************************************************************************************
-
-
+            if (ioRN1723_isIdle(rn1723) == 1)
+            	gotoState(State_Idle);
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+                // Al pasar un segundo se va a tratar de sincronizar con el SNTP
+                cTimer_start(timerSynchronizeTime, 1000);
+
+                if (ioRN1723_isAuthenticated(rn1723))
+                {
+                	SetEvent (taskSmartPlug, evAuthenticated);
+                	moduleLog_log("Unido a WiFi");
+                }
+                else
+                	SetEvent (taskSmartPlug, evDeAuthenticated);
             }
 			break;
 
@@ -147,7 +194,34 @@ TASK(taskWiFi)
 
             }
             //**********************************************************************************************
+            // Iniciar el proceso de WPS
+            if (executeWPS)
+            {
+            	executeWPS = 0;
+            	gotoState(State_WaitingWPS);
+            }
 
+            // Iniciar el Soft-Ap
+            if (executeWebServer)
+			{
+            	executeWebServer = 0;
+				gotoState(State_WaitingWebServer);
+			}
+
+            // Llegaron bytes de una nueva conexión
+            if (ioComm_dataAvailable(rn1723))
+            {
+            	//gotoState(State_WaitFrameStart1);
+            }
+
+            // Expiró el timer para sincronizar el RTC
+            if (cTimer_hasExpired(timerSynchronizeTime))
+            {
+            	if (!ioRN1723_isTimeValid(rn1723))
+            	{
+            		gotoState(State_SynchronizeTime);
+            	}
+            }
 
             //**********************************************************************************************
             if (stateOut)
@@ -163,15 +237,52 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                ioRN1723_synchronizeTime(rn1723);
             }
             //**********************************************************************************************
-
-
+            if (ioRN1723_isIdle(rn1723) == 1)
+            	gotoState(State_GetNewTime);
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+        		// Espera 1,5 s para recibir la hora de internet
+        		cTimer_start(timerTimeout, 1500);
+            }
+			break;
+
+		case State_GetNewTime:
+            if (stateIn)
+            {
+                stateIn = 0;
+                stateOut = 0;
+
+                ioRN1723_refreshLocalTime(rn1723);
+            }
+            //**********************************************************************************************
+            if (cTimer_hasExpired(timerTimeout))
+            	gotoState(State_Idle);
+            //**********************************************************************************************
+            if (stateOut)
+            {
+                stateOut = 0;
+                stateIn = 1;
+
+                // Si no se pudo sincronizar a los 30 segundos va a volver a intentar
+                if (ioRN1723_isTimeValid(rn1723) == 0)
+                	cTimer_start(timerSynchronizeTime, 30000);
+                else
+                {
+                	ioRN1723_getTime(rn1723, &fullTime);
+                	taskRTC_setTime(&fullTime);
+
+                	moduleLog_log("RTC sincronizado");
+
+                	//TODO: agregar que se sincronize, por ejemplo cada día, para corregir el error del RTC del micro.
+                	cTimer_stop(timerSynchronizeTime);
+                }
             }
 			break;
 
@@ -415,15 +526,24 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                ioRN1723_runWPS(rn1723, 3);
             }
             //**********************************************************************************************
-
-
+            if (ioRN1723_isIdle(rn1723) == 1)
+            	gotoState(State_Idle);
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+                if (ioRN1723_isAuthenticated(rn1723))
+                {
+                	SetEvent (taskSmartPlug, evAuthenticated);
+                	moduleLog_log("Unido a WiFi");
+                }
+                else
+                	SetEvent (taskSmartPlug, evDeAuthenticated);
             }
 			break;
 
@@ -433,21 +553,32 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                ioRN1723_runConfigWebServer(rn1723);
             }
             //**********************************************************************************************
-
-
+            if (ioRN1723_isIdle(rn1723) == 1)
+            	gotoState(State_Idle);
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+                if (ioRN1723_isAuthenticated(rn1723))
+                {
+                	SetEvent (taskSmartPlug, evAuthenticated);
+                	moduleLog_log("Unido a WiFi");
+                }
+                else
+                	SetEvent (taskSmartPlug, evDeAuthenticated);
             }
 			break;
 	}
+
+	TerminateTask();
 }
 
-void gotoState (uin32_t newState)
+void gotoState (uint32_t newState)
 {
     state = newState;
     stateOut = 1;
@@ -457,12 +588,12 @@ void gotoState (uin32_t newState)
 
 ISR(UART2_handler)
 {
-	if (ioComm_getInt(uartCS5490, IOUART_INT_ID_TX))
+	if (ioComm_getInt(uartRN1723, IOUART_INT_ID_TX))
 	{
-		ioUART_txHandler(uartCS5490);
+		ioUART_txHandler(uartRN1723);
 	}
-	else if(ioComm_getInt(uartCS5490, IOUART_INT_ID_RX))
+	else if(ioComm_getInt(uartRN1723, IOUART_INT_ID_RX))
 	{
-		ioUART_rxHandler(uartCS5490);
+		ioUART_rxHandler(uartRN1723);
 	}
 }

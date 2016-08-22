@@ -17,6 +17,7 @@ EVENT = evSwitch;
 EVENT = evSwitch_5sec;
 EVENT = evRTC_1min;
 EVENT = evRTC_1hour;
+EVENT = evRTC_1day;
 EVENT = evAuthenticated;
 EVENT = evDeAuthenticated;
 EVENT = evNewConn;
@@ -175,7 +176,7 @@ ISR EINT3_handler {
 TASK taskWiFi {
     PRIORITY = 3;
     ACTIVATION = 1;
-    STACK = 800;
+    STACK = 1000;
     TYPE = EXTENDED;
     SCHEDULE = FULL;
     EVENT = evAuthenticated;

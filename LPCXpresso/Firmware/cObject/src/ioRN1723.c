@@ -92,6 +92,7 @@ const uint8_t* cmdReboot = "reboot";
 const uint8_t* cmdSetDeviceID = "set opt device_id";
 const uint8_t* cmdShowTT = "show t t";
 const uint8_t* cmdSetTimeEnable = "set time enable";
+const uint8_t* cmdSetTimeAddress = "set time address";
 
 
 #define CMD_WLAN_JOIN				cmdWLANJoin
@@ -114,6 +115,7 @@ const uint8_t* cmdSetTimeEnable = "set time enable";
 #define CMD_SET_DEVICE_ID			cmdSetDeviceID
 #define CMD_SHOW_T_T				cmdShowTT
 #define CMD_SET_TIME_ENABLE			cmdSetTimeEnable
+#define CMD_SET_TIME_ADDRESS		cmdSetTimeAddress
 
 // ********************************************************************************
 
@@ -157,8 +159,8 @@ uint32_t rnResponsesLength[RN_RESPONSES_COUNT] = {
 												14,
 												4,
 												12,
-												17,
-
+												12,
+												17
 };
 
 #define RESP_OK						0
@@ -259,8 +261,9 @@ enum {
 	CONFIG_IOFUNC = FSM_CONFIG | 2,
 	CONFIG_SAVE = FSM_CONFIG | 3,
 	CONFIG_TIME_ENABLE = FSM_CONFIG | 4,
-	CONFIG_TIME = FSM_CONFIG | 5,
-	CONFIG_EXIT = FSM_CONFIG | 6,
+	CONFIG_TIME_ADDRESS = FSM_CONFIG | 5,
+	CONFIG_TIME = FSM_CONFIG | 6,
+	CONFIG_EXIT = FSM_CONFIG | 7,
 	LEAVE_NETWORK_CMD = FSM_LEAVE_NETWORK | 1,
 	LEAVE_NETWORK_EXIT = FSM_LEAVE_NETWORK | 2,
 	CLOSE_TCP_CMD = FSM_CLOSE_TCP | 1,
@@ -303,7 +306,7 @@ static void* ioRN1723_ctor  (void* _this, va_list* va)
 	this->inBuffer = va_arg(*va, void*);
 	this->outBuffer = va_arg(*va, void*);
 
-	this->cmdBuffer = cObject_new(cQueue, 40, sizeof(char));
+	this->cmdBuffer = cObject_new(cQueue, 50, sizeof(char));
 	this->timer = cObject_new(cTimer);
 
 	this->authenticated = 0;
@@ -560,6 +563,11 @@ void ioRN1723_handler (void* _this)
 
 					case CONFIG_TIME_ENABLE:
 						sendCmd(this, CMD_SET_TIME_ENABLE, "1", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
+						this->fsm_sub_state = CONFIG_TIME_ADDRESS;
+						break;
+
+					case CONFIG_TIME_ADDRESS:
+						sendCmd(this, CMD_SET_TIME_ADDRESS, "129.6.15.28", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
 						this->fsm_sub_state = CONFIG_SAVE;
 						break;
 
@@ -973,7 +981,7 @@ uint32_t ioRN1723_isIdle (void* _this)
 {
 	struct ioRN1723* this = _this;
 
-	return ( (this->fsm_state == FSM_IDLE) && (this->fsm_sub_state = FSM_NO_SUBSTATE) );
+	return ( (this->fsm_state == FSM_IDLE) && (this->fsm_sub_state == FSM_NO_SUBSTATE) );
 }
 
 
@@ -1228,6 +1236,7 @@ void processRX (void* _this)
 	{
 		c = ioObject_read(uart(this));
 
+
 		// Se determina si se está recibiendo alguna de las respuestas esperadas
 		for (j = 0; j < RN_RESPONSES_COUNT; j++)
 		{
@@ -1364,6 +1373,21 @@ void processRX (void* _this)
 					}
 					break;
 
+				case RESP_TIME_NOT_SET:
+					if (this->answerFilter & RESP_FILTER_TIME_NOT_SET)
+					{
+						// No se pudo obtener la hora del server NTP.
+						this->invalidRTC = 1;
+						this->readingRTCValue = 0;
+
+						// Se fuerza a cero para que no lea un RTC incorrecto.
+						this->answerFilter = 0;
+
+						ev_emit(this->events, EV_RTC_RECEIVED);
+						ev_emit(this->events, EV_RESP_RECEIVED);
+					}
+					break;
+
 				case RESP_RTC:
 					if (this->answerFilter & RESP_FILTER_RTC)
 					{
@@ -1374,16 +1398,6 @@ void processRX (void* _this)
 					}
 					break;
 
-				case RESP_TIME_NOT_SET:
-					if (this->answerFilter & RESP_FILTER_TIME_NOT_SET)
-					{
-						// No se pudo obtener la hora del server NTP.
-						this->invalidRTC = 1;
-
-						ev_emit(this->events, EV_RTC_RECEIVED);
-						ev_emit(this->events, EV_RESP_RECEIVED);
-					}
-					break;
 
 				case RESP_DISABLING_AP_MODE:
 					if (this->answerFilter & RESP_FILTER_DISABLING_AP_MODE)

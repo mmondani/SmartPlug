@@ -24,6 +24,8 @@
 #include "taskLeds.h"
 #include "taskTimer.h"
 #include "taskRTC.h"
+#include "taskMeter.h"
+#include "taskWiFi.h"
 #include "taskSmartPlug.h"
 #include "moduleLog.h"
 
@@ -60,6 +62,7 @@ TASK(TaskInit)
 	taskLeds_init();
 	taskRTC_init();
 	taskMeter_init(0);
+	taskWiFi_init(0);
 	taskSmartPlug_init(0);
 
 
