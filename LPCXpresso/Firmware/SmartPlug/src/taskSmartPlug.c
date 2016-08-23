@@ -9,6 +9,7 @@
 #include "taskRTC.h"
 #include "taskMeter.h"
 #include "moduleLog.h"
+#include "taskWiFi.h"
 
 
 static void* eeprom;
@@ -50,6 +51,9 @@ TASK(taskSmartPlug)
 		{
 			taskLeds_blinkLed(LED_ID_GREEN, 250, 500);
 			taskLeds_blinkLed(LED_ID_RED, 0, 1);
+
+			taskWiFi_initWPS();
+
 			moduleLog_log("evSwitch");
 		}
 

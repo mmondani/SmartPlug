@@ -30,6 +30,7 @@ EVENT = evResetMeasurements;
 
 RESOURCE = resRTC;
 RESOURCE = resLog;
+RESOURCE = resEEPROM;
 
 
 TASK TaskInit {
@@ -176,7 +177,7 @@ ISR EINT3_handler {
 TASK taskWiFi {
     PRIORITY = 3;
     ACTIVATION = 1;
-    STACK = 1000;
+    STACK = 1100;
     TYPE = EXTENDED;
     SCHEDULE = FULL;
     EVENT = evAuthenticated;
@@ -190,6 +191,7 @@ TASK taskWiFi {
 	EVENT = evResetMeasurements;
     RESOURCE = resRTC;
     RESOURCE = resLog;
+    RESOURCE = resEEPROM;
 }
 
 ALARM alarmRunTaskWiFi {

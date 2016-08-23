@@ -31,14 +31,14 @@ void taskWiFi_init (void* _eeprom);
  * @brief      Le indica a la tarea que inicie el proceso de WPS
  *
  */
-void taskLeds_initWPS (void);
+void taskWiFi_initWPS (void);
 
 
 /**
  * @brief      Le indica a la tarea que inicie el modo Soft-AP para poder configurar la red WiFi por medio del web server embebido.
  *
  */
-void taskLeds_initWebServer (void);
+void taskWiFi_initWebServer (void);
 
 
 /**
@@ -46,7 +46,7 @@ void taskLeds_initWebServer (void);
  *
  * @return     0 si no está unido. 1 si está unido.
  */
-void taskLeds_isAuthenticated (void);
+void taskWiFi_isAuthenticated (void);
 
 
 /**
@@ -54,7 +54,7 @@ void taskLeds_isAuthenticated (void);
  *
  * @return     0 si no está conectado. 1 si está conectado.
  */
-void taskLeds_isTPCConnected (void);
+void taskWiFi_isTPCConnected (void);
 
 
 

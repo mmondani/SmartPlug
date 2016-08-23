@@ -15,9 +15,11 @@
 #include "ioRN1723.h"
 #include "ioUART.h"
 #include "cQueue.h"
+#include "ioEE25LCxxx.h"
 
 #include "moduleLog.h"
 #include "taskRTC.h"
+#include "TCPCommands.h"
 
 
 static void* eeprom;
@@ -32,13 +34,24 @@ static void* timerTimeout;
 
 enum {State_Create = 0, State_Waiting4Ready, State_Init, State_Idle, State_SynchronizeTime, State_GetNewTime,
        State_WaitFrameStart1, State_WaitFrameStart2, State_WaitFrameLength, State_WaitCommand,
-       State_NodeCommand, State_WaitFrameEnd1, State_WaitFrameEnd2, State_WaitRegister,
+       State_NodeCommand, State_WaitFrameEnd1, State_WaitFrameEnd2, State_WaitRegister,State_WaitParam, State_SearchDate,
        State_ReadEEPROM, State_SendGetResponse, State_WaitValue, State_WriteEEPROM,
        State_EraseEEPROM, State_WaitingWPS, State_WaitingWebServer};
 static uint32_t state = State_Create;
 static uint8_t stateIn = 0, stateOut = 0;
 static uint8_t executeWPS = 0;
 static uint8_t executeWebServer = 0;
+
+static uint8_t byte;
+static uint8_t length;
+static uint8_t command;
+static uint8_t reg;
+static uint32_t counter;
+static uint8_t blockPointer;		// Cuando se busca en la EEPROM un bloque de mediciones, se usa esta variable como índice.
+static uint32_t EEAddress;
+
+static uint8_t indexBuffer;
+static uint8_t buffer[120];
 
 
 // Cambia de estado en la FSM.
@@ -57,19 +70,19 @@ void taskWiFi_init (void* _eeprom)
 }
 
 
-void taskLeds_initWPS (void)
+void taskWiFi_initWPS (void)
 {
 	executeWPS = 1;
 }
 
 
-void taskLeds_initWebServer (void)
+void taskWiFi_initWebServer (void)
 {
 	executeWebServer = 1;
 }
 
 
-void taskLeds_isAuthenticated (void)
+void taskWiFi_isAuthenticated (void)
 {
 	if (ioRN1723_isAuthenticated(rn1723))
 		return 1;
@@ -78,7 +91,7 @@ void taskLeds_isAuthenticated (void)
 }
 
 
-void taskLeds_isTPCConnected (void)
+void taskWiFi_isTPCConnected (void)
 {
 	if (ioRN1723_isTCPConnected(rn1723))
 		return 1;
@@ -90,6 +103,7 @@ void taskLeds_isTPCConnected (void)
 TASK(taskWiFi)
 {
 	rtc_time_t fullTime;
+	uint8_t buffEE[3];
 
 
 	if (rn1723 != 0)
@@ -211,7 +225,7 @@ TASK(taskWiFi)
             // Llegaron bytes de una nueva conexión
             if (ioComm_dataAvailable(rn1723))
             {
-            	//gotoState(State_WaitFrameStart1);
+            	gotoState(State_WaitFrameStart1);
             }
 
             // Expiró el timer para sincronizar el RTC
@@ -292,10 +306,17 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                moduleLog_log("Nueva conexion");
+                SetEvent(taskSmartPlug, evNewConn);
             }
             //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				byte = (uint8_t)ioObject_read(rn1723);
 
-
+				if (byte == '#')
+					gotoState(State_WaitFrameStart2);
+            }
             //**********************************************************************************************
             if (stateOut)
             {
@@ -309,11 +330,15 @@ TASK(taskWiFi)
             {
                 stateIn = 0;
                 stateOut = 0;
-
             }
             //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				byte = (uint8_t)ioObject_read(rn1723);
 
-
+				if (byte == '!')
+					gotoState(State_WaitFrameLength);
+            }
             //**********************************************************************************************
             if (stateOut)
             {
@@ -328,10 +353,15 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                length = 0;
             }
             //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				length = (uint8_t)ioObject_read(rn1723);
 
-
+				gotoState(State_WaitCommand);
+            }
             //**********************************************************************************************
             if (stateOut)
             {
@@ -345,11 +375,17 @@ TASK(taskWiFi)
             {
                 stateIn = 0;
                 stateOut = 0;
-
             }
             //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				command = (uint8_t)ioObject_read(rn1723);
 
-
+				if ( (command == NODE_ON) || (command == NODE_OFF) )
+					gotoState(State_NodeCommand);
+				else
+					gotoState(State_WaitRegister);
+            }
             //**********************************************************************************************
             if (stateOut)
             {
@@ -363,11 +399,14 @@ TASK(taskWiFi)
             {
                 stateIn = 0;
                 stateOut = 0;
-
             }
             //**********************************************************************************************
+            if (command == NODE_ON)
+            	SetEvent(taskSmartPlug, evRelayOn);
+            else if (commando == NODE_OFF)
+            	SetEvent(taskSmartPlug, evRelayOff);
 
-
+            gotoState(State_WaitFrameEnd1);
             //**********************************************************************************************
             if (stateOut)
             {
@@ -381,11 +420,15 @@ TASK(taskWiFi)
             {
                 stateIn = 0;
                 stateOut = 0;
-
             }
             //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				byte = (uint8_t)ioObject_read(rn1723);
 
-
+				if (byte == '#')
+					gotoState(State_WaitFrameEnd2);
+            }
             //**********************************************************************************************
             if (stateOut)
             {
@@ -399,16 +442,23 @@ TASK(taskWiFi)
             {
                 stateIn = 0;
                 stateOut = 0;
-
             }
             //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				byte = (uint8_t)ioObject_read(rn1723);
 
-
+				if (byte == '!')
+					gotoState(State_Idle);
+            }
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+                moduleLog_log("Conexion cerrada");
+                SetEvent(taskSmartPlug, evCloseConn);
             }
 			break;
 
@@ -417,11 +467,117 @@ TASK(taskWiFi)
             {
                 stateIn = 0;
                 stateOut = 0;
+            }
+            //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				reg = (uint8_t)ioObject_read(rn1723);
+
+				if ( command == GET && (reg == REG_PER_HOUR_ACTIVE_POWER || reg == REG_PER_HOUR_ENERGY) )
+					gotoState(State_WaitParam);
+				else if (command == GET)
+					gotoState(State_ReadEEPROM);
+				else if (command == SET)
+					gotoState(State_WaitValue);
+				else if ( (command == RESET_MEASUREMENTS) )
+					gotoState(State_EraseEEPROM);
+            }
+            //**********************************************************************************************
+            if (stateOut)
+            {
+                stateOut = 0;
+                stateIn = 1;
+            }
+			break;
+
+		case State_WaitParam:
+            if (stateIn)
+            {
+                stateIn = 0;
+                stateOut = 0;
+
+                // Van a llegar 3 bytes que indican la fecha que se debe buscar en la EEPROM.
+                counter = 0;
+                indexBuffer = 0;
+            }
+            //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				byte = (uint8_t)ioObject_read(rn1723);
+
+				buffer[indexBuffer] = byte;
+				indexBuffer ++;
+				counter ++;
+
+				// Se recibió la fecha (DIA MES AÑO), se la buaca en la EEPROM para determinar el bloque que se está buscando.
+				if (counter >= 3)
+					gotoState(State_SearchDate);
 
             }
             //**********************************************************************************************
+            if (stateOut)
+            {
+                stateOut = 0;
+                stateIn = 1;
+            }
+			break;
 
+		case State_SearchDate:
+            if (stateIn)
+            {
+                stateIn = 0;
+                stateOut = 0;
 
+                blockPointer = 0;
+            }
+            //**********************************************************************************************
+            GetResource(resEEPROM);
+
+            // Se busca el número del bloque de EEPROM que contiene las mediciones pedidas.
+            if (reg == REG_PER_HOUR_ACTIVE_POWER)
+            {
+            	EEAddress = blockPointer * 128 + 64;		// Dirección del campo DIA de la fecha del bloque de mediciones
+            	ioEE25LCxxx_readData(eeprom, EEAddress, &buffEE, 3);
+
+            	if ( (buffer[0] != buffEE[0]) || (buffer[1] != buffEE[1]) || (buffer[2] != buffEE[2]))
+            	{
+            		blockPointer++;
+            		if (blockPointer >= 7)
+            		{
+            			// Se indica un valor imposible para que los siguientes estados traten este error.
+            			blockPointer = 0xFF;
+            			gotoState(State_ReadEEPROM);
+            		}
+            	}
+            	else
+            	{
+            		// Se encontró el bloque buscado
+            		gotoState(State_ReadEEPROM);
+            	}
+            }
+            else if (reg == REG_PER_HOUR_ENERGY)
+            {
+            	EEAddress = blockPointer * 128 + 1088;		// Dirección del campo DIA de la fecha del bloque de mediciones
+            	ioEE25LCxxx_readData(eeprom, EEAddress, &buffEE, 3);
+
+            	if ( (buffer[0] != buffEE[0]) || (buffer[1] != buffEE[1]) || (buffer[2] != buffEE[2]))
+            	{
+            		blockPointer++;
+            		if (blockPointer >= 7)
+            		{
+            			// Se indica un valor imposible para que los siguientes estados traten este error.
+            			blockPointer = 0xFF;
+            			gotoState(State_ReadEEPROM);
+            		}
+            	}
+            	else
+            	{
+            		// Se encontró el bloque buscado
+            		gotoState(State_ReadEEPROM);
+            	}
+            }
+
+            ReleaseResource(resEEPROM);
             //**********************************************************************************************
             if (stateOut)
             {
@@ -435,7 +591,6 @@ TASK(taskWiFi)
             {
                 stateIn = 0;
                 stateOut = 0;
-
             }
             //**********************************************************************************************
 
