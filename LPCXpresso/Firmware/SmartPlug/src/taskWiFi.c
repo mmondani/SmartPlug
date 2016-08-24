@@ -19,7 +19,9 @@
 
 #include "moduleLog.h"
 #include "taskRTC.h"
+#include "taskMeter.h"
 #include "TCPCommands.h"
+#include "EEPROMMap.h"
 
 
 static void* eeprom;
@@ -35,8 +37,8 @@ static void* timerTimeout;
 enum {State_Create = 0, State_Waiting4Ready, State_Init, State_Idle, State_SynchronizeTime, State_GetNewTime,
        State_WaitFrameStart1, State_WaitFrameStart2, State_WaitFrameLength, State_WaitCommand,
        State_NodeCommand, State_WaitFrameEnd1, State_WaitFrameEnd2, State_WaitRegister,State_WaitParam, State_SearchDate,
-       State_ReadEEPROM, State_SendGetResponse, State_WaitValue, State_WriteEEPROM,
-       State_EraseEEPROM, State_WaitingWPS, State_WaitingWebServer};
+       State_ReadEEPROM, State_SendGetResponse, State_WaitValue, State_WriteEEPROM, State_SendSetResponse,
+       State_EraseEEPROM, State_SendResetResponse, State_WaitingWPS, State_WaitingWebServer};
 static uint32_t state = State_Create;
 static uint8_t stateIn = 0, stateOut = 0;
 static uint8_t executeWPS = 0;
@@ -50,14 +52,17 @@ static uint32_t counter;
 static uint8_t blockPointer;		// Cuando se busca en la EEPROM un bloque de mediciones, se usa esta variable como índice.
 static uint32_t EEAddress;
 
+#define BUFFER_LEN				120
 static uint8_t indexBuffer;
-static uint8_t buffer[120];
+static uint8_t buffer[BUFFER_LEN];
 
 
 // Cambia de estado en la FSM.
 void gotoState (uint32_t newState);
 
-
+uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_t* buff);
+void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buff);
+void float2Bytes (uint8_t* bytes, float floatVariable);
 
 
 
@@ -104,6 +109,7 @@ TASK(taskWiFi)
 {
 	rtc_time_t fullTime;
 	uint8_t buffEE[3];
+	uint8_t i;
 
 
 	if (rn1723 != 0)
@@ -381,7 +387,7 @@ TASK(taskWiFi)
             {
 				command = (uint8_t)ioObject_read(rn1723);
 
-				if ( (command == NODE_ON) || (command == NODE_OFF) )
+				if ( (command == CMD_NODE_ON) || (command == CMD_NODE_OFF) )
 					gotoState(State_NodeCommand);
 				else
 					gotoState(State_WaitRegister);
@@ -401,9 +407,9 @@ TASK(taskWiFi)
                 stateOut = 0;
             }
             //**********************************************************************************************
-            if (command == NODE_ON)
+            if (command == CMD_NODE_ON)
             	SetEvent(taskSmartPlug, evRelayOn);
-            else if (commando == NODE_OFF)
+            else if (command == CMD_NODE_OFF)
             	SetEvent(taskSmartPlug, evRelayOff);
 
             gotoState(State_WaitFrameEnd1);
@@ -473,13 +479,13 @@ TASK(taskWiFi)
             {
 				reg = (uint8_t)ioObject_read(rn1723);
 
-				if ( command == GET && (reg == REG_PER_HOUR_ACTIVE_POWER || reg == REG_PER_HOUR_ENERGY) )
+				if ( command == CMD_GET && (reg == REG_PER_HOUR_ACTIVE_POWER || reg == REG_PER_HOUR_ENERGY) )
 					gotoState(State_WaitParam);
-				else if (command == GET)
+				else if (command == CMD_GET)
 					gotoState(State_ReadEEPROM);
-				else if (command == SET)
+				else if (command == CMD_SET)
 					gotoState(State_WaitValue);
-				else if ( (command == RESET_MEASUREMENTS) )
+				else if ( (command == CMD_RESET) )
 					gotoState(State_EraseEEPROM);
             }
             //**********************************************************************************************
@@ -509,7 +515,7 @@ TASK(taskWiFi)
 				indexBuffer ++;
 				counter ++;
 
-				// Se recibió la fecha (DIA MES AÑO), se la buaca en la EEPROM para determinar el bloque que se está buscando.
+				// Se recibió la fecha (DIA MES AÑO), se la busca en la EEPROM para determinar el bloque que se está buscando.
 				if (counter >= 3)
 					gotoState(State_SearchDate);
 
@@ -591,10 +597,12 @@ TASK(taskWiFi)
             {
                 stateIn = 0;
                 stateOut = 0;
+
+                // Se lee la memoria EEPROM.
+                counter = readEEPROMbyRegister (eeprom, reg, blockPointer, buffer);
             }
             //**********************************************************************************************
-
-
+            gotoState(State_SendGetResponse);
             //**********************************************************************************************
             if (stateOut)
             {
@@ -609,15 +617,25 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                ioObject_write(rn1723, '#');
+                ioObject_write(rn1723, '!');
+                ioObject_write(rn1723, counter + 4);	// Se agrega el byte del campo COMANDO, el byte del campo REGISTRO y los #! finales.
+                ioObject_write(rn1723, CMD_RESP_GET);
+                ioObject_write(rn1723, reg);
+                ioComm_writeBytes(rn1723, counter, buffer);
+                ioObject_write(rn1723, '#');
+                ioObject_write(rn1723, '!');
             }
             //**********************************************************************************************
-
-
+            gotoState(State_Idle);
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+                moduleLog_log("Conexion cerrada");
+                SetEvent(taskSmartPlug, evCloseConn);
             }
 			break;
 
@@ -627,10 +645,24 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                // Van a llegar (length-4) bytes que se deben guardar en la EEPROM
+                counter = 0;
+                indexBuffer = 0;
             }
             //**********************************************************************************************
+            if (ioComm_dataAvailable(rn1723) > 0)
+            {
+				byte = (uint8_t)ioObject_read(rn1723);
 
+				buffer[indexBuffer] = byte;
+				indexBuffer ++;
+				counter ++;
 
+				// Se recibieron los (length - 4) bytes que se deben guardar en la EEPROM
+				if ( counter >= (length -4) )
+					gotoState(State_WriteEEPROM);
+
+            }
             //**********************************************************************************************
             if (stateOut)
             {
@@ -645,15 +677,46 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                // Se escribe la memoria EEPROM.
+                writeEEPROMbyRegister (eeprom, reg, counter, buffer);
             }
             //**********************************************************************************************
-
-
+            gotoState(State_SendSetResponse);
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+                moduleLog_log("Conexion cerrada");
+                SetEvent(taskSmartPlug, evCloseConn);
+            }
+			break;
+
+		case State_SendSetResponse:
+            if (stateIn)
+            {
+                stateIn = 0;
+                stateOut = 0;
+
+                ioObject_write(rn1723, '#');
+                ioObject_write(rn1723, '!');
+                ioObject_write(rn1723, 4);
+                ioObject_write(rn1723, CMD_RESP_SET);
+                ioObject_write(rn1723, reg);
+                ioObject_write(rn1723, '#');
+                ioObject_write(rn1723, '!');
+            }
+            //**********************************************************************************************
+            gotoState(State_Idle);
+            //**********************************************************************************************
+            if (stateOut)
+            {
+                stateOut = 0;
+                stateIn = 1;
+
+                moduleLog_log("Conexion cerrada");
+                SetEvent(taskSmartPlug, evCloseConn);
             }
 			break;
 
@@ -663,15 +726,47 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
+                // Se carga con ceros buffer
+                for (i = 0; i < BUFFER_LEN; i++)
+                	buffer[i] = 0;
+
+                // Se borra la EEPROM
+                eraseEEPROMbyRegister (eeprom, reg, buffer);
             }
             //**********************************************************************************************
-
-
+            gotoState(State_Idle);
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
+            }
+			break;
+
+		case State_SendResetResponse:
+            if (stateIn)
+            {
+                stateIn = 0;
+                stateOut = 0;
+
+                ioObject_write(rn1723, '#');
+                ioObject_write(rn1723, '!');
+                ioObject_write(rn1723, 4);
+                ioObject_write(rn1723, CMD_RESP_RESET);
+                ioObject_write(rn1723, reg);
+                ioObject_write(rn1723, '#');
+                ioObject_write(rn1723, '!');
+            }
+            //**********************************************************************************************
+            gotoState(State_Idle);
+            //**********************************************************************************************
+            if (stateOut)
+            {
+                stateOut = 0;
+                stateIn = 1;
+
+                moduleLog_log("Conexion cerrada");
+                SetEvent(taskSmartPlug, evCloseConn);
             }
 			break;
 
@@ -738,6 +833,369 @@ void gotoState (uint32_t newState)
     state = newState;
     stateOut = 1;
 }
+
+
+uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_t* buff)
+{
+	uint32_t bytesRead = 0;
+	float floatValue;
+	rtc_time_t fullTIme;
+
+
+	if (regEE == REG_V_RMS)
+	{
+		floatValue = taskMeter_getMeterValue(ID_VRMS);
+		float2Bytes(buff, floatValue);
+		bytesRead = 4;
+	}
+	else if (regEE == REG_I_RMS)
+	{
+		floatValue = taskMeter_getMeterValue(ID_IRMS);
+		float2Bytes(buff, floatValue);
+		bytesRead = 4;
+	}
+	else if (regEE == REG_POWER_FACTOR)
+	{
+		floatValue = taskMeter_getMeterValue(ID_POWER_FACTOR);
+		float2Bytes(buff, floatValue);
+		bytesRead = 4;
+	}
+	else if (regEE == REG_FREQUENCY)
+	{
+		floatValue = taskMeter_getMeterValue(ID_FREQUENCY);
+		float2Bytes(buff, floatValue);
+		bytesRead = 4;
+	}
+	else if (regEE == REG_ACTIVE_POWER)
+	{
+		floatValue = taskMeter_getMeterValue(ID_ACTIVE_POWER);
+		float2Bytes(buff, floatValue);
+		bytesRead = 4;
+	}
+	else if (regEE == REG_CURRENT_HOUR_ENERGY)
+	{
+		floatValue = taskMeter_getMeterValue(ID_IRMS);
+		float2Bytes(buff, floatValue);
+		bytesRead = 4;
+	}
+	else if (regEE == REG_LOAD_STATE)
+	{
+		// TODO Llamar a la función taskSmartPlug_getLoadState para saber el estado
+		bytesRead = 1;
+	}
+	else
+	{
+		GetResource(resEEPROM);
+
+
+		if (regEE == REG_TOTAL_ENERGY)
+		{
+			ioEE25LCxxx_readData(ee, EE_ACUM_ENERGY, buff, 4);
+			bytesRead = 4;
+		}
+		else if (regEE == REG_DEVICE_ID)
+		{
+			ioEE25LCxxx_readData(ee, EE_DEVICE_ID, buff, 33);
+			bytesRead = 33;
+		}
+		else if (regEE == REG_DEVICE_ID)
+		{
+			ioEE25LCxxx_readData(ee, EE_DEVICE_ID, buff, 33);
+			bytesRead = 33;
+		}
+		else if (regEE == REG_MONDAY_LOAD_ON_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_MONDAY_LOAD_OFF_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_TUESDAY_LOAD_ON_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_TUESDAY_LOAD_OFF_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_WEDNESDAY_LOAD_ON_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_THURSDAY_LOAD_ON_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_THURSDAY_LOAD_OFF_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_FRIDAY_LOAD_ON_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_FRIDAY_LOAD_OFF_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_SATURDAY_LOAD_ON_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_SATURDAY_LOAD_OFF_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_SUNDAY_LOAD_ON_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else if (regEE == REG_SUNDAY_LOAD_OFF_TIME)
+		{
+			ioEE25LCxxx_readData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
+			bytesRead = 2;
+		}
+		else
+		{
+			if (blockPointer != 0xFF)
+			{
+				// Se encontró el bloque correspondiente a la fecha buscada.
+				if (regEE == REG_PER_HOUR_ACTIVE_POWER)
+				{
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
+					bytesRead = 96;
+				}
+				else if (regEE == REG_PER_HOUR_ENERGY)
+				{
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
+					bytesRead = 96;
+				}
+			}
+			else
+			{
+				// No se encontró el bloque. Se devuelve vacío
+				bytesRead = 0;
+			}
+
+		}
+
+		ReleaseResource(resEEPROM);
+	}
+
+
+
+	return bytesRead;
+}
+
+void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buff)
+{
+
+	if (regEE == REG_LOAD_STATE)
+	{
+		// Llega un único byte que indica si se debe encender o apagar la carga.
+		if (buff[0] == 0)
+			SetEvent(taskSmartPlug, evRelayOff);
+		else if (buff[0] == 1)
+			SetEvent(taskSmartPlug, evRelayOn);
+	}
+	else
+	{
+		GetResource(resEEPROM);
+
+
+		if (regEE == REG_DEVICE_ID)
+		{
+			// Siempre llegan 33 bytes, aunque el nombre sea más corto.
+			ioEE25LCxxx_writeData(ee, EE_DEVICE_ID, buff, 33);
+		}
+		else if(regEE == REG_MONDAY_LOAD_ON_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
+		}
+		else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
+		}
+		else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
+		}
+		else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
+		}
+		else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
+		}
+		else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
+		}
+		else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
+		}
+		else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
+		}
+		else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
+		}
+		else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
+		}
+		else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
+		}
+		else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
+		}
+
+		ReleaseResource(resEEPROM);
+	}
+}
+
+
+void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
+{
+	uint8_t i;
+
+
+	GetResource(resEEPROM);
+
+
+	if (regEE == REG_DEVICE_ID)
+	{
+		ioEE25LCxxx_writeData(ee, EE_DEVICE_ID, buff, 33);
+	}
+	else if (regEE == REG_TOTAL_ENERGY)
+	{
+		ioEE25LCxxx_writeData(ee, EE_ACUM_ENERGY, buff, 4);
+	}
+	else if(regEE == REG_MONDAY_LOAD_ON_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
+	}
+	else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
+	}
+	else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
+	}
+	else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
+	}
+	else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
+	}
+	else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
+	}
+	else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
+	}
+	else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
+	}
+	else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
+	}
+	else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
+	}
+	else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
+	}
+	else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
+	}
+	else if(regEE == REG_SUNDAY_LOAD_ON_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
+	}
+	else if(regEE == REG_SUNDAY_LOAD_OFF_TIME)
+	{
+		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
+	}
+	else if(regEE == REG_PER_HOUR_ENERGY)
+	{
+		for (i = 0; i < 7; i ++)
+		{
+			ioEE25LCxxx_readData(ee, i * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
+			ioEE25LCxxx_readData(ee, i * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);	// Últimas 12 horas del día
+		}
+	}
+	else if(regEE == REG_PER_HOUR_ACTIVE_POWER)
+	{
+		for (i = 0; i < 7; i ++)
+		{
+			ioEE25LCxxx_readData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
+			ioEE25LCxxx_readData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
+		}
+	}
+
+
+	ReleaseResource(resEEPROM);
+}
+
+
+void float2Bytes (uint8_t* bytes, float floatVariable)
+{
+	uint8_t i;
+
+	for (i = 0; i < 4; i ++)
+		bytes[i] = ((uint8_t*)&floatVariable)[i];
+}
+
 
 
 
