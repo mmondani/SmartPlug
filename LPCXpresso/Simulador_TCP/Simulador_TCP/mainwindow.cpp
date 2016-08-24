@@ -10,6 +10,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     portValidator = new QIntValidator(0, 65535, this);
+    ui->lineUDPPort->setValidator(portValidator);
+    ui->lineTCPPort->setValidator(portValidator);
+
     UDPSocket = new QUdpSocket(this);
     TCPSocket = new QTcpSocket(this);
 

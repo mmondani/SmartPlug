@@ -36,6 +36,8 @@ private slots:
 private:
     QTcpSocket* socket;
     QByteArray data2Send;
+    QByteArray dataReceived;
+    char length2Receive;
 };
 
 #endif // SMARTPLUGCOMM_H
