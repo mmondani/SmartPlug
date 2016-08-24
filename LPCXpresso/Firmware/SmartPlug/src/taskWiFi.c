@@ -62,6 +62,7 @@ void gotoState (uint32_t newState);
 
 uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_t* buff);
 void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buff);
+void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff);
 void float2Bytes (uint8_t* bytes, float floatVariable);
 
 
@@ -1032,61 +1033,73 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
 			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 
 		ReleaseResource(resEEPROM);
@@ -1113,58 +1126,72 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	else if(regEE == REG_MONDAY_LOAD_ON_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_SUNDAY_LOAD_ON_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_SUNDAY_LOAD_OFF_TIME)
 	{
 		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
+		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_PER_HOUR_ENERGY)
 	{
