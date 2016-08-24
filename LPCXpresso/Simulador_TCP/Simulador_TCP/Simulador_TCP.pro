@@ -14,9 +14,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    smartplugconnection.cpp
+    smartplugconnection.cpp \
+    smartplugcomm.cpp
 
 HEADERS  += mainwindow.h \
-    smartplugconnection.h
+    smartplugconnection.h \
+    smartplugcomm.h
 
 FORMS    += mainwindow.ui
