@@ -1,9 +1,7 @@
 #include "smartplugconnection.h"
 
-SmartPlugConnection::SmartPlugConnection(QObject *parent) : QObject(parent)
+SmartPlugConnection::SmartPlugConnection()
 {
-    // Guarda los 6 bytes de la dirección MAC
-    MACAdress = new QByteArray(6);
 }
 
 void SmartPlugConnection::setMACAddress(QByteArray address)
@@ -11,12 +9,12 @@ void SmartPlugConnection::setMACAddress(QByteArray address)
     this->MACAdress = address;
 }
 
-void SmartPlugConnection::setRSSI(qint8 rssi)
+void SmartPlugConnection::setRSSI(quint8 rssi)
 {
     this->rssi = rssi;
 }
 
-void SmartPlugConnection::setPort(qint16 port)
+void SmartPlugConnection::setPort(quint16 port)
 {
     this->port = port;
 }
@@ -29,6 +27,11 @@ void SmartPlugConnection::setID(QString ID)
 void SmartPlugConnection::setIPAddress(QHostAddress address)
 {
     this->ipAddress = address;
+}
+
+void SmartPlugConnection::setLastTime(QDateTime dateTime)
+{
+    this->lastTime = dateTime;
 }
 
 QByteArray SmartPlugConnection::getMACAddress()
@@ -54,5 +57,10 @@ QString SmartPlugConnection::getID()
 QHostAddress SmartPlugConnection::getIPAddress()
 {
     return ipAddress;
+}
+
+QDateTime SmartPlugConnection::getLastTime()
+{
+    return lastTime;
 }
 

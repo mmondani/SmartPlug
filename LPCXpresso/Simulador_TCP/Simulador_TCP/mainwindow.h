@@ -5,6 +5,7 @@
 #include <QUdpSocket>
 #include <QTcpSocket>
 #include <QIntValidator>
+#include <QListWidget>
 #include <smartplugconnection.h>
 
 
@@ -22,6 +23,7 @@ public:
 
 private slots:
     void readPendingUDPDatagram ();
+    void listItemChanged (QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
     Ui::MainWindow *ui;
