@@ -23,11 +23,11 @@ static void* gpioReset;
 static void* uartCS5490;
 static void* cs5490;
 
-uint32_t irms, vrms, activePower, powerFactor, epsilon;
-uint32_t energyPulses = 0;
+static uint32_t irms, vrms, activePower, powerFactor, epsilon;
+static uint32_t energyPulses = 0;
 
-enum {STATE_INIT = 0, STATE_RUNNING};
-uint32_t state = STATE_INIT;
+static enum {STATE_INIT = 0, STATE_RUNNING};
+static uint32_t state = STATE_INIT;
 
 
 

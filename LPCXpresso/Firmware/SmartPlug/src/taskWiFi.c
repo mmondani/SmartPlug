@@ -544,6 +544,7 @@ TASK(taskWiFi)
             if (reg == REG_PER_HOUR_ACTIVE_POWER)
             {
             	EEAddress = blockPointer * 128 + 64;		// Dirección del campo DIA de la fecha del bloque de mediciones
+            	ioEE25LCxxx_busyPolling(eeprom);
             	ioEE25LCxxx_readData(eeprom, EEAddress, &buffEE, 3);
 
             	if ( (buffer[0] != buffEE[0]) || (buffer[1] != buffEE[1]) || (buffer[2] != buffEE[2]))
@@ -565,6 +566,7 @@ TASK(taskWiFi)
             else if (reg == REG_PER_HOUR_ENERGY)
             {
             	EEAddress = blockPointer * 128 + 1088;		// Dirección del campo DIA de la fecha del bloque de mediciones
+            	ioEE25LCxxx_busyPolling(eeprom);
             	ioEE25LCxxx_readData(eeprom, EEAddress, &buffEE, 3);
 
             	if ( (buffer[0] != buffEE[0]) || (buffer[1] != buffEE[1]) || (buffer[2] != buffEE[2]))
@@ -881,7 +883,7 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 	}
 	else if (regEE == REG_LOAD_STATE)
 	{
-		// TODO Llamar a la función taskSmartPlug_getLoadState para saber el estado
+		buff[0] = taskSmartPlug_getLoadState();
 		bytesRead = 1;
 	}
 	else
@@ -891,86 +893,103 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 
 		if (regEE == REG_TOTAL_ENERGY)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_ACUM_ENERGY, buff, 4);
 			bytesRead = 4;
 		}
 		else if (regEE == REG_DEVICE_ID)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_DEVICE_ID, buff, 33);
 			bytesRead = 33;
 		}
 		else if (regEE == REG_DEVICE_ID)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_DEVICE_ID, buff, 33);
 			bytesRead = 33;
 		}
 		else if (regEE == REG_MONDAY_LOAD_ON_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_MONDAY_LOAD_OFF_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_TUESDAY_LOAD_ON_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_TUESDAY_LOAD_OFF_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_WEDNESDAY_LOAD_ON_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_THURSDAY_LOAD_ON_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_THURSDAY_LOAD_OFF_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_FRIDAY_LOAD_ON_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_FRIDAY_LOAD_OFF_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_SATURDAY_LOAD_ON_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_SATURDAY_LOAD_OFF_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_SUNDAY_LOAD_ON_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
 			bytesRead = 2;
 		}
 		else if (regEE == REG_SUNDAY_LOAD_OFF_TIME)
 		{
+			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_readData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
 			bytesRead = 2;
 		}
@@ -981,13 +1000,17 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 				// Se encontró el bloque correspondiente a la fecha buscada.
 				if (regEE == REG_PER_HOUR_ACTIVE_POWER)
 				{
+					ioEE25LCxxx_busyPolling(ee);
 					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
+					ioEE25LCxxx_busyPolling(ee);
 					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
 					bytesRead = 96;
 				}
 				else if (regEE == REG_PER_HOUR_ENERGY)
 				{
+					ioEE25LCxxx_busyPolling(ee);
 					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
+					ioEE25LCxxx_busyPolling(ee);
 					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
 					bytesRead = 96;
 				}
@@ -1027,77 +1050,103 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		if (regEE == REG_DEVICE_ID)
 		{
 			// Siempre llegan 33 bytes, aunque el nombre sea más corto.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_DEVICE_ID, buff, 33);
 		}
 		else if(regEE == REG_MONDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
 		else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
 		{
 			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
@@ -1117,79 +1166,111 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 
 	if (regEE == REG_DEVICE_ID)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_DEVICE_ID, buff, 33);
 	}
 	else if (regEE == REG_TOTAL_ENERGY)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_ACUM_ENERGY, buff, 4);
 	}
 	else if(regEE == REG_MONDAY_LOAD_ON_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_SUNDAY_LOAD_ON_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_SUNDAY_LOAD_OFF_TIME)
 	{
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
@@ -1197,16 +1278,24 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	{
 		for (i = 0; i < 7; i ++)
 		{
-			ioEE25LCxxx_readData(ee, i * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
-			ioEE25LCxxx_readData(ee, i * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);	// Últimas 12 horas del día
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);	// Últimas 12 horas del día
 		}
 	}
 	else if(regEE == REG_PER_HOUR_ACTIVE_POWER)
 	{
 		for (i = 0; i < 7; i ++)
 		{
-			ioEE25LCxxx_readData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
-			ioEE25LCxxx_readData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
 		}
 	}
 

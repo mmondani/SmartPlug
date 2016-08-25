@@ -26,7 +26,6 @@ EVENT = evRelayOn;
 EVENT = evRelayOff;
 EVENT = evResetEnergy;
 EVENT = evChangeOnOffTime;
-EVENT = evResetMeasurements;
 
 RESOURCE = resRTC;
 RESOURCE = resLog;
@@ -65,7 +64,7 @@ ALARM alarmRunTaskSwitch {
 TASK taskSmartPlug {
     PRIORITY = 6;
     ACTIVATION = 1;
-    STACK = 500;
+    STACK = 700;
     TYPE = EXTENDED;
     SCHEDULE = FULL;
     EVENT = evSwitch;
@@ -81,7 +80,6 @@ TASK taskSmartPlug {
 	EVENT = evRelayOff;
 	EVENT = evResetEnergy;
 	EVENT = evChangeOnOffTime;
-	EVENT = evResetMeasurements;
     RESOURCE = resRTC;
     RESOURCE = resLog;
 }
@@ -188,7 +186,6 @@ TASK taskWiFi {
 	EVENT = evRelayOff;
 	EVENT = evResetEnergy;
 	EVENT = evChangeOnOffTime;
-	EVENT = evResetMeasurements;
     RESOURCE = resRTC;
     RESOURCE = resLog;
     RESOURCE = resEEPROM;
