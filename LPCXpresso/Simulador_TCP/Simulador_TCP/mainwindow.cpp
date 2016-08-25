@@ -18,14 +18,25 @@ MainWindow::MainWindow(QWidget *parent) :
     UDPSocket = new QUdpSocket(this);
     TCPSocket = new QTcpSocket(this);
 
-    QByteArray mac;
-    mac.append((char)0x00);
-    mac.append((char)0x1b);
-    mac.append((char)0x63);
-    mac.append((char)0x84);
-    mac.append((char)0x63);
-    mac.append((char)0xe6);
-    QString example = getMACString(mac);
+
+    // Agregar comandos
+    QStringList commands;
+    commands << "GET" << "SET" << "RESET" << "NODE ON" << "NODE OFF";
+    ui->comboCommand->addItems(commands);
+
+    // Agregar registros
+    QStringList registers;
+    registers << "V_RMS" <<"I_RMS" << "POWER_FACTOR" << "FREQUENCY" << "ACTIVE_POWER" << "TOTAL_POWER" <<
+                 "CURRENT_HOUR_ENERGY" << "DEVICE_ID" << "LOAD_STATE" <<
+                 "MONDAY_LOAD_ON_TIME" << "MONDAY_LOAD_OF_TIME" <<
+                 "TUESDAY_LOAD_ON_TIME" << "TUESDAY_LOAD_OF_TIME" <<
+                 "WEDNESDAY_LOAD_ON_TIME" << "WEDNESDAY_LOAD_OF_TIME" <<
+                 "THURSDAY_LOAD_ON_TIME" << "THURSDAY_LOAD_OF_TIME" <<
+                 "FRIDAY_LOAD_ON_TIME" << "FRIDAY_LOAD_OF_TIME" <<
+                 "SATURDAY_LOAD_ON_TIME" << "SATURDAY_LOAD_OF_TIME" <<
+                 "SUNDAY_LOAD_ON_TIME" << "SUNDAY_LOAD_OF_TIME" <<
+                 "PER_HOUR_ENERGY" << "PER_HOUR_ACIVE_POWER";
+    ui->comboRegister->addItems(registers);
 
     connect(UDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingUDPDatagram()));
     connect (ui->listConnected, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(listItemChanged(QListWidgetItem*,QListWidgetItem*)));
@@ -160,3 +171,38 @@ void MainWindow::on_pushClose_clicked()
 }
 
 
+
+void MainWindow::on_pushSend_clicked()
+{
+
+}
+
+void MainWindow::on_comboCommand_currentIndexChanged(const QString &command)
+{
+    if (command == "SET")
+    {
+        ui->linePayload->setEnabled(true);
+        ui->comboRegister->setEnabled(true);
+    }
+    else if (command == "GET")
+    {
+        ui->linePayload->setEnabled(false);
+        ui->comboRegister->setEnabled(true);
+    }
+    else if (command == "RESET")
+    {
+        ui->linePayload->setEnabled(false);
+        ui->comboRegister->setEnabled(true);
+    }
+    else if (command == "NODE ON" || command == "NODE OFF")
+    {
+        ui->linePayload->setEnabled(false);
+        ui->comboRegister->setEnabled(false);
+    }
+
+}
+
+void MainWindow::on_comboRegister_currentIndexChanged(const QString &reg)
+{
+
+}

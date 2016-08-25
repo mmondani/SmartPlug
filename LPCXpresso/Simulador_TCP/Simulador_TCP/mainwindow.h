@@ -30,6 +30,12 @@ private slots:
     void on_pushOpen_clicked();
     void on_pushClose_clicked();
 
+    void on_pushSend_clicked();
+
+    void on_comboCommand_currentIndexChanged(const QString &command);
+
+    void on_comboRegister_currentIndexChanged(const QString &reg);
+
 private:
     Ui::MainWindow *ui;
     QIntValidator* portValidator;

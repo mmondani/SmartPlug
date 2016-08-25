@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>707</width>
-    <height>463</height>
+    <width>730</width>
+    <height>609</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -286,6 +286,69 @@
       <property name="title">
        <string>Comandos TCP</string>
       </property>
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLabel" name="label_10">
+           <property name="text">
+            <string>Comando</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboCommand"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>Registro</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="comboRegister"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>Payload</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="linePayload"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushSend">
+           <property name="text">
+            <string>Enviar</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_13">
+         <property name="text">
+          <string>Enviado</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textSend"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Recibido</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QTextEdit" name="textReceived"/>
+       </item>
+      </layout>
      </widget>
     </item>
    </layout>
@@ -295,8 +358,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>707</width>
-     <height>25</height>
+     <width>730</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>
