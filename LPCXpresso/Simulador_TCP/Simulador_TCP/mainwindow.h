@@ -25,6 +25,10 @@ private slots:
     void readPendingUDPDatagram ();
     void listItemChanged (QListWidgetItem* current, QListWidgetItem* previous);
 
+    void on_pushOpen_clicked();
+
+    void on_pushClose_clicked();
+
 private:
     Ui::MainWindow *ui;
     QIntValidator* portValidator;

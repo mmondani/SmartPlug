@@ -36,6 +36,26 @@
        </layout>
       </item>
       <item>
+       <widget class="QPushButton" name="pushOpen">
+        <property name="text">
+         <string>Abrir</string>
+        </property>
+        <property name="checkable">
+         <bool>false</bool>
+        </property>
+        <property name="checked">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushClose">
+        <property name="text">
+         <string>Cerrar</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
          <widget class="QLabel" name="label_7">
@@ -276,7 +296,7 @@
      <x>0</x>
      <y>0</y>
      <width>707</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
