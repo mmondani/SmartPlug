@@ -21,12 +21,13 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private:
+    QString getMACString (QByteArray MAC);
+
 private slots:
     void readPendingUDPDatagram ();
     void listItemChanged (QListWidgetItem* current, QListWidgetItem* previous);
-
     void on_pushOpen_clicked();
-
     void on_pushClose_clicked();
 
 private:

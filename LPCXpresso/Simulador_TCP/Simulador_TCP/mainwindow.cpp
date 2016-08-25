@@ -18,7 +18,14 @@ MainWindow::MainWindow(QWidget *parent) :
     UDPSocket = new QUdpSocket(this);
     TCPSocket = new QTcpSocket(this);
 
-
+    QByteArray mac;
+    mac.append((char)0x00);
+    mac.append((char)0x1b);
+    mac.append((char)0x63);
+    mac.append((char)0x84);
+    mac.append((char)0x63);
+    mac.append((char)0xe6);
+    QString example = getMACString(mac);
 
     connect(UDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingUDPDatagram()));
     connect (ui->listConnected, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(listItemChanged(QListWidgetItem*,QListWidgetItem*)));
@@ -27,6 +34,25 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+QString MainWindow::getMACString(QByteArray MAC)
+{
+    QString strMAC;
+    int m1 = MAC.at(0) & 0xFF;
+    int m2 = MAC.at(1) & 0xFF;
+    int m3 = MAC.at(2) & 0xFF;
+    int m4 = MAC.at(3) & 0xFF;
+    int m5 = MAC.at(4) & 0xFF;
+    int m6 = MAC.at(5) & 0xFF;
+    strMAC = QString("%1:%2:%3:%4:%5:%6").arg(MAC.at(0) & 0xFF, 2, 16, QChar('0')).
+                                         arg(MAC.at(1) & 0xFF, 2, 16, QChar('0')).
+                                         arg(MAC.at(2) & 0xFF, 2, 16, QChar('0')).
+                                         arg(MAC.at(3) & 0xFF, 2, 16, QChar('0')).
+                                         arg(MAC.at(4) & 0xFF, 2, 16, QChar('0')).
+                                         arg(MAC.at(5) & 0xFF, 2, 16, QChar('0'));
+
+    return strMAC;
 }
 
 void MainWindow::readPendingUDPDatagram()
@@ -47,6 +73,13 @@ void MainWindow::readPendingUDPDatagram()
 
 
     // Se obtienen los campos de interés de la trama
+    bool ipv6 = (sender.protocol() == QAbstractSocket::IPv6Protocol)? true : false;
+    QString ip;
+    if (ipv6)
+        ip = sender.toString().remove(0,7);
+    else
+        ip = sender.toString();
+
     QByteArray MACAddress = receivedData.mid(0,6);
     quint8 rssi = receivedData.mid(7,1).at(0);
     quint16 localPort = receivedData.mid(8,2).toInt();
@@ -104,7 +137,7 @@ void MainWindow::listItemChanged(QListWidgetItem *current, QListWidgetItem *prev
 
     ui->labelID->setText(value->getID());
     ui->labelPORT->setText(QString::number(value->getPort()));
-    ui->labelMAC->setText(QString(value->getMACAddress()));
+    ui->labelMAC->setText(getMACString(value->getMACAddress()));
     ui->labelRSSI->setText(QString::number(value->getRSSI()));
     ui->labelIP->setText(value->getIPAddress().toString());
     ui->labelLastTime->setText(value->getLastTime().toString("hh:mm:ss - dd/MM/yyyy"));
@@ -125,3 +158,5 @@ void MainWindow::on_pushClose_clicked()
 
     UDPSocket->close();
 }
+
+
