@@ -19,6 +19,7 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     smartplugconnection.h \
-    smartplugcomm.h
+    smartplugcomm.h \
+    smartplugdefinitions.h
 
 FORMS    += mainwindow.ui

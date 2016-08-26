@@ -6,6 +6,7 @@
 #include <QHostAddress>
 #include <QTcpSocket>
 
+
 typedef struct
 {
     char len;

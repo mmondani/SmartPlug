@@ -7,6 +7,8 @@
 #include <QIntValidator>
 #include <QListWidget>
 #include <smartplugconnection.h>
+#include <smartplugcomm.h>
+#include <smartplugdefinitions.h>
 
 
 namespace Ui {
@@ -29,12 +31,10 @@ private slots:
     void listItemChanged (QListWidgetItem* current, QListWidgetItem* previous);
     void on_pushOpen_clicked();
     void on_pushClose_clicked();
-
     void on_pushSend_clicked();
-
     void on_comboCommand_currentIndexChanged(const QString &command);
-
     void on_comboRegister_currentIndexChanged(const QString &reg);
+    void newSmartPlugMsgReceived (SmartPlugMsg_t msg);
 
 private:
     Ui::MainWindow *ui;
@@ -42,6 +42,7 @@ private:
     QUdpSocket* UDPSocket;
     QTcpSocket* TCPSocket;
     QByteArray UDPDatagram;
+    SmartPlugComm tcpComm;
 };
 
 
