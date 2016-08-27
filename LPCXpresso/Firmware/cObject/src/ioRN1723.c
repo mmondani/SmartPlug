@@ -1218,6 +1218,14 @@ uint32_t ioRN1723_getDataPendingToSend (void* _this)
 }
 
 
+void ioRN1723_flushRxData (void* _this)
+{
+	struct ioRN1723* this = _this;
+
+	return cBuffer_clear(inBuffer(this));
+}
+
+
 // ********************************************************************************
 // ********************************************************************************
 

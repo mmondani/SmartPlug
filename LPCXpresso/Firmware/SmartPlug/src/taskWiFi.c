@@ -36,7 +36,7 @@ static void* timerTimeout;
 
 enum {State_Create = 0, State_Waiting4Ready, State_Init, State_Idle, State_SynchronizeTime, State_GetNewTime,
        State_WaitFrameStart1, State_WaitFrameStart2, State_WaitFrameLength, State_WaitCommand,
-       State_NodeCommand, State_WaitFrameEnd1, State_WaitFrameEnd2, State_WaitRegister,State_WaitParam, State_SearchDate,
+       State_NodeCommand, State_SendNodeResponse, State_WaitRegister,State_WaitParam, State_SearchDate,
        State_ReadEEPROM, State_SendGetResponse, State_WaitValue, State_WriteEEPROM, State_SendSetResponse,
        State_EraseEEPROM, State_SendResetResponse, State_WaitingWPS, State_WaitingWebServer};
 static uint32_t state = State_Create;
@@ -413,7 +413,7 @@ TASK(taskWiFi)
             else if (command == CMD_NODE_OFF)
             	SetEvent(taskSmartPlug, evRelayOff);
 
-            gotoState(State_WaitFrameEnd1);
+            gotoState(State_SendNodeResponse);
             //**********************************************************************************************
             if (stateOut)
             {
@@ -422,52 +422,40 @@ TASK(taskWiFi)
             }
 			break;
 
-		case State_WaitFrameEnd1:
+		case State_SendNodeResponse:
             if (stateIn)
             {
                 stateIn = 0;
                 stateOut = 0;
+
+                ioObject_write(rn1723, '#');
+                ioObject_write(rn1723, '!');
+                ioObject_write(rn1723, 3);
+                if (command == CMD_NODE_ON)
+                	ioObject_write(rn1723, CMD_RESP_NODE_ON);
+                else if (command == CMD_NODE_OFF)
+                	ioObject_write(rn1723, CMD_RESP_NODE_OFF);
+                ioObject_write(rn1723, '#');
+                ioObject_write(rn1723, '!');
             }
             //**********************************************************************************************
-            if (ioComm_dataAvailable(rn1723) > 0)
-            {
-				byte = (uint8_t)ioObject_read(rn1723);
-
-				if (byte == '#')
-					gotoState(State_WaitFrameEnd2);
-            }
+            gotoState(State_Idle);
             //**********************************************************************************************
             if (stateOut)
             {
                 stateOut = 0;
                 stateIn = 1;
-            }
-			break;
 
-		case State_WaitFrameEnd2:
-            if (stateIn)
-            {
-                stateIn = 0;
-                stateOut = 0;
-            }
-            //**********************************************************************************************
-            if (ioComm_dataAvailable(rn1723) > 0)
-            {
-				byte = (uint8_t)ioObject_read(rn1723);
-
-				if (byte == '!')
-					gotoState(State_Idle);
-            }
-            //**********************************************************************************************
-            if (stateOut)
-            {
-                stateOut = 0;
-                stateIn = 1;
+                // Limpia el buffer de recepción de la conexión TCP. Se prepara para recibir una nueva trama.
+                ioRN1723_flushRxData(rn1723);
 
                 moduleLog_log("Conexion cerrada");
                 SetEvent(taskSmartPlug, evCloseConn);
             }
 			break;
+			break;
+
+
 
 		case State_WaitRegister:
             if (stateIn)
@@ -637,6 +625,9 @@ TASK(taskWiFi)
                 stateOut = 0;
                 stateIn = 1;
 
+                // Limpia el buffer de recepción de la conexión TCP. Se prepara para recibir una nueva trama.
+                ioRN1723_flushRxData(rn1723);
+
                 moduleLog_log("Conexion cerrada");
                 SetEvent(taskSmartPlug, evCloseConn);
             }
@@ -690,9 +681,6 @@ TASK(taskWiFi)
             {
                 stateOut = 0;
                 stateIn = 1;
-
-                moduleLog_log("Conexion cerrada");
-                SetEvent(taskSmartPlug, evCloseConn);
             }
 			break;
 
@@ -717,6 +705,9 @@ TASK(taskWiFi)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+                // Limpia el buffer de recepción de la conexión TCP. Se prepara para recibir una nueva trama.
+                ioRN1723_flushRxData(rn1723);
 
                 moduleLog_log("Conexion cerrada");
                 SetEvent(taskSmartPlug, evCloseConn);
@@ -767,6 +758,9 @@ TASK(taskWiFi)
             {
                 stateOut = 0;
                 stateIn = 1;
+
+                // Limpia el buffer de recepción de la conexión TCP. Se prepara para recibir una nueva trama.
+                ioRN1723_flushRxData(rn1723);
 
                 moduleLog_log("Conexion cerrada");
                 SetEvent(taskSmartPlug, evCloseConn);

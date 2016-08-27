@@ -18,6 +18,8 @@
 #define CMD_RESP_GET				0x30
 #define CMD_RESP_SET				0x31
 #define CMD_RESP_RESET				0x32
+#define CMD_RESP_NODE_ON			0x33
+#define CMD_RESP_NODE_OFF			0x34
 
 
 // Registros

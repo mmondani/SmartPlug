@@ -232,6 +232,8 @@ void ioRN1723_setDeviceID (void* _this, uint8_t* id);
  * @brief      Indica si se produjo un timeout en algún comando o no.
  *
  * @param      _this   instancia de la clase ioRN1723.
+ *
+ * @return 	   0 si no ocurrió un timeout. 1 si ocurrió
  */
 uint32_t ioRN1723_timeoutOcurred (void* _this);
 
@@ -240,8 +242,18 @@ uint32_t ioRN1723_timeoutOcurred (void* _this);
  * @brief      Indica la cantidad de bytes que faltan por enviar en la conexión TCP.
  *
  * @param      _this   instancia de la clase ioRN1723.
+ *
+ * @return     cantidad de bytes que faltan enviar.
  */
 uint32_t ioRN1723_getDataPendingToSend (void* _this);
+
+
+/**
+ * @brief      Limpia el buffer de recepción de la conexión TCP
+ *
+ * @param      _this   instancia de la clase ioRN1723.
+ */
+void ioRN1723_flushRxData (void* _this);
 
 ///@}
 // ********************************************************************************
