@@ -25,6 +25,7 @@ public:
 
 private:
     QString getMACString (QByteArray MAC);
+    void loadRegisterNameMap ();
 
 private slots:
     void readPendingUDPDatagram ();
@@ -43,6 +44,8 @@ private:
     QTcpSocket* TCPSocket;
     QByteArray UDPDatagram;
     SmartPlugComm tcpComm;
+    QMap<QString, quint8> registerNameMap;
+    QMap<quint8, QString> registerValueMap;
 };
 
 

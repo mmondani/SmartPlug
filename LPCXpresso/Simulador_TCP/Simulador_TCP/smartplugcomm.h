@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QHostAddress>
 #include <QTcpSocket>
+#include "smartplugdefinitions.h"
 
 
 typedef struct
@@ -22,7 +23,7 @@ class SmartPlugComm : public QObject
     Q_OBJECT
 public:
     explicit SmartPlugComm(QObject *parent = 0);
-    void sendMsg (QHostAddress destIP, int port, char command, char reg, QByteArray* data = 0);
+    QByteArray &sendMsg(QString destIP, int port, char command, char reg, QByteArray data = 0);
 
 signals:
     void newMsg (SmartPlugMsg_t msg);

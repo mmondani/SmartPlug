@@ -24,7 +24,7 @@ void SmartPlugConnection::setID(QString ID)
     this->ID = ID;
 }
 
-void SmartPlugConnection::setIPAddress(QHostAddress address)
+void SmartPlugConnection::setIPAddress(QString address)
 {
     this->ipAddress = address;
 }
@@ -54,7 +54,7 @@ QString SmartPlugConnection::getID()
     return ID;
 }
 
-QHostAddress SmartPlugConnection::getIPAddress()
+QString SmartPlugConnection::getIPAddress()
 {
     return ipAddress;
 }

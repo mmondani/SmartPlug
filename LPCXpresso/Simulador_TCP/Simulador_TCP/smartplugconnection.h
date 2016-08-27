@@ -14,14 +14,14 @@ public:
     void setRSSI (quint8 rssi);
     void setPort (quint16 port);
     void setID (QString ID);
-    void setIPAddress (QHostAddress address);
+    void setIPAddress (QString address);
     void setLastTime (QDateTime dateTime);
 
     QByteArray getMACAddress ();
     quint8 getRSSI ();
     quint16 getPort ();
     QString getID ();
-    QHostAddress getIPAddress ();
+    QString getIPAddress();
     QDateTime getLastTime();
 
 signals:
@@ -33,7 +33,7 @@ private:
     quint8 rssi;
     quint16 port;
     QString ID;
-    QHostAddress ipAddress;
+    QString ipAddress;
     QDateTime lastTime;
 };
 

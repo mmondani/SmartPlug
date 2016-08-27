@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
                  "PER_HOUR_ENERGY" << "PER_HOUR_ACIVE_POWER";
     ui->comboRegister->addItems(registers);
 
-
+    loadRegisterNameMap();
 
 
     connect(UDPSocket, SIGNAL(readyRead()), this, SLOT(readPendingUDPDatagram()));
@@ -69,6 +69,62 @@ QString MainWindow::getMACString(QByteArray MAC)
                                          arg(MAC.at(5) & 0xFF, 2, 16, QChar('0'));
 
     return strMAC;
+}
+
+void MainWindow::loadRegisterNameMap()
+{
+    registerNameMap["V_RMS"] = REG_V_RMS;
+    registerNameMap["I_RMS"] = REG_I_RMS;
+    registerNameMap["POWER_FACTOR"] = REG_POWER_FACTOR;
+    registerNameMap["FREQUENCY"] = REG_FREQUENCY;
+    registerNameMap["ACTIVE_POWER"] = REG_ACTIVE_POWER;
+    registerNameMap["TOTAL_POWER"] = REG_TOTAL_ENERGY;
+    registerNameMap["CURRENT_HOUR_ENERGY"] = REG_CURRENT_HOUR_ENERGY;
+    registerNameMap["DEVICE_ID"] = REG_DEVICE_ID;
+    registerNameMap["LOAD_STATE"] = REG_LOAD_STATE;
+    registerNameMap["MONDAY_LOAD_ON_TIME"] = REG_MONDAY_LOAD_ON_TIME;
+    registerNameMap["MONDAY_LOAD_OFF_TIME"] = REG_MONDAY_LOAD_OFF_TIME;
+    registerNameMap["TUESDAY_LOAD_ON_TIME"] = REG_TUESDAY_LOAD_ON_TIME;
+    registerNameMap["TUESDAY_LOAD_OFF_TIME"] = REG_TUESDAY_LOAD_OFF_TIME;
+    registerNameMap["WEDNESDAY_LOAD_ON_TIME"] = REG_WEDNESDAY_LOAD_ON_TIME;
+    registerNameMap["WEDNESDAY_LOAD_OFF_TIME"] = REG_WEDNESDAY_LOAD_OFF_TIME;
+    registerNameMap["THURSDAY_LOAD_ON_TIME"] = REG_THURSDAY_LOAD_ON_TIME;
+    registerNameMap["THURSDAY_LOAD_OFF_TIME"] = REG_THURSDAY_LOAD_OFF_TIME;
+    registerNameMap["FRIDAY_LOAD_ON_TIME"] = REG_FRIDAY_LOAD_ON_TIME;
+    registerNameMap["FRIDAY_LOAD_OFF_TIME"] = REG_FRIDAY_LOAD_OFF_TIME;
+    registerNameMap["SATURDAY_LOAD_ON_TIME"] = REG_SATURDAY_LOAD_ON_TIME;
+    registerNameMap["SATURDAY_LOAD_OFF_TIME"] = REG_SATURDAY_LOAD_OFF_TIME;
+    registerNameMap["SUNDAY_LOAD_ON_TIME"] = REG_SUNDAY_LOAD_ON_TIME;
+    registerNameMap["SUNDAY_LOAD_OFF_TIME"] = REG_SUNDAY_LOAD_OFF_TIME;
+    registerNameMap["PER_HOUR_ENERGY"] = REG_PER_HOUR_ENERGY;
+    registerNameMap["PER_HOUR_ACIVE_POWER"] = REG_PER_HOUR_ACTIVE_POWER;
+
+
+    registerValueMap[REG_V_RMS] = "V_RMS";
+    registerValueMap[REG_I_RMS] = "I_RMS";
+    registerValueMap[REG_POWER_FACTOR] = "POWER_FACTOR";
+    registerValueMap[REG_FREQUENCY] = "FREQUENCY";
+    registerValueMap[REG_ACTIVE_POWER] = "ACTIVE_POWER";
+    registerValueMap[REG_TOTAL_ENERGY] = "TOTAL_POWER";
+    registerValueMap[REG_CURRENT_HOUR_ENERGY] = "CURRENT_HOUR_ENERGY";
+    registerValueMap[REG_DEVICE_ID] = "DEVICE_ID";
+    registerValueMap[REG_LOAD_STATE] = "LOAD_STATE";
+    registerValueMap[REG_MONDAY_LOAD_ON_TIME] = "MONDAY_LOAD_ON_TIME";
+    registerValueMap[REG_MONDAY_LOAD_OFF_TIME] = "MONDAY_LOAD_OFF_TIME";
+    registerValueMap[REG_TUESDAY_LOAD_ON_TIME] = "TUESDAY_LOAD_ON_TIME";
+    registerValueMap[REG_TUESDAY_LOAD_OFF_TIME] = "TUESDAY_LOAD_OFF_TIME";
+    registerValueMap[REG_WEDNESDAY_LOAD_ON_TIME] = "WEDNESDAY_LOAD_ON_TIME";
+    registerValueMap[REG_WEDNESDAY_LOAD_OFF_TIME] = "WEDNESDAY_LOAD_OFF_TIME";
+    registerValueMap[REG_THURSDAY_LOAD_ON_TIME] = "THURSDAY_LOAD_ON_TIME";
+    registerValueMap[REG_THURSDAY_LOAD_OFF_TIME] = "THURSDAY_LOAD_OFF_TIME";
+    registerValueMap[REG_FRIDAY_LOAD_ON_TIME] = "FRIDAY_LOAD_ON_TIME";
+    registerValueMap[REG_FRIDAY_LOAD_OFF_TIME] = "FRIDAY_LOAD_OFF_TIME";
+    registerValueMap[REG_SATURDAY_LOAD_ON_TIME] = "SATURDAY_LOAD_ON_TIME";
+    registerValueMap[REG_SATURDAY_LOAD_OFF_TIME] = "SATURDAY_LOAD_OFF_TIME";
+    registerValueMap[REG_SUNDAY_LOAD_ON_TIME] = "SUNDAY_LOAD_ON_TIME";
+    registerValueMap[REG_SUNDAY_LOAD_OFF_TIME] = "SUNDAY_LOAD_OFF_TIME";
+    registerValueMap[REG_PER_HOUR_ENERGY] = "PER_HOUR_ENERGY";
+    registerValueMap[REG_PER_HOUR_ACTIVE_POWER] = "PER_HOUR_ACIVE_POWER";
 }
 
 
@@ -116,13 +172,13 @@ void MainWindow::readPendingUDPDatagram()
             // Se encontró la MAC por lo que ya está en la lista. Se actualizan los datos.
             value->setRSSI(rssi);
             value->setLastTime(QDateTime::currentDateTime());
-            value->setIPAddress(sender);
+            value->setIPAddress(ip);
 
             // Si es el current item, actualizar la GUI
             if (ui->listConnected->currentItem() == item)
             {
                 ui->labelRSSI->setText(QString::number(rssi));
-                ui->labelIP->setText(value->getIPAddress().toString());
+                ui->labelIP->setText(value->getIPAddress());
                 ui->labelLastTime->setText(value->getLastTime().toString("hh:mm:ss - dd/MM/yyyy"));
             }
 
@@ -135,7 +191,7 @@ void MainWindow::readPendingUDPDatagram()
         // No se encontró la MAC, se la agrega a la lista.
         SmartPlugConnection* newConn = new SmartPlugConnection ();
         newConn->setID(ID);
-        newConn->setIPAddress(sender);
+        newConn->setIPAddress(ip);
         newConn->setLastTime(QDateTime::currentDateTime());
         newConn->setMACAddress(MACAddress);
         newConn->setPort(localPort);
@@ -156,7 +212,7 @@ void MainWindow::listItemChanged(QListWidgetItem *current, QListWidgetItem *prev
     ui->labelPORT->setText(QString::number(value->getPort()));
     ui->labelMAC->setText(getMACString(value->getMACAddress()));
     ui->labelRSSI->setText(QString::number(value->getRSSI()));
-    ui->labelIP->setText(value->getIPAddress().toString());
+    ui->labelIP->setText(value->getIPAddress());
     ui->labelLastTime->setText(value->getLastTime().toString("hh:mm:ss - dd/MM/yyyy"));
 }
 
@@ -184,17 +240,16 @@ void MainWindow::on_pushSend_clicked()
     QString reg = ui->comboRegister->currentText();
     QString payload = ui->linePayload->text();
 
-    quint8 commandByte;
+    quint8 commandByte = 0xFF;
     quint8 regByte;
     QByteArray payloadBytes;
     QStringList payloadStrings;
 
     if (command == "SET")
     {
-        commandByte = CMD_SET;
-
         if (reg == "DEVICE_ID")
         {
+            commandByte = CMD_SET;
             regByte = REG_DEVICE_ID;
             payloadStrings = payload.split(" ", QString::SkipEmptyParts);
             for (int i = 0; i < payloadStrings.length(); i++)
@@ -205,9 +260,10 @@ void MainWindow::on_pushSend_clicked()
                 payloadBytes.append(payloadStrings.at(i).at(0));
             }
         }
-        else if (reg == "MONDAY_LOAD_ON_TIME")
+        else if (reg.endsWith("TIME"))
         {
-            regByte = REG_MONDAY_LOAD_ON_TIME;
+            commandByte = CMD_SET;
+            regByte = registerNameMap[reg];
             payloadStrings = payload.split(" ", QString::SkipEmptyParts);
             for (int i = 0; i < payloadStrings.length(); i++)
             {
@@ -218,6 +274,77 @@ void MainWindow::on_pushSend_clicked()
                 payloadBytes.append(number);
             }
         }
+    }
+    else if (command == "GET")
+    {
+        commandByte = CMD_GET;
+        regByte = registerNameMap[reg];
+
+        // En estos registros se agregan tres bytes en el payload para indicar la fecha
+        // del bloque que se quiere recuperar: DIA MES AÑO (AÑO REAL - 2000)
+        if (regByte == REG_PER_HOUR_ACTIVE_POWER || regByte == REG_PER_HOUR_ENERGY)
+        {
+            payloadStrings = payload.split(" ", QString::SkipEmptyParts);
+            for (int i = 0; i < payloadStrings.length(); i++)
+            {
+                if (i >= 3)
+                    break;
+
+                char number = (char)(payloadStrings.at(i).toInt());
+                payloadBytes.append(number);
+            }
+        }
+    }
+    else if (command == "NODE ON")
+    {
+        commandByte = CMD_NODE_ON;
+    }
+    else if (command == "NODE OFF")
+    {
+        commandByte = CMD_NODE_OFF;
+    }
+    else if (command == "RESET")
+    {
+        if (reg == "DEVICE_ID")
+        {
+            commandByte = CMD_RESET;
+            regByte = REG_DEVICE_ID;
+        }
+        else if (reg.endsWith("TIME"))
+        {
+            commandByte = CMD_RESET;
+            regByte = registerNameMap[reg];
+        }
+        else if (reg == "PER_HOUR_ENERGY")
+        {
+            commandByte = CMD_RESET;
+            regByte = REG_PER_HOUR_ENERGY;
+        }
+        else if (reg == "PER_HOUR_ACIVE_POWER")
+        {
+            commandByte = CMD_RESET;
+            regByte = REG_PER_HOUR_ACTIVE_POWER;
+        }
+    }
+
+
+    if (commandByte != 0xFF)
+    {
+        //SmartPlugConnection* currentSmartPlugConnection = ui->listConnected->currentItem()->data(Qt::UserRole).value<SmartPlugConnection*>();
+
+        //tcpComm.sendMsg(currentSmartPlugConnection->getIPAddress(), ui->lineTCPPort->text().toInt(),
+        //                commandByte, regByte, payloadBytes);
+
+        QByteArray data2Send = tcpComm.sendMsg("192.168.0.101", ui->lineTCPPort->text().toInt(),
+                                commandByte, regByte, payloadBytes);
+
+        QString data2SendStr;
+        for (int i = 0; i < data2Send.length(); i++)
+        {
+            data2SendStr.append(QString::number(data2Send.at(i), 16));
+            data2SendStr.append(" ");
+        }
+        ui->textSend->append(data2SendStr);
     }
 }
 
@@ -230,8 +357,17 @@ void MainWindow::on_comboCommand_currentIndexChanged(const QString &command)
     }
     else if (command == "GET")
     {
-        ui->linePayload->setEnabled(false);
-        ui->comboRegister->setEnabled(true);
+        if (ui->comboRegister->currentText() == "PER_HOUR_ENERGY" || ui->comboRegister->currentText() == "PER_HOUR_ACIVE_POWER")
+        {
+            // Al hacer un GET de estos dos registros se deben enviar 3 bytes con el DIA MES y AÑO que se quiere recuperar.
+            ui->linePayload->setEnabled(true);
+            ui->comboRegister->setEnabled(true);
+        }
+        else
+        {
+            ui->linePayload->setEnabled(false);
+            ui->comboRegister->setEnabled(true);
+        }
     }
     else if (command == "RESET")
     {
@@ -248,10 +384,71 @@ void MainWindow::on_comboCommand_currentIndexChanged(const QString &command)
 
 void MainWindow::on_comboRegister_currentIndexChanged(const QString &reg)
 {
-
+    if (ui->comboCommand->currentText() == "GET")
+    {
+        if (reg == "PER_HOUR_ENERGY" || reg == "PER_HOUR_ACIVE_POWER")
+        {
+            // Al hacer un GET de estos dos registros se deben enviar 3 bytes con el DIA MES y AÑO que se quiere recuperar.
+            ui->linePayload->setEnabled(true);
+            ui->comboRegister->setEnabled(true);
+        }
+        else
+        {
+            ui->linePayload->setEnabled(false);
+            ui->comboRegister->setEnabled(true);
+        }
+    }
 }
 
 void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
 {
+    QString regStr;
+    QString commandStr;
 
+
+    if (msg.command != CMD_RESP_NODE_ON && msg.command != CMD_RESP_NODE_OFF)
+        regStr = registerValueMap[msg.reg];
+
+
+    // TODO implementar el parseo de GET de acuerdo al registro leído
+
+    if (msg.command == CMD_RESP_GET)
+    {
+        commandStr = "GET";
+    }
+    else if (msg.command == CMD_RESP_SET)
+    {
+        commandStr = "SET";
+    }
+    else if (msg.command == CMD_RESP_RESET)
+    {
+        commandStr = "RESET";
+    }
+    else if (msg.command == CMD_RESP_NODE_ON)
+    {
+        commandStr = "NODE ON";
+    }
+    else if (msg.command == CMD_RESP_NODE_OFF)
+    {
+        commandStr = "NODE OFF";
+    }
+
+
+    QString frameParsed = commandStr;
+
+    if (!regStr.isEmpty())
+        frameParsed.append(" : " + regStr);
+
+    if (msg.rawData.size() > 0)
+    {
+        frameParsed.append(" - ");
+
+        for (int i = 0; i < msg.rawData.length(); i++)
+        {
+            frameParsed.append(QString::number(msg.rawData.at(i), 16));
+            frameParsed.append(" ");
+        }
+    }
+
+    ui->textReceived->append(frameParsed);
 }
