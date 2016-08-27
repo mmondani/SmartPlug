@@ -404,17 +404,65 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
 {
     QString regStr;
     QString commandStr;
+    QString payloadStr;
+    QString frameRaw;
 
 
     if (msg.command != CMD_RESP_NODE_ON && msg.command != CMD_RESP_NODE_OFF)
         regStr = registerValueMap[msg.reg];
 
 
-    // TODO implementar el parseo de GET de acuerdo al registro leído
-
+    // Se parsea la trama recibida en función del comando
     if (msg.command == CMD_RESP_GET)
     {
         commandStr = "GET";
+
+        // Se parsea el payload de acuerdo al registro que se leyó.
+        if (msg.reg == REG_V_RMS || msg.reg == REG_I_RMS || msg.reg == REG_POWER_FACTOR ||
+                msg.reg == REG_FREQUENCY || msg.reg == REG_ACTIVE_POWER || msg.reg == REG_TOTAL_ENERGY ||
+                msg.reg == REG_CURRENT_HOUR_ENERGY)
+        {
+            // El payload deben ser 4 bytes de un float
+            if (msg.len < 4)
+                payloadStr = "Error";
+            else
+            {
+                payloadStr = QString::number(hexToFloat(msg.rawData.mid(0, 4)));
+            }
+        }
+        else if (msg.reg == REG_DEVICE_ID)
+        {
+            // Es un string
+            payloadStr = QString (msg.rawData.mid(0,32));
+        }
+        else if (msg.reg == REG_MONDAY_LOAD_ON_TIME ||msg.reg == REG_MONDAY_LOAD_OFF_TIME ||
+                 msg.reg == REG_TUESDAY_LOAD_ON_TIME || msg.reg == REG_TUESDAY_LOAD_OFF_TIME ||
+                 msg.reg == REG_WEDNESDAY_LOAD_ON_TIME || msg.reg == REG_WEDNESDAY_LOAD_OFF_TIME ||
+                 msg.reg == REG_THURSDAY_LOAD_ON_TIME || msg.reg == REG_THURSDAY_LOAD_OFF_TIME ||
+                 msg.reg == REG_FRIDAY_LOAD_ON_TIME || msg.reg == REG_FRIDAY_LOAD_OFF_TIME ||
+                 msg.reg == REG_SATURDAY_LOAD_ON_TIME || msg.reg == REG_SATURDAY_LOAD_OFF_TIME ||
+                 msg.reg == REG_SUNDAY_LOAD_ON_TIME || msg.reg == REG_SUNDAY_LOAD_OFF_TIME)
+        {
+            // Son dos bytes que indican HORAS y MINUTOS
+            if (msg.len < 2)
+                payloadStr = "Error";
+            else
+                payloadStr = QString::number(msg.rawData.at(0)) + ":" + QString::number(msg.rawData.at(1));
+        }
+        else if (msg.reg == REG_PER_HOUR_ACTIVE_POWER || msg.reg == REG_PER_HOUR_ENERGY)
+        {
+            // Son 24 valores float (tiene que haber 96 bytes)
+            if (msg.len < 96)
+                payloadStr = "Error";
+            else
+            {
+                for (int i = 0; i < msg.rawData.length(); i+4)
+                {
+                    // Agarra de a 4 bytes y los convierte a float
+                    payloadStr.append(QString::number(hexToFloat(msg.rawData.mid(i, 4))) + "; ");
+                }
+            }
+        }
     }
     else if (msg.command == CMD_RESP_SET)
     {
@@ -434,21 +482,49 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
     }
 
 
+    // Se obtiene la trama en formato hexadecimal
+    frameRaw.append(QString::number(msg.command, 16) + " ");
+    if (!regStr.isEmpty())
+        frameRaw.append(QString::number(msg.reg, 16) + " ");
+    for (int i = 0; i < msg.rawData.length(); i++)
+        frameRaw.append(QString::number(msg.rawData.at(i), 16) + " ");
+
+
+
+    // Se arma el string para mostrar en la GUI.
     QString frameParsed = commandStr;
 
     if (!regStr.isEmpty())
         frameParsed.append(" : " + regStr);
 
-    if (msg.rawData.size() > 0)
-    {
-        frameParsed.append(" - ");
+    if (!payloadStr.isEmpty())
+        frameParsed.append("   " + payloadStr);
 
-        for (int i = 0; i < msg.rawData.length(); i++)
-        {
-            frameParsed.append(QString::number(msg.rawData.at(i), 16));
-            frameParsed.append(" ");
-        }
-    }
+    frameParsed.append(" ( " + frameRaw + " )");
 
     ui->textReceived->append(frameParsed);
+}
+
+
+
+float MainWindow::hexToFloat(const QByteArray &_array)
+
+{
+    bool ok;
+    int sign = 1;
+    QByteArray array(_array.toHex());
+    array = QByteArray::number(array.toLongLong(&ok,16),2); //convert hex to binary
+    if(array.length()==32)
+    {
+        if(array.at(0)=='1') sign =-1; // if bit 0 is 1 number is negative
+            array.remove(0,1); // remove sign bit
+    }
+    QByteArray fraction =array.right(23); //get the fractional part
+    double mantissa = 0;
+    for(int i=0;i<fraction.length();i++) // iterate through the array to claculate the fraction as a decimal.
+        if(fraction.at(i)=='1') mantissa += 1.0/(pow(2,i+1));
+            int exponent = array.left(array.length()-23).toLongLong(&ok,2)-127; //claculate the exponent
+
+
+    return (sign*pow(2,exponent)*(mantissa+1.0));
 }

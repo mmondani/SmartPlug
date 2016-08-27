@@ -6,6 +6,7 @@
 #include <QTcpSocket>
 #include <QIntValidator>
 #include <QListWidget>
+#include <math.h>
 #include <smartplugconnection.h>
 #include <smartplugcomm.h>
 #include <smartplugdefinitions.h>
@@ -46,6 +47,7 @@ private:
     SmartPlugComm tcpComm;
     QMap<QString, quint8> registerNameMap;
     QMap<quint8, QString> registerValueMap;
+    float hexToFloat(const QByteArray &_array);
 };
 
 

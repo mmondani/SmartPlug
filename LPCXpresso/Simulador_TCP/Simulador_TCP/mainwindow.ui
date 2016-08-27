@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Simulador SmartPlug</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,1,2">
@@ -359,7 +359,7 @@
      <x>0</x>
      <y>0</y>
      <width>730</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
