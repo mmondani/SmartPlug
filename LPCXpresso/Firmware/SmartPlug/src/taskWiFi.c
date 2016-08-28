@@ -232,6 +232,9 @@ TASK(taskWiFi)
             // Llegaron bytes de una nueva conexión
             if (ioComm_dataAvailable(rn1723))
             {
+            	// Si en 500 ms no llega el frame start vuelve a idle y borra el buffer de recepción de WiFi.
+            	cTimer_start(timerTimeout, 500);
+
             	gotoState(State_WaitFrameStart1);
             }
 
@@ -293,7 +296,7 @@ TASK(taskWiFi)
 
                 // Si no se pudo sincronizar a los 30 segundos va a volver a intentar
                 if (ioRN1723_isTimeValid(rn1723) == 0)
-                	cTimer_start(timerSynchronizeTime, 30000);
+                	cTimer_start(timerSynchronizeTime, 20000);
                 else
                 {
                 	ioRN1723_getTime(rn1723, &fullTime);
@@ -313,8 +316,6 @@ TASK(taskWiFi)
                 stateIn = 0;
                 stateOut = 0;
 
-                moduleLog_log("Nueva conexion");
-                SetEvent(taskSmartPlug, evNewConn);
             }
             //**********************************************************************************************
             if (ioComm_dataAvailable(rn1723) > 0)
@@ -322,7 +323,20 @@ TASK(taskWiFi)
 				byte = (uint8_t)ioObject_read(rn1723);
 
 				if (byte == '#')
+				{
+	                moduleLog_log("Nueva conexion");
+	                SetEvent(taskSmartPlug, evNewConn);
 					gotoState(State_WaitFrameStart2);
+				}
+            }
+            else
+            {
+            	if (cTimer_hasExpired(timerTimeout))
+            	{
+            		// No llegó el frame start, por lo que vuelve a Idle y borra el buffer de recepción de WiFi.
+            		ioRN1723_flushRxData(rn1723);
+            		gotoState(State_Idle);
+            	}
             }
             //**********************************************************************************************
             if (stateOut)
@@ -1144,6 +1158,22 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
 			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
+		else if(regEE == REG_SUNDAY_LOAD_ON_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_SUNDAY_LOAD_OFF_TIME)
+		{
+			// Llegan 2 bytes: horas y minutos.
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
 
 		ReleaseResource(resEEPROM);
 	}
@@ -1303,7 +1333,7 @@ void float2Bytes (uint8_t* bytes, float floatVariable)
 	uint8_t i;
 
 	for (i = 0; i < 4; i ++)
-		bytes[i] = ((uint8_t*)&floatVariable)[i];
+		bytes[i] = ((uint8_t*)&floatVariable)[3-i];
 }
 
 

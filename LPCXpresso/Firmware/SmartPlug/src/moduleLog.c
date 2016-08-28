@@ -18,7 +18,7 @@
 
 
 static void* uartLog;
-static void* strLog[50];
+static char strLog[50];
 
 
 

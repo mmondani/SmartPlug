@@ -24,6 +24,7 @@ class SmartPlugComm : public QObject
 public:
     explicit SmartPlugComm(QObject *parent = 0);
     QByteArray &sendMsg(QString destIP, int port, char command, char reg, QByteArray data = 0);
+    void closeConn (void);
 
 signals:
     void newMsg (SmartPlugMsg_t msg);

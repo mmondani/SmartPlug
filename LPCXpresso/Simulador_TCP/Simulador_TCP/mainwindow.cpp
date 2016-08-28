@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Agregar registros
     QStringList registers;
-    registers << "V_RMS" <<"I_RMS" << "POWER_FACTOR" << "FREQUENCY" << "ACTIVE_POWER" << "TOTAL_POWER" <<
+    registers << "V_RMS" <<"I_RMS" << "POWER_FACTOR" << "FREQUENCY" << "ACTIVE_POWER" << "TOTAL_ENERGY" <<
                  "CURRENT_HOUR_ENERGY" << "DEVICE_ID" << "LOAD_STATE" <<
                  "MONDAY_LOAD_ON_TIME" << "MONDAY_LOAD_OFF_TIME" <<
                  "TUESDAY_LOAD_ON_TIME" << "TUESDAY_LOAD_OFF_TIME" <<
@@ -78,7 +78,7 @@ void MainWindow::loadRegisterNameMap()
     registerNameMap["POWER_FACTOR"] = REG_POWER_FACTOR;
     registerNameMap["FREQUENCY"] = REG_FREQUENCY;
     registerNameMap["ACTIVE_POWER"] = REG_ACTIVE_POWER;
-    registerNameMap["TOTAL_POWER"] = REG_TOTAL_ENERGY;
+    registerNameMap["TOTAL_ENERGY"] = REG_TOTAL_ENERGY;
     registerNameMap["CURRENT_HOUR_ENERGY"] = REG_CURRENT_HOUR_ENERGY;
     registerNameMap["DEVICE_ID"] = REG_DEVICE_ID;
     registerNameMap["LOAD_STATE"] = REG_LOAD_STATE;
@@ -105,7 +105,7 @@ void MainWindow::loadRegisterNameMap()
     registerValueMap[REG_POWER_FACTOR] = "POWER_FACTOR";
     registerValueMap[REG_FREQUENCY] = "FREQUENCY";
     registerValueMap[REG_ACTIVE_POWER] = "ACTIVE_POWER";
-    registerValueMap[REG_TOTAL_ENERGY] = "TOTAL_POWER";
+    registerValueMap[REG_TOTAL_ENERGY] = "TOTAL_ENERGY";
     registerValueMap[REG_CURRENT_HOUR_ENERGY] = "CURRENT_HOUR_ENERGY";
     registerValueMap[REG_DEVICE_ID] = "DEVICE_ID";
     registerValueMap[REG_LOAD_STATE] = "LOAD_STATE";
@@ -252,12 +252,16 @@ void MainWindow::on_pushSend_clicked()
             commandByte = CMD_SET;
             regByte = REG_DEVICE_ID;
             payloadStrings = payload.split(" ", QString::SkipEmptyParts);
+
+            // Siempre se envían 33 bytes.
+            payloadBytes.resize(33);
+            payloadBytes.fill('\0');
             for (int i = 0; i < payloadStrings.length(); i++)
             {
                 if (i >= 32)
                     break;
 
-                payloadBytes.append(payloadStrings.at(i).at(0));
+                payloadBytes[i] = payloadStrings.at(i).at(0).toLatin1();
             }
         }
         else if (reg.endsWith("TIME"))
@@ -330,21 +334,24 @@ void MainWindow::on_pushSend_clicked()
 
     if (commandByte != 0xFF)
     {
-        //SmartPlugConnection* currentSmartPlugConnection = ui->listConnected->currentItem()->data(Qt::UserRole).value<SmartPlugConnection*>();
-
-        //tcpComm.sendMsg(currentSmartPlugConnection->getIPAddress(), ui->lineTCPPort->text().toInt(),
-        //                commandByte, regByte, payloadBytes);
-
-        QByteArray data2Send = tcpComm.sendMsg("192.168.0.101", ui->lineTCPPort->text().toInt(),
-                                commandByte, regByte, payloadBytes);
-
-        QString data2SendStr;
-        for (int i = 0; i < data2Send.length(); i++)
+        if (ui->listConnected->count() > 0)
         {
-            data2SendStr.append(QString::number(data2Send.at(i), 16));
-            data2SendStr.append(" ");
+            SmartPlugConnection* currentSmartPlugConnection = ui->listConnected->currentItem()->data(Qt::UserRole).value<SmartPlugConnection*>();
+
+            QByteArray data2Send = tcpComm.sendMsg(currentSmartPlugConnection->getIPAddress(), ui->lineTCPPort->text().toInt(),
+                            commandByte, regByte, payloadBytes);
+
+            //QByteArray data2Send = tcpComm.sendMsg("192.168.0.101", ui->lineTCPPort->text().toInt(),
+            //                        commandByte, regByte, payloadBytes);
+
+            QString data2SendStr;
+            for (int i = 0; i < data2Send.length(); i++)
+            {
+                data2SendStr.append(QString::number(data2Send.at(i), 16));
+                data2SendStr.append(" ");
+            }
+            ui->textSend->append(data2SendStr);
         }
-        ui->textSend->append(data2SendStr);
     }
 }
 
@@ -432,7 +439,7 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
         }
         else if (msg.reg == REG_DEVICE_ID)
         {
-            // Es un string
+            // Es un string                           
             payloadStr = QString (msg.rawData.mid(0,32));
         }
         else if (msg.reg == REG_MONDAY_LOAD_ON_TIME ||msg.reg == REG_MONDAY_LOAD_OFF_TIME ||
@@ -484,10 +491,12 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
 
     // Se obtiene la trama en formato hexadecimal
     frameRaw.append(QString::number(msg.command, 16) + " ");
+
     if (!regStr.isEmpty())
         frameRaw.append(QString::number(msg.reg, 16) + " ");
+
     for (int i = 0; i < msg.rawData.length(); i++)
-        frameRaw.append(QString::number(msg.rawData.at(i), 16) + " ");
+        frameRaw.append(QString::number(msg.rawData.at(i), 16).mid(0,2) + " ");
 
 
 
@@ -503,6 +512,10 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
     frameParsed.append(" ( " + frameRaw + " )");
 
     ui->textReceived->append(frameParsed);
+
+
+    // Se cierra la conexión TCP
+    tcpComm.closeConn();
 }
 
 

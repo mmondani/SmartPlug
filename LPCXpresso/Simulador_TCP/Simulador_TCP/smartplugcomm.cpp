@@ -40,6 +40,12 @@ QByteArray& SmartPlugComm::sendMsg(QString destIP, int port, char command, char 
     return data2Send;
 }
 
+void SmartPlugComm::closeConn()
+{
+    if (socket->isOpen())
+        socket->close();
+}
+
 void SmartPlugComm::connected()
 {
     // Si se pudo enviar se envìa la trama armada
@@ -51,7 +57,7 @@ void SmartPlugComm::connected()
 void SmartPlugComm::disconnected()
 {
     // Cuando se desconecta se destruye el socket
-    delete socket;
+    socket->deleteLater();
     data2Send.clear();
     dataReceived.clear();
 }
@@ -60,6 +66,10 @@ void SmartPlugComm::readyRead()
 {
     // Llegó información del Smart Plug se la parsea
     dataReceived.append(socket->readAll());
+
+    if (QString(dataReceived) == "*HELLO*" || QString(dataReceived) == "*CLOS*")
+        dataReceived.clear();
+
 
     if (dataReceived.length() >= 3)
     {
@@ -88,7 +98,6 @@ void SmartPlugComm::readyRead()
 
         // Se eliminan los bytes ya procesados
         dataReceived.clear();
-
 
         emit newMsg(msg);
     }

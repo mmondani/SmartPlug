@@ -50,12 +50,12 @@ float taskMeter_getMeterValue (uint32_t variableID)
 	switch(variableID)
 	{
 		case ID_VRMS:
-			conversion = ioCS5490_unsignedFract2Float(irms, 0, 24);
+			conversion = ioCS5490_unsignedFract2Float(vrms, 0, 24);
 			result = conversion * ioCS5490_getIcalibration(cs5490) / ioCS5490_getMeterScale(cs5490);
 			break;
 
 		case ID_IRMS:
-			conversion = ioCS5490_unsignedFract2Float(vrms, 0, 24);
+			conversion = ioCS5490_unsignedFract2Float(irms, 0, 24);
 			result = conversion * ioCS5490_getVmax(cs5490) / 0.6;
 			break;
 
@@ -124,15 +124,8 @@ TASK(taskMeter)
 
 			// Instancia del driver del CS5490
 			cs5490 = cObject_new (ioCS5490, uartCS5490, gpioReset, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
-			ioCS5490_init(cs5490, 0, 0, 0x400000, 0x400000);
+			ioCS5490_init(cs5490, 0xFE5657, 0xFFE0FB, 0x3C7AE1, 0x741857);
 
-
-			// Se inicializa la ganancia y el offset.
-			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
-			ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_DCOFF, 0xFE5657);
-			ioCS5490_registerWrite(cs5490, IOCS5490_REG_I_DCOFF, 0xFFE0FB);
-			ioCS5490_registerWrite(cs5490, IOCS5490_REG_V_GAIN, 0x3C7AE1);
-			ioCS5490_registerWrite(cs5490, IOCS5490_REG_I_GAIN, 0x741857);
 
 
 			// Comienza el proceso de conversión continua en el CS5490

@@ -90,33 +90,33 @@ TASK(taskSmartPlug)
 				GetResource(resEEPROM);
 
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_ON_TIME, onTimes[0], 2);
+				ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_ON_TIME, onTimes[1], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_ON_TIME, onTimes[1], 2);
+				ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_ON_TIME, onTimes[2], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_ON_TIME, onTimes[2], 2);
+				ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_ON_TIME, onTimes[3], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_ON_TIME, onTimes[3], 2);
+				ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_ON_TIME, onTimes[4], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_ON_TIME, onTimes[4], 2);
+				ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_ON_TIME, onTimes[5], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_ON_TIME, onTimes[5], 2);
+				ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_ON_TIME, onTimes[6], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_ON_TIME, onTimes[6], 2);
+				ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_ON_TIME, onTimes[0], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_OFF_TIME, offTimes[0], 2);
+				ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_OFF_TIME, offTimes[1], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_OFF_TIME, offTimes[1], 2);
+				ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_OFF_TIME, offTimes[2], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_OFF_TIME, offTimes[2], 2);
+				ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_OFF_TIME, offTimes[3], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_OFF_TIME, offTimes[3], 2);
+				ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_OFF_TIME, offTimes[4], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_OFF_TIME, offTimes[4], 2);
+				ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_OFF_TIME, offTimes[5], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_OFF_TIME, offTimes[5], 2);
+				ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_OFF_TIME, offTimes[6], 2);
 				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[6], 2);
+				ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[0], 2);
 
 
 				// Se recuperan los punteros de las mediciones históricas de potencia activa y energía
@@ -138,6 +138,8 @@ TASK(taskSmartPlug)
 			ioObject_init(pinRelay);
 
 			state = State_Running;
+
+			ChainTask(taskSmartPlug);
 
 			break;
 
@@ -191,8 +193,8 @@ TASK(taskSmartPlug)
 					// Se anailiza si hay que prender o apagar la carga en función de la hora
 					taskRTC_getTime(&fullTime);
 
-					dayOfWeek = fullTime.dayOfWeek;
-					if ( (onTimes[dayOfWeek][0] == fullTime.hour) && (onTimes[dayOfWeek][1] == fullTime.minute) )
+					//dayOfWeek = fullTime.dayOfWeek;
+					if ( (onTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (onTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
 					{
 						// La hora actual coincide con la hora de encendido
 						ioObject_write(pinRelay, 1);
@@ -201,13 +203,13 @@ TASK(taskSmartPlug)
 						moduleLog_log("Carga encendida");
 					}
 
-					if ( (offTimes[dayOfWeek][0] == fullTime.hour) && (offTimes[dayOfWeek][1] == fullTime.minute) )
+					if ( (offTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (offTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
 					{
 						// La hora actual coincide con la hora de apagado
 						ioObject_write(pinRelay, 0);
 						loadState = 0;
 
-						moduleLog_log("Carga encendida");
+						moduleLog_log("Carga apagada");
 					}
 
 
@@ -331,33 +333,33 @@ TASK(taskSmartPlug)
 					GetResource(resEEPROM);
 
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_ON_TIME, onTimes[0], 2);
+					ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_ON_TIME, onTimes[1], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_ON_TIME, onTimes[1], 2);
+					ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_ON_TIME, onTimes[2], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_ON_TIME, onTimes[2], 2);
+					ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_ON_TIME, onTimes[3], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_ON_TIME, onTimes[3], 2);
+					ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_ON_TIME, onTimes[4], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_ON_TIME, onTimes[4], 2);
+					ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_ON_TIME, onTimes[5], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_ON_TIME, onTimes[5], 2);
+					ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_ON_TIME, onTimes[6], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_ON_TIME, onTimes[6], 2);
+					ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_ON_TIME, onTimes[0], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_OFF_TIME, offTimes[0], 2);
+					ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_OFF_TIME, offTimes[1], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_OFF_TIME, offTimes[1], 2);
+					ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_OFF_TIME, offTimes[2], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_OFF_TIME, offTimes[2], 2);
+					ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_OFF_TIME, offTimes[3], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_OFF_TIME, offTimes[3], 2);
+					ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_OFF_TIME, offTimes[4], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_OFF_TIME, offTimes[4], 2);
+					ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_OFF_TIME, offTimes[5], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_OFF_TIME, offTimes[5], 2);
+					ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_OFF_TIME, offTimes[6], 2);
 					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[6], 2);
+					ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[0], 2);
 
 					ReleaseResource(resEEPROM);
 				}

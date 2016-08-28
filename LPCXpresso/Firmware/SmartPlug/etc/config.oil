@@ -64,7 +64,7 @@ ALARM alarmRunTaskSwitch {
 TASK taskSmartPlug {
     PRIORITY = 6;
     ACTIVATION = 1;
-    STACK = 700;
+    STACK = 1000;
     TYPE = EXTENDED;
     SCHEDULE = FULL;
     EVENT = evSwitch;
