@@ -742,7 +742,7 @@ TASK(taskWiFi)
                 eraseEEPROMbyRegister (eeprom, reg, buffer);
             }
             //**********************************************************************************************
-            gotoState(State_Idle);
+            gotoState(State_SendResetResponse);
             //**********************************************************************************************
             if (stateOut)
             {

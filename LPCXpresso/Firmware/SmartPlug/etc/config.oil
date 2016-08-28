@@ -145,7 +145,7 @@ ISR UART1_handler {
 TASK taskMeter {
     PRIORITY = 2;
     ACTIVATION = 1;
-    STACK = 800;
+    STACK = 1000;
     TYPE = BASIC;
     SCHEDULE = FULL;
     RESOURCE = resRTC;
