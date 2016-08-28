@@ -466,6 +466,19 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
             else
                 payloadStr = QString::number(msg.rawData.at(0)) + ":" + QString::number(msg.rawData.at(1));
         }
+        else if (msg.reg == REG_LOAD_STATE)
+        {
+            // Es un byte que indica si está encendida o no
+            if (msg.len < 1)
+                payloadStr = "Error";
+            else
+            {
+                if (msg.rawData.at(0) == 0)
+                    payloadStr = "Load OFF";
+                else
+                    payloadStr = "Load ON";
+            }
+        }
         else if (msg.reg == REG_PER_HOUR_ACTIVE_POWER || msg.reg == REG_PER_HOUR_ENERGY)
         {
             // Son 24 valores float (tiene que haber 96 bytes)
