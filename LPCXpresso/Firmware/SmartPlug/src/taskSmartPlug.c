@@ -34,6 +34,7 @@ static uint32_t state = State_Init;
 // Horarios de encendido y apagado de la carga. Ej: onTimes[0] corresponde al domingo y onTimes[6] corresponde al sábado.
 static uint8_t onTimes[7][2];
 static uint8_t offTimes[7][2];
+static uint8_t timesEnabled;
 
 static uint32_t loadState = 0;
 static float avgActivePower = 0.0;
@@ -118,6 +119,9 @@ TASK(taskSmartPlug)
 				ioEE25LCxxx_busyPolling(eeprom);
 				ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[0], 2);
 
+				ioEE25LCxxx_busyPolling(eeprom);
+				ioEE25LCxxx_readData(eeprom, EE_ENABLE_ONOFF_TIME, &timesEnabled, 1);
+
 
 				// Se recuperan los punteros de las mediciones históricas de potencia activa y energía
 				ioEE25LCxxx_busyPolling(eeprom);
@@ -193,23 +197,29 @@ TASK(taskSmartPlug)
 					// Se anailiza si hay que prender o apagar la carga en función de la hora
 					taskRTC_getTime(&fullTime);
 
-					//dayOfWeek = fullTime.dayOfWeek;
-					if ( (onTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (onTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
+					if (fullTime.dayOfWeek < 7)
 					{
-						// La hora actual coincide con la hora de encendido
-						ioObject_write(pinRelay, 1);
-						loadState = 1;
+						// Está habilitada la programación horaria para el día de la semana?
+						if (timesEnabled & (1 << fullTime.dayOfWeek))
+						{
+							if ( (onTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (onTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
+							{
+								// La hora actual coincide con la hora de encendido
+								ioObject_write(pinRelay, 1);
+								loadState = 1;
 
-						moduleLog_log("Carga encendida");
-					}
+								moduleLog_log("Carga encendida");
+							}
 
-					if ( (offTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (offTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
-					{
-						// La hora actual coincide con la hora de apagado
-						ioObject_write(pinRelay, 0);
-						loadState = 0;
+							if ( (offTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (offTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
+							{
+								// La hora actual coincide con la hora de apagado
+								ioObject_write(pinRelay, 0);
+								loadState = 0;
 
-						moduleLog_log("Carga apagada");
+								moduleLog_log("Carga apagada");
+							}
+						}
 					}
 
 
@@ -361,6 +371,9 @@ TASK(taskSmartPlug)
 					ioEE25LCxxx_busyPolling(eeprom);
 					ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[0], 2);
 
+					ioEE25LCxxx_busyPolling(eeprom);
+					ioEE25LCxxx_readData(eeprom, EE_ENABLE_ONOFF_TIME, &timesEnabled, 1);
+
 					ReleaseResource(resEEPROM);
 				}
 			}
@@ -389,6 +402,12 @@ void initEEPROM (void* ee)
 	ioEE25LCxxx_busyPolling(ee);
 	ioEE25LCxxx_setWriteEnable(ee);
 	ioEE25LCxxx_erase(ee, EE_MONDAY_LOAD_ON_TIME, 28);
+
+	// Se deshabilita la programación horaria para todos los días
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_setWriteEnable(ee);
+	ioEE25LCxxx_erase(ee, EE_ENABLE_ONOFF_TIME, 1);
+
 
 	ioEE25LCxxx_busyPolling(ee);
 	ioEE25LCxxx_setWriteEnable(ee);

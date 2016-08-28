@@ -1041,6 +1041,7 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 
 void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buff)
 {
+	uint8_t enabledTimes;
 
 	if (regEE == REG_LOAD_STATE)
 	{
@@ -1064,7 +1065,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_MONDAY_LOAD_ON_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 1);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
@@ -1072,7 +1080,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 1);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
@@ -1080,7 +1095,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 2);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
@@ -1088,7 +1110,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 2);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
@@ -1096,7 +1125,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 3);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
@@ -1104,7 +1140,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 3);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
@@ -1112,7 +1155,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 4);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
@@ -1120,7 +1170,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 4);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
@@ -1128,7 +1185,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 5);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
@@ -1136,7 +1200,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 5);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
@@ -1144,7 +1215,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 6);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
@@ -1152,7 +1230,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 6);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
@@ -1160,7 +1245,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_SUNDAY_LOAD_ON_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 0);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
@@ -1168,7 +1260,14 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 		}
 		else if(regEE == REG_SUNDAY_LOAD_OFF_TIME)
 		{
-			// Llegan 2 bytes: horas y minutos.
+			// Llegan 2 bytes: horas y minutos. Se debe habilitar la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes |= (1 << 0);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
 			ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
@@ -1183,7 +1282,7 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 {
 	uint8_t i;
-
+	uint8_t enabledTimes;
 
 	GetResource(resEEPROM);
 
@@ -1202,6 +1301,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_MONDAY_LOAD_ON_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 1);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
@@ -1209,6 +1316,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 1);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
@@ -1216,6 +1331,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 2);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
@@ -1223,13 +1346,28 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 2);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
 		SetEvent(taskSmartPlug, evChangeOnOffTime);
 	}
 	else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
-	{
+	{		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 3);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
@@ -1237,6 +1375,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 3);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
@@ -1244,6 +1390,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 4);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
@@ -1251,6 +1405,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 4);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
@@ -1258,6 +1420,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 5);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
@@ -1265,6 +1435,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 5);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
@@ -1272,6 +1450,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 6);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
@@ -1279,6 +1465,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 6);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
@@ -1286,6 +1480,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_SUNDAY_LOAD_ON_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 0);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
@@ -1293,6 +1495,14 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	}
 	else if(regEE == REG_SUNDAY_LOAD_OFF_TIME)
 	{
+		// Se deshabilita la programación horaria
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+		enabledTimes &= ~(1 << 0);
+		ioEE25LCxxx_busyPolling(ee);
+		ioEE25LCxxx_setWriteEnable(ee);
+		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
 		ioEE25LCxxx_busyPolling(ee);
 		ioEE25LCxxx_setWriteEnable(ee);
 		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
