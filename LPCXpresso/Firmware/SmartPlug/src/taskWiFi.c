@@ -1284,257 +1284,266 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 	uint8_t i;
 	uint8_t enabledTimes;
 
-	GetResource(resEEPROM);
+
+	if (regEE == REG_ALL_REGISTERS)
+	{
+		// Se genera el evento para que taskSmartPlug vuelva a valores de fábrica.
+		SetEvent(taskSmartPlug, evFactoryReset);
+	}
+	else
+	{
+		GetResource(resEEPROM);
 
 
-	if (regEE == REG_DEVICE_ID)
-	{
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_DEVICE_ID, buff, 33);
-	}
-	else if (regEE == REG_TOTAL_ENERGY)
-	{
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ACUM_ENERGY, buff, 4);
-	}
-	else if(regEE == REG_MONDAY_LOAD_ON_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 1);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 1);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 2);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 2);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
-	{		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 3);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 3);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 4);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 4);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 5);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 5);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 6);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 6);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_SUNDAY_LOAD_ON_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 0);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_SUNDAY_LOAD_OFF_TIME)
-	{
-		// Se deshabilita la programación horaria
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-		enabledTimes &= ~(1 << 0);
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
-
-		ioEE25LCxxx_busyPolling(ee);
-		ioEE25LCxxx_setWriteEnable(ee);
-		ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
-		SetEvent(taskSmartPlug, evChangeOnOffTime);
-	}
-	else if(regEE == REG_PER_HOUR_ENERGY)
-	{
-		for (i = 0; i < 7; i ++)
+		if (regEE == REG_DEVICE_ID)
 		{
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
-			ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
-			ioEE25LCxxx_busyPolling(ee);
-			ioEE25LCxxx_setWriteEnable(ee);
-			ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);	// Últimas 12 horas del día
+			ioEE25LCxxx_writeData(ee, EE_DEVICE_ID, buff, 33);
 		}
-	}
-	else if(regEE == REG_PER_HOUR_ACTIVE_POWER)
-	{
-		for (i = 0; i < 7; i ++)
+		else if (regEE == REG_TOTAL_ENERGY)
 		{
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
-			ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
+			ioEE25LCxxx_writeData(ee, EE_ACUM_ENERGY, buff, 4);
+		}
+		else if(regEE == REG_MONDAY_LOAD_ON_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 1);
 			ioEE25LCxxx_busyPolling(ee);
 			ioEE25LCxxx_setWriteEnable(ee);
-			ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
 		}
+		else if(regEE == REG_MONDAY_LOAD_OFF_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 1);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_MONDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_TUESDAY_LOAD_ON_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 2);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_TUESDAY_LOAD_OFF_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 2);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_TUESDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_WEDNESDAY_LOAD_ON_TIME)
+		{		// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 3);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_WEDNESDAY_LOAD_OFF_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 3);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_THURSDAY_LOAD_ON_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 4);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_THURSDAY_LOAD_OFF_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 4);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_THURSDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_FRIDAY_LOAD_ON_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 5);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_FRIDAY_LOAD_OFF_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 5);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_FRIDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_SATURDAY_LOAD_ON_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 6);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_SATURDAY_LOAD_OFF_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 6);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_SATURDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_SUNDAY_LOAD_ON_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 0);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_ON_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_SUNDAY_LOAD_OFF_TIME)
+		{
+			// Se deshabilita la programación horaria
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+			enabledTimes &= ~(1 << 0);
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_ENABLE_ONOFF_TIME, &enabledTimes, 1);
+
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_setWriteEnable(ee);
+			ioEE25LCxxx_writeData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
+			SetEvent(taskSmartPlug, evChangeOnOffTime);
+		}
+		else if(regEE == REG_PER_HOUR_ENERGY)
+		{
+			for (i = 0; i < 7; i ++)
+			{
+				ioEE25LCxxx_busyPolling(ee);
+				ioEE25LCxxx_setWriteEnable(ee);
+				ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
+				ioEE25LCxxx_busyPolling(ee);
+				ioEE25LCxxx_setWriteEnable(ee);
+				ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);	// Últimas 12 horas del día
+			}
+		}
+		else if(regEE == REG_PER_HOUR_ACTIVE_POWER)
+		{
+			for (i = 0; i < 7; i ++)
+			{
+				ioEE25LCxxx_busyPolling(ee);
+				ioEE25LCxxx_setWriteEnable(ee);
+				ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
+				ioEE25LCxxx_busyPolling(ee);
+				ioEE25LCxxx_setWriteEnable(ee);
+				ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
+			}
+		}
+
+
+		ReleaseResource(resEEPROM);
 	}
-
-
-	ReleaseResource(resEEPROM);
 }
 
 

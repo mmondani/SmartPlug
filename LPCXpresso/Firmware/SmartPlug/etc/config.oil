@@ -26,6 +26,7 @@ EVENT = evRelayOn;
 EVENT = evRelayOff;
 EVENT = evResetEnergy;
 EVENT = evChangeOnOffTime;
+EVENT = evFactoryReset;
 
 RESOURCE = resRTC;
 RESOURCE = resLog;
@@ -80,6 +81,7 @@ TASK taskSmartPlug {
 	EVENT = evRelayOff;
 	EVENT = evResetEnergy;
 	EVENT = evChangeOnOffTime;
+	EVENT = evFactoryReset;
     RESOURCE = resRTC;
     RESOURCE = resLog;
 }
@@ -186,6 +188,7 @@ TASK taskWiFi {
 	EVENT = evRelayOff;
 	EVENT = evResetEnergy;
 	EVENT = evChangeOnOffTime;
+	EVENT = evFactoryReset;
     RESOURCE = resRTC;
     RESOURCE = resLog;
     RESOURCE = resEEPROM;

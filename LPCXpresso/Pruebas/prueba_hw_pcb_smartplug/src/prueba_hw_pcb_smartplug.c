@@ -144,6 +144,7 @@ int main(void) {
 	float potencia_aparente_linea;
 	uint32_t sendTCPData, sendDisconnect;
 	uint32_t intWrite, intRead;
+	float floatWrite, floatRead;
 
 
     // Read clock settings and update SystemCoreClock variable
@@ -303,14 +304,22 @@ int main(void) {
 
     		intWrite = 112147;
 			ioEE25LCxxx_setWriteEnable(ee25LC256);
-			ioEE25LCxxx_writeData(ee25LC256, 0x05, (uint8_t*)&intWrite, sizeof(uint32_t));
+			ioEE25LCxxx_writeData(ee25LC256, 0x05, &intWrite, sizeof(uint32_t));
 			ioEE25LCxxx_busyPolling(ee25LC256);
-			ioEE25LCxxx_readData(ee25LC256, 0x05, (uint8_t*)&intRead, sizeof(uint32_t));
+			ioEE25LCxxx_readData(ee25LC256, 0x05, &intRead, sizeof(uint32_t));
+
+    		floatWrite = 220.15;
+			ioEE25LCxxx_setWriteEnable(ee25LC256);
+			ioEE25LCxxx_writeData(ee25LC256, 0x10, &floatWrite, 4);
+			ioEE25LCxxx_busyPolling(ee25LC256);
+			ioEE25LCxxx_readData(ee25LC256, 0x10, &floatRead, 4);
 
 			term_clear(uartDebug);
 			term_home(uartDebug);
 
 			sprintf(buff, "EEPROM: %d - %d\n\r", intWrite, intRead);
+			ioUART_writeString(uartDebug, buff);
+			sprintf(buff, "EEPROM: %f - %f\n\r", floatWrite, floatRead);
 			ioUART_writeString(uartDebug, buff);
     	}
 

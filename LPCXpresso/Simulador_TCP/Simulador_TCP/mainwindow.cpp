@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
                  "FRIDAY_LOAD_ON_TIME" << "FRIDAY_LOAD_OFF_TIME" <<
                  "SATURDAY_LOAD_ON_TIME" << "SATURDAY_LOAD_OFF_TIME" <<
                  "SUNDAY_LOAD_ON_TIME" << "SUNDAY_LOAD_OFF_TIME" <<
-                 "PER_HOUR_ENERGY" << "PER_HOUR_ACIVE_POWER";
+                 "PER_HOUR_ENERGY" << "PER_HOUR_ACIVE_POWER" << "ALL_REGISTERS";
     ui->comboRegister->addItems(registers);
 
     loadRegisterNameMap();
@@ -98,6 +98,7 @@ void MainWindow::loadRegisterNameMap()
     registerNameMap["SUNDAY_LOAD_OFF_TIME"] = REG_SUNDAY_LOAD_OFF_TIME;
     registerNameMap["PER_HOUR_ENERGY"] = REG_PER_HOUR_ENERGY;
     registerNameMap["PER_HOUR_ACIVE_POWER"] = REG_PER_HOUR_ACTIVE_POWER;
+    registerNameMap["ALL_REGISTERS"] = REG_ALL_REGISTERS;
 
 
     registerValueMap[REG_V_RMS] = "V_RMS";
@@ -125,6 +126,7 @@ void MainWindow::loadRegisterNameMap()
     registerValueMap[REG_SUNDAY_LOAD_OFF_TIME] = "SUNDAY_LOAD_OFF_TIME";
     registerValueMap[REG_PER_HOUR_ENERGY] = "PER_HOUR_ENERGY";
     registerValueMap[REG_PER_HOUR_ACTIVE_POWER] = "PER_HOUR_ACIVE_POWER";
+    registerValueMap[REG_ALL_REGISTERS] = "ALL_REGISTERS";
 }
 
 
@@ -281,21 +283,24 @@ void MainWindow::on_pushSend_clicked()
     }
     else if (command == "GET")
     {
-        commandByte = CMD_GET;
-        regByte = registerNameMap[reg];
-
-        // En estos registros se agregan tres bytes en el payload para indicar la fecha
-        // del bloque que se quiere recuperar: DIA MES AÑO (AÑO REAL - 2000)
-        if (regByte == REG_PER_HOUR_ACTIVE_POWER || regByte == REG_PER_HOUR_ENERGY)
+        if (reg != "ALL_REGISTERS")
         {
-            payloadStrings = payload.split(" ", QString::SkipEmptyParts);
-            for (int i = 0; i < payloadStrings.length(); i++)
-            {
-                if (i >= 3)
-                    break;
+            commandByte = CMD_GET;
+            regByte = registerNameMap[reg];
 
-                char number = (char)(payloadStrings.at(i).toInt());
-                payloadBytes.append(number);
+            // En estos registros se agregan tres bytes en el payload para indicar la fecha
+            // del bloque que se quiere recuperar: DIA MES AÑO (AÑO REAL - 2000)
+            if (regByte == REG_PER_HOUR_ACTIVE_POWER || regByte == REG_PER_HOUR_ENERGY)
+            {
+                payloadStrings = payload.split(" ", QString::SkipEmptyParts);
+                for (int i = 0; i < payloadStrings.length(); i++)
+                {
+                    if (i >= 3)
+                        break;
+
+                    char number = (char)(payloadStrings.at(i).toInt());
+                    payloadBytes.append(number);
+                }
             }
         }
     }
@@ -328,6 +333,11 @@ void MainWindow::on_pushSend_clicked()
         {
             commandByte = CMD_RESET;
             regByte = REG_PER_HOUR_ACTIVE_POWER;
+        }
+        else if (reg == "ALL_REGISTERS")
+        {
+            commandByte = CMD_RESET;
+            regByte = REG_ALL_REGISTERS;
         }
     }
 

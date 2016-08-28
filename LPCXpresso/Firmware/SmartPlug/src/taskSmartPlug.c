@@ -85,56 +85,54 @@ TASK(taskSmartPlug)
 				// La memoria no está inicializada. Se la inicializa
 				initEEPROM(eeprom);
 			}
-			else
-			{
-				// La memoria está inicializada. Se recuperan los valores.
-				GetResource(resEEPROM);
 
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_ON_TIME, onTimes[1], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_ON_TIME, onTimes[2], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_ON_TIME, onTimes[3], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_ON_TIME, onTimes[4], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_ON_TIME, onTimes[5], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_ON_TIME, onTimes[6], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_ON_TIME, onTimes[0], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_OFF_TIME, offTimes[1], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_OFF_TIME, offTimes[2], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_OFF_TIME, offTimes[3], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_OFF_TIME, offTimes[4], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_OFF_TIME, offTimes[5], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_OFF_TIME, offTimes[6], 2);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[0], 2);
+			// La memoria está inicializada. Se recuperan los valores.
+			GetResource(resEEPROM);
 
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_ENABLE_ONOFF_TIME, &timesEnabled, 1);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_ON_TIME, onTimes[1], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_ON_TIME, onTimes[2], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_ON_TIME, onTimes[3], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_ON_TIME, onTimes[4], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_ON_TIME, onTimes[5], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_ON_TIME, onTimes[6], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_ON_TIME, onTimes[0], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_OFF_TIME, offTimes[1], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_OFF_TIME, offTimes[2], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_OFF_TIME, offTimes[3], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_OFF_TIME, offTimes[4], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_OFF_TIME, offTimes[5], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_OFF_TIME, offTimes[6], 2);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[0], 2);
 
-
-				// Se recuperan los punteros de las mediciones históricas de potencia activa y energía
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_ACTIVE_POWER_PTR, &activePower_ptr, 1);
-				ioEE25LCxxx_busyPolling(eeprom);
-				ioEE25LCxxx_readData(eeprom, EE_ENERGY_PTR, &energy_ptr, 1);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_ENABLE_ONOFF_TIME, &timesEnabled, 1);
 
 
-				// TODO recuperar los valores de calibración
+			// Se recuperan los punteros de las mediciones históricas de potencia activa y energía
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_ACTIVE_POWER_PTR, &activePower_ptr, 1);
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_ENERGY_PTR, &energy_ptr, 1);
 
 
-				ReleaseResource(resEEPROM);
-			}
+			// TODO recuperar los valores de calibración
+
+
+			ReleaseResource(resEEPROM);
 
 
 			// Pin que maneja el relay
@@ -152,7 +150,7 @@ TASK(taskSmartPlug)
 			while(1)
 			{
 				WaitEvent(evSwitch | evSwitch_5sec | evRelayOn | evRelayOff | evRTC_1min | evRTC_1hour | evAuthenticated |
-							evAuthenticated | evResetEnergy | evChangeOnOffTime);
+							evAuthenticated | evResetEnergy | evChangeOnOffTime | evFactoryReset);
 				GetEvent(taskSmartPlug, &events);
 				ClearEvent(events);
 
@@ -256,13 +254,13 @@ TASK(taskSmartPlug)
 					{
 						ioEE25LCxxx_busyPolling(eeprom);
 						ioEE25LCxxx_setWriteEnable(eeprom);
-						ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_HOUR_00 + fullTime.hour * 4, &avgActivePower, 4);
+						ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_HOUR_00 + fullTime.hour * 4, &hourEnergy, 4);
 					}
 					else
 					{
 
 						ioEE25LCxxx_setWriteEnable(eeprom);
-						ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_HOUR_12 + (fullTime.hour-12) * 4, &avgActivePower, 4);
+						ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_HOUR_12 + (fullTime.hour-12) * 4, &hourEnergy, 4);
 					}
 
 					// Se acumula la energía de la hora a la energía total
@@ -376,6 +374,15 @@ TASK(taskSmartPlug)
 
 					ReleaseResource(resEEPROM);
 				}
+
+				if (events & evFactoryReset)
+				{
+					initEEPROM(eeprom);
+
+					timesEnabled = 0;
+
+					moduleLog_log("Reset a valores de fabrica");
+				}
 			}
 
 			break;
@@ -447,7 +454,7 @@ void initEEPROM (void* ee)
 
 	ioEE25LCxxx_busyPolling(ee);
 	ioEE25LCxxx_setWriteEnable(ee);
-	ioEE25LCxxx_erase(ee, i * 128 + EE_ACUM_ENERGY, 4);
+	ioEE25LCxxx_erase(ee, EE_ACUM_ENERGY, 4);
 
 	value = 0;
 	ioEE25LCxxx_busyPolling(ee);
