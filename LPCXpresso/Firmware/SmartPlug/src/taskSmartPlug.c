@@ -195,27 +195,30 @@ TASK(taskSmartPlug)
 					// Se anailiza si hay que prender o apagar la carga en función de la hora
 					taskRTC_getTime(&fullTime);
 
-					if (fullTime.dayOfWeek < 7)
+					if (taskRTC_isTimeSynchronized())
 					{
-						// Está habilitada la programación horaria para el día de la semana?
-						if (timesEnabled & (1 << fullTime.dayOfWeek))
+						if (fullTime.dayOfWeek < 7)
 						{
-							if ( (onTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (onTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
+							// Está habilitada la programación horaria para el día de la semana?
+							if (timesEnabled & (1 << fullTime.dayOfWeek))
 							{
-								// La hora actual coincide con la hora de encendido
-								ioObject_write(pinRelay, 1);
-								loadState = 1;
+								if ( (onTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (onTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
+								{
+									// La hora actual coincide con la hora de encendido
+									ioObject_write(pinRelay, 1);
+									loadState = 1;
 
-								moduleLog_log("Carga encendida");
-							}
+									moduleLog_log("Carga encendida");
+								}
 
-							if ( (offTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (offTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
-							{
-								// La hora actual coincide con la hora de apagado
-								ioObject_write(pinRelay, 0);
-								loadState = 0;
+								if ( (offTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (offTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
+								{
+									// La hora actual coincide con la hora de apagado
+									ioObject_write(pinRelay, 0);
+									loadState = 0;
 
-								moduleLog_log("Carga apagada");
+									moduleLog_log("Carga apagada");
+								}
 							}
 						}
 					}
@@ -235,32 +238,50 @@ TASK(taskSmartPlug)
 
 					GetResource(resEEPROM);
 
-					// Se guarda la potencia activa promediada de la hora actual
-					if (fullTime.hour <= 11)
+					if (taskRTC_isTimeSynchronized())
 					{
-						ioEE25LCxxx_busyPolling(eeprom);
-						ioEE25LCxxx_setWriteEnable(eeprom);
-						ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_HOUR_00 + fullTime.hour * 4, &avgActivePower, 4);
-					}
-					else
-					{
-						ioEE25LCxxx_busyPolling(eeprom);
-						ioEE25LCxxx_setWriteEnable(eeprom);
-						ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_HOUR_12 + (fullTime.hour-12) * 4, &avgActivePower, 4);
-					}
+						// Cada vez que se carga las mediciones de una hora, se carga la fecha de la medición al inicio del bloque.
+						// Esto permite que se inicie el proceso de medición en cualquier hora del día y el bloque siempre tenga
+						// la fecha del día.
+						buffDate[0] = fullTime.dayOfMonth;
+						buffDate[1] = fullTime.month;
+						buffDate[2] = fullTime.year - 2000;
 
-					// Se guarda la energía acumulada en la hora actual
-					if (fullTime.hour <= 11)
-					{
 						ioEE25LCxxx_busyPolling(eeprom);
 						ioEE25LCxxx_setWriteEnable(eeprom);
-						ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_HOUR_00 + fullTime.hour * 4, &hourEnergy, 4);
-					}
-					else
-					{
-
+						ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_DATE, buffDate, 3);
+						ioEE25LCxxx_busyPolling(eeprom);
 						ioEE25LCxxx_setWriteEnable(eeprom);
-						ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_HOUR_12 + (fullTime.hour-12) * 4, &hourEnergy, 4);
+						ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_DATE, buffDate, 3);
+
+
+						// Se guarda la potencia activa promediada de la hora actual
+						if (fullTime.hour <= 11)
+						{
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_HOUR_00 + fullTime.hour * 4, &avgActivePower, 4);
+						}
+						else
+						{
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_HOUR_12 + (fullTime.hour-12) * 4, &avgActivePower, 4);
+						}
+
+						// Se guarda la energía acumulada en la hora actual
+						if (fullTime.hour <= 11)
+						{
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_HOUR_00 + fullTime.hour * 4, &hourEnergy, 4);
+						}
+						else
+						{
+
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_HOUR_12 + (fullTime.hour-12) * 4, &hourEnergy, 4);
+						}
 					}
 
 					// Se acumula la energía de la hora a la energía total
@@ -284,37 +305,40 @@ TASK(taskSmartPlug)
 				{
 					taskRTC_getTime(&fullTime);
 
-					// Se actualizan los punteros de mediciones históricas
-					activePower_ptr ++;
-					if (activePower_ptr >= 7)
-						activePower_ptr = 0;
+					if (taskRTC_isTimeSynchronized())
+					{
+						// Se actualizan los punteros de mediciones históricas
+						activePower_ptr ++;
+						if (activePower_ptr >= 7)
+							activePower_ptr = 0;
 
-					energy_ptr ++;
-					if (energy_ptr >= 7)
-						energy_ptr = 0;
+						energy_ptr ++;
+						if (energy_ptr >= 7)
+							energy_ptr = 0;
 
-					// Se va a cargar la fecha al inicio del nuevo bloque
-					buffDate[0] = fullTime.dayOfMonth;
-					buffDate[1] = fullTime.month;
-					buffDate[2] = fullTime.year - 2000;
+						// Se va a cargar la fecha al inicio del nuevo bloque
+						buffDate[0] = fullTime.dayOfMonth;
+						buffDate[1] = fullTime.month;
+						buffDate[2] = fullTime.year - 2000;
 
-					GetResource(resEEPROM);
+						GetResource(resEEPROM);
 
-					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_setWriteEnable(eeprom);
-					ioEE25LCxxx_writeData(eeprom, EE_ACTIVE_POWER_PTR, &activePower_ptr, 1);
-					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_setWriteEnable(eeprom);
-					ioEE25LCxxx_writeData(eeprom, EE_ENERGY_PTR, &energy_ptr, 1);
+						ioEE25LCxxx_busyPolling(eeprom);
+						ioEE25LCxxx_setWriteEnable(eeprom);
+						ioEE25LCxxx_writeData(eeprom, EE_ACTIVE_POWER_PTR, &activePower_ptr, 1);
+						ioEE25LCxxx_busyPolling(eeprom);
+						ioEE25LCxxx_setWriteEnable(eeprom);
+						ioEE25LCxxx_writeData(eeprom, EE_ENERGY_PTR, &energy_ptr, 1);
 
-					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_setWriteEnable(eeprom);
-					ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_DATE, buffDate, 3);
-					ioEE25LCxxx_busyPolling(eeprom);
-					ioEE25LCxxx_setWriteEnable(eeprom);
-					ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_PTR, buffDate, 3);
+						ioEE25LCxxx_busyPolling(eeprom);
+						ioEE25LCxxx_setWriteEnable(eeprom);
+						ioEE25LCxxx_writeData(eeprom, activePower_ptr * 128 + EE_ACTIVE_POWER_DATE, buffDate, 3);
+						ioEE25LCxxx_busyPolling(eeprom);
+						ioEE25LCxxx_setWriteEnable(eeprom);
+						ioEE25LCxxx_writeData(eeprom, energy_ptr * 128 + EE_ENERGY_DATE, buffDate, 3);
 
-					ReleaseResource(resEEPROM);
+						ReleaseResource(resEEPROM);
+					}
 				}
 
 				if (events & evAuthenticated)

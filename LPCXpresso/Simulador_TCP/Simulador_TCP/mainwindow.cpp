@@ -486,10 +486,18 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
                 payloadStr = "Error";
             else
             {
-                for (int i = 0; i < msg.rawData.length(); i+4)
+                for (int i = 0; i < msg.rawData.length(); i = i+4)
                 {
-                    // Agarra de a 4 bytes y los convierte a float
-                    payloadStr.append(QString::number(hexToFloat(msg.rawData.mid(i, 4))) + "; ");
+                    // Agarra de a 4 bytes y los convierte a float.
+                    // Los 4 bytes de cada float vienen al reves!!!!!
+                    QByteArray floatBytes = msg.rawData.mid(i, 4);
+                    std::reverse(floatBytes.begin(), floatBytes.end());
+                    float number = hexToFloat(floatBytes);
+
+                    if (number >= 0.01)
+                        payloadStr.append(QString::number(number) + "; ");
+                    else
+                        payloadStr.append(QString("0.0") + QString("; "));
                 }
             }
         }
@@ -519,7 +527,7 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
         frameRaw.append(QString::number(msg.reg, 16) + " ");
 
     for (int i = 0; i < msg.rawData.length(); i++)
-        frameRaw.append(QString::number(msg.rawData.at(i), 16).mid(0,2) + " ");
+        frameRaw.append(QString::number(msg.rawData.at(i), 16).right(2) + " ");
 
 
 
