@@ -346,21 +346,26 @@ void MainWindow::on_pushSend_clicked()
     {
         if (ui->listConnected->count() > 0)
         {
-            SmartPlugConnection* currentSmartPlugConnection = ui->listConnected->currentItem()->data(Qt::UserRole).value<SmartPlugConnection*>();
+            QListWidgetItem* currentItem = ui->listConnected->currentItem();
 
-            QByteArray data2Send = tcpComm.sendMsg(currentSmartPlugConnection->getIPAddress(), ui->lineTCPPort->text().toInt(),
-                            commandByte, regByte, payloadBytes);
-
-            //QByteArray data2Send = tcpComm.sendMsg("192.168.0.101", ui->lineTCPPort->text().toInt(),
-            //                        commandByte, regByte, payloadBytes);
-
-            QString data2SendStr;
-            for (int i = 0; i < data2Send.length(); i++)
+            if (currentItem)
             {
-                data2SendStr.append(QString::number(data2Send.at(i), 16));
-                data2SendStr.append(" ");
+                SmartPlugConnection* currentSmartPlugConnection = currentItem->data(Qt::UserRole).value<SmartPlugConnection*>();
+
+                QByteArray data2Send = tcpComm.sendMsg(currentSmartPlugConnection->getIPAddress(), ui->lineTCPPort->text().toInt(),
+                                commandByte, regByte, payloadBytes);
+
+                //QByteArray data2Send = tcpComm.sendMsg("192.168.0.101", ui->lineTCPPort->text().toInt(),
+                //                        commandByte, regByte, payloadBytes);
+
+                QString data2SendStr;
+                for (int i = 0; i < data2Send.length(); i++)
+                {
+                    data2SendStr.append(QString::number(data2Send.at(i), 16));
+                    data2SendStr.append(" ");
+                }
+                ui->textSend->append(data2SendStr);
             }
-            ui->textSend->append(data2SendStr);
         }
     }
 }
