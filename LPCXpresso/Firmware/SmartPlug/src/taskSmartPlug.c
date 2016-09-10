@@ -68,6 +68,7 @@ TASK(taskSmartPlug)
 	uint8_t i;
 	uint32_t dayOfWeek;
 	uint8_t buffDate[3];
+	uint8_t deviceNumber[6];
 
 
 
@@ -125,6 +126,12 @@ TASK(taskSmartPlug)
 			// Se recupera el puntero de las mediciones históricas de potencia activa y energía
 			ioEE25LCxxx_busyPolling(eeprom);
 			ioEE25LCxxx_readData(eeprom, EE_BLOCK_PTR, &block_ptr, 1);
+
+
+			// Se recupera el número de dispositivo
+			ioEE25LCxxx_busyPolling(eeprom);
+			ioEE25LCxxx_readData(eeprom, EE_DEVICE_NUMBER, deviceNumber, 6);
+			taskWiFi_configureID(deviceNumber);
 
 
 			// TODO recuperar los valores de calibración
@@ -414,6 +421,7 @@ void initEEPROM (void* ee)
 	uint8_t i;
 	uint32_t value;
 	uint8_t valueChar;
+	uint8_t buffer[6];
 
 
 	GetResource(resEEPROM);
@@ -469,6 +477,20 @@ void initEEPROM (void* ee)
 	ioEE25LCxxx_busyPolling(ee);
 	ioEE25LCxxx_setWriteEnable(ee);
 	ioEE25LCxxx_erase(ee, EE_ACUM_ENERGY, 4);
+
+
+	// TODO: este ID se carga en la rutina de prueba, en fábrica
+	buffer[0] = '1';
+	buffer[1] = '2';
+	buffer[2] = '3';
+	buffer[3] = '4';
+	buffer[4] = '5';
+	buffer[5] = '6';
+
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_setWriteEnable(ee);
+	ioEE25LCxxx_writeData(ee, EE_DEVICE_NUMBER, buffer, 6);
+
 
 	value = 0;
 	ioEE25LCxxx_busyPolling(ee);

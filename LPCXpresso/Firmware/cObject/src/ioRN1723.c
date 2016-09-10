@@ -93,6 +93,7 @@ const uint8_t* cmdSetDeviceID = "set opt device_id";
 const uint8_t* cmdShowTT = "show t t";
 const uint8_t* cmdSetTimeEnable = "set time enable";
 const uint8_t* cmdSetTimeAddress = "set time address";
+const uint8_t* cmdHeartbeatInterval = "set broadcast interval";
 
 
 #define CMD_WLAN_JOIN				cmdWLANJoin
@@ -116,6 +117,7 @@ const uint8_t* cmdSetTimeAddress = "set time address";
 #define CMD_SHOW_T_T				cmdShowTT
 #define CMD_SET_TIME_ENABLE			cmdSetTimeEnable
 #define CMD_SET_TIME_ADDRESS		cmdSetTimeAddress
+#define CMD_SET_HEARTBEATINTERVAL	cmdHeartbeatInterval
 
 // ********************************************************************************
 
@@ -263,7 +265,8 @@ enum {
 	CONFIG_TIME_ENABLE = FSM_CONFIG | 4,
 	CONFIG_TIME_ADDRESS = FSM_CONFIG | 5,
 	CONFIG_TIME = FSM_CONFIG | 6,
-	CONFIG_EXIT = FSM_CONFIG | 7,
+	CONFIG_INTERVAL = FSM_CONFIG | 7,
+	CONFIG_EXIT = FSM_CONFIG | 8,
 	LEAVE_NETWORK_CMD = FSM_LEAVE_NETWORK | 1,
 	LEAVE_NETWORK_EXIT = FSM_LEAVE_NETWORK | 2,
 	CLOSE_TCP_CMD = FSM_CLOSE_TCP | 1,
@@ -305,6 +308,7 @@ static void* ioRN1723_ctor  (void* _this, va_list* va)
 	this->gpioReset = va_arg(*va, void*);
 	this->inBuffer = va_arg(*va, void*);
 	this->outBuffer = va_arg(*va, void*);
+	this->heartbeatInterval = va_arg(*va, int);
 
 	this->cmdBuffer = cObject_new(cQueue, 50, sizeof(char));
 	this->timer = cObject_new(cTimer);
@@ -578,6 +582,32 @@ void ioRN1723_handler (void* _this)
 
 					case CONFIG_TIME:
 						sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
+						this->fsm_sub_state = CONFIG_INTERVAL;
+						break;
+
+					case CONFIG_INTERVAL:
+						switch(this->heartbeatInterval)
+						{
+							case 0x1:
+								sendCmd(this, CMD_SET_HEARTBEATINTERVAL, "0x1", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
+								break;
+
+							case 0x3:
+								sendCmd(this, CMD_SET_HEARTBEATINTERVAL, "0x3", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
+								break;
+
+							case 0x2:
+								sendCmd(this, CMD_SET_HEARTBEATINTERVAL, "0x2", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
+								break;
+
+							case 0x7:
+								sendCmd(this, CMD_SET_HEARTBEATINTERVAL, "0x7", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
+								break;
+
+							case 0x6:
+								sendCmd(this, CMD_SET_HEARTBEATINTERVAL, "0x6", RESP_FILTER_OK | RESP_FILTER_ERROR, 4000);
+								break;
+						}
 						this->fsm_sub_state = CONFIG_EXIT;
 						break;
 

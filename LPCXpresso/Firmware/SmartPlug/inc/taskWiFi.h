@@ -57,6 +57,13 @@ void taskWiFi_isAuthenticated (void);
 void taskWiFi_isTPCConnected (void);
 
 
+/**
+ * @brief      Le indica al taskWiFi que debe configurar el ID id en el módulo WiFi. Este ID va a ser usado en el heartbeat UDP.
+ *
+ * @param      id puntero al ID de 6 digitos.
+ */
+void taskWiFi_configureID (uint8_t* id);
+
 
 #endif
 

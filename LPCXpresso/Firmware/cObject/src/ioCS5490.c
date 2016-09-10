@@ -52,17 +52,18 @@ static void* ioCS5490_ctor  (void* _this, va_list* va)
 
 	this->uart = va_arg(*va, void*);
 	this->gpioReset = va_arg(*va, void*);
-	this->wordRate = va_arg(*va, double);
-	this->vMax = va_arg(*va, double);
-	this->iMax = va_arg(*va, double);
-	this->iCal = va_arg(*va, double);
-	this->meterConstant = va_arg(*va, double);
-	this->minimumLoad = va_arg(*va, double);
+	/*
+	this->wordRate = (float)va_arg(*va, double);
+	this->vMax = (float)va_arg(*va, double);
+	this->iMax = (float)va_arg(*va, double);
+	this->iCal = (float)va_arg(*va, double);
+	this->meterConstant = (float)va_arg(*va, double);
+	this->minimumLoad = (float)va_arg(*va, double);
 
 	this->scale = 0.6 * this->iCal / this->iMax;
 	this->maxPower = this->vMax * this->iCal;
 	this->powerScale = 0.6 * this->scale;
-
+*/
 
 	// Se pone en 1 el pin de RESET para sacar del reset al CS5490
 	ioObject_write(gpioReset(this), 1);
@@ -110,12 +111,24 @@ static void* ioCS5490_copy (void* _this, void* _src)
 
 
 
-void ioCS5490_init (void* _this, uint32_t vDCOffset, uint32_t iDCOffset, uint32_t vGain, uint32_t iGain)
+void ioCS5490_init (void* _this, uint32_t vDCOffset, uint32_t iDCOffset, uint32_t vGain, uint32_t iGain, float wordRate, float vMax, float iMax,
+						float iCal, float meterConstant, float minimumLoad)
 {
 	struct ioCS5490* this = _this;
 	void* timer;
 	uint32_t aux1;
 	float auxFloat;
+
+	this->wordRate = wordRate;
+	this->vMax = vMax;
+	this->iMax = iMax;
+	this->iCal = iCal;
+	this->meterConstant = meterConstant;
+	this->minimumLoad = minimumLoad;
+
+	this->scale = 0.6 * this->iCal / this->iMax;
+	this->maxPower = this->vMax * this->iCal;
+	this->powerScale = 0.6 * this->scale;
 
 
 	timer = cObject_new(cTimer);

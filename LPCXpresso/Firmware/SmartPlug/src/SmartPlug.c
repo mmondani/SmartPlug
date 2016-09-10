@@ -84,9 +84,9 @@ TASK(TaskInit)
 	taskSwitch_init();
 	taskLeds_init();
 	taskRTC_init();
-	taskMeter_init(ee25LC256);
 	taskWiFi_init(ee25LC256);
 	taskSmartPlug_init(ee25LC256);
+	taskMeter_init(ee25LC256);
 
 
 

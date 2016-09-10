@@ -38,11 +38,13 @@ enum {State_Create = 0, State_Waiting4Ready, State_Init, State_Idle, State_Synch
        State_WaitFrameStart1, State_WaitFrameStart2, State_WaitFrameLength, State_WaitCommand,
        State_NodeCommand, State_SendNodeResponse, State_WaitRegister,State_WaitParam, State_SearchDate,
        State_ReadEEPROM, State_SendGetResponse, State_WaitValue, State_WriteEEPROM, State_SendSetResponse,
-       State_EraseEEPROM, State_SendResetResponse, State_WaitingWPS, State_WaitingWebServer};
+       State_EraseEEPROM, State_SendResetResponse, State_WaitingWPS, State_WaitingWebServer, State_ConfigureiD};
 static uint32_t state = State_Create;
 static uint8_t stateIn = 0, stateOut = 0;
 static uint8_t executeWPS = 0;
 static uint8_t executeWebServer = 0;
+static uint8_t configID = 0;
+
 
 static uint8_t byte;
 static uint8_t length;
@@ -56,6 +58,7 @@ static uint32_t EEAddress;
 static uint8_t indexBuffer;
 static uint8_t buffer[BUFFER_LEN];
 
+static uint8_t bufferID[7];
 
 // Cambia de estado en la FSM.
 void gotoState (uint32_t newState);
@@ -106,6 +109,20 @@ void taskWiFi_isTPCConnected (void)
 }
 
 
+void taskWiFi_configureID (uint8_t* id)
+{
+	uint32_t i;
+
+	for (i = 0; i < 6; i++)
+		bufferID[i] = id[i];
+
+	// El driver del RN1723 necesita que el string del ID termine en '\0'.
+	bufferID[6] = '\0';
+
+	configID = 1;
+}
+
+
 TASK(taskWiFi)
 {
 	rtc_time_t fullTime;
@@ -126,6 +143,7 @@ TASK(taskWiFi)
 
             }
             //**********************************************************************************************
+
             gpioResetRN1723 = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 2);
             ioObject_init(gpioResetRN1723);
 
@@ -144,7 +162,7 @@ TASK(taskWiFi)
             outBuffer = cObject_new(cQueue, 160, sizeof(uint8_t));
 
 
-            rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer);
+            rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer, IORN1723_INTERVAL_1_EVERY_4_SEC);
 
             timerSynchronizeTime = cObject_new(cTimer);
             timerTimeout = cObject_new(cTimer);
@@ -229,6 +247,7 @@ TASK(taskWiFi)
 				gotoState(State_WaitingWebServer);
 			}
 
+
             // Llegaron bytes de una nueva conexión
             if (ioComm_dataAvailable(rn1723))
             {
@@ -247,6 +266,11 @@ TASK(taskWiFi)
             	}
             }
 
+            if (configID)
+            {
+            	configID = 0;
+            	gotoState(State_ConfigureiD);
+            }
             //**********************************************************************************************
             if (stateOut)
             {
@@ -832,6 +856,25 @@ TASK(taskWiFi)
                 }
                 else
                 	SetEvent (taskSmartPlug, evDeAuthenticated);
+            }
+			break;
+
+		case State_ConfigureiD:
+            if (stateIn)
+            {
+                stateIn = 0;
+                stateOut = 0;
+
+                ioRN1723_setDeviceID(rn1723, bufferID);
+            }
+            //**********************************************************************************************
+            if (ioRN1723_isIdle(rn1723) == 1)
+            	gotoState(State_Idle);
+            //**********************************************************************************************
+            if (stateOut)
+            {
+                stateOut = 0;
+                stateIn = 1;
             }
 			break;
 	}

@@ -223,7 +223,7 @@ int main(void) {
     outBuffer = cObject_new(cQueue, 10, sizeof(uint8_t));
 
 
-    rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer);
+    rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer, IORN1723_INTERVAL_1_EVERY_4_SEC);
     // =====================================================
 
 
@@ -251,8 +251,8 @@ int main(void) {
 	NVIC_SetPriority(UART3_IRQn, 1);
 	NVIC_EnableIRQ(UART3_IRQn);
 
-	cs5490 = cObject_new (ioCS5490, uartCS5490, gpioReset, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
-	ioCS5490_init(cs5490, 0xFE5657, 0xFFE0FB, 0x3C7AE1, 0x741857);
+	cs5490 = cObject_new (ioCS5490, uartCS5490, gpioReset);
+	ioCS5490_init(cs5490, 0xFE5657, 0xFFE0FB, 0x3C7AE1, 0x741857, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
 	// =====================================================
 
 

@@ -100,7 +100,6 @@ TASK(taskMeter)
 	{
 		case STATE_INIT:
 
-
 			// Pin encargado de contar los pulsos de energía generados por el CS5490
 			gpioDO = cObject_new(ioDigital, LPC_GPIO, IOGPIO_INPUT, 0, 27);
 			ioObject_init(gpioDO);
@@ -123,10 +122,8 @@ TASK(taskMeter)
 			NVIC_EnableIRQ(UART3_IRQn);
 
 			// Instancia del driver del CS5490
-			cs5490 = cObject_new (ioCS5490, uartCS5490, gpioReset, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
-			ioCS5490_init(cs5490, 0xFE5657, 0xFFE0FB, 0x3C7AE1, 0x741857);
-
-
+			cs5490 = cObject_new (ioCS5490, uartCS5490, gpioReset);
+			ioCS5490_init(cs5490, 0xFE5657, 0xFFE0FB, 0x3C7AE1, 0x741857, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
 
 			// Comienza el proceso de conversión continua en el CS5490
 			ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CONTINUOUS_CONV);

@@ -37,6 +37,7 @@
 #define EE_IDC_OFFSET						5764
 #define EE_VAC_GAIN							5768
 #define EE_IAC_GAIN							5772
+#define EE_DEVICE_NUMBER					5824
 #define EE_INIT_FLAG						6400
 
 

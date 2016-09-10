@@ -31,17 +31,30 @@
  * @brief Nombre de la clase.
  * @details La forma de instanciar esta clase es la siguiente:
  * @code
- * void* module = cObject_new(ioRN1723, uart, reset, inBuff, outBuff)
+ * void* module = cObject_new(ioRN1723, uart, reset, inBuff, outBuff, heartbeatInterval)
  * @endcode
  * @param ioRN1723 			nombre de la clase a instanciar.
  * @param uart				instancia de la clase @ref grp_ioUART a través de la que se va a establecer la comunicación con el módulo.
  * @param reset				instancia de la clase @ref grp_ioDigital conectado al pin RESET del módulo RN1723.
  * @param inBuff			instancia de la clase @ref grp_cQueue usada para enviar datos al módulo
  * @param outBuff			instancia de la clase @ref grp_cQueue usada para recibir datos del módulo.
+ * @param heartbeatInterval	intervalo de tiempo entre los mensajes UDP de heartbeat. Ver @ref ioRN1723_HeartbeatInterval.
  */
 extern const void* ioRN1723;
 
 
+// ********************************************************************************
+
+/**
+ * Enumeración con las posibles longitudes de datos.
+ */
+enum ioRN1723_Interval{
+	   IORN1723_INTERVAL_1_EVERY_2_SEC = 0x1,				///< Un paquete cada 2 segundos.
+	   IORN1723_INTERVAL_1_EVERY_4_SEC = 0x3,				///< Un paquete cada 4 segundos.
+	   IORN1723_INTERVAL_2_EVERY_4_SEC = 0x2,				///< Dos paquetes cada 4 segundos.
+	   IORN1723_INTERVAL_1_EVERY_8_SEC = 0x7,				///< Un paquete cada 8 segundos.
+	   IORN1723_INTERVAL_2_EVERY_8_SEC = 0x6,				///< Dos paquetes cada 8 segundos.
+};
 
 
 // ********************************************************************************
