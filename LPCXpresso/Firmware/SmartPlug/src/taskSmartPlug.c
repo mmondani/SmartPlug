@@ -22,6 +22,8 @@
 
 
 void initEEPROM (void* ee);
+void loadEEPROM (void* ee);
+
 
 static void* eeprom;
 static void* pinRelay;
@@ -68,7 +70,7 @@ TASK(taskSmartPlug)
 	uint8_t i;
 	uint32_t dayOfWeek;
 	uint8_t buffDate[3];
-	uint8_t deviceNumber[6];
+
 
 
 
@@ -88,56 +90,7 @@ TASK(taskSmartPlug)
 			}
 
 			// La memoria está inicializada. Se recuperan los valores.
-			GetResource(resEEPROM);
-
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_ON_TIME, onTimes[1], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_ON_TIME, onTimes[2], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_ON_TIME, onTimes[3], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_ON_TIME, onTimes[4], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_ON_TIME, onTimes[5], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_ON_TIME, onTimes[6], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_ON_TIME, onTimes[0], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_MONDAY_LOAD_OFF_TIME, offTimes[1], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_TUESDAY_LOAD_OFF_TIME, offTimes[2], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_WEDNESDAY_LOAD_OFF_TIME, offTimes[3], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_THURSDAY_LOAD_OFF_TIME, offTimes[4], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_FRIDAY_LOAD_OFF_TIME, offTimes[5], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_SATURDAY_LOAD_OFF_TIME, offTimes[6], 2);
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_SUNDAY_LOAD_OFF_TIME, offTimes[0], 2);
-
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_ENABLE_ONOFF_TIME, &timesEnabled, 1);
-
-
-			// Se recupera el puntero de las mediciones históricas de potencia activa y energía
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_BLOCK_PTR, &block_ptr, 1);
-
-
-			// Se recupera el número de dispositivo
-			ioEE25LCxxx_busyPolling(eeprom);
-			ioEE25LCxxx_readData(eeprom, EE_DEVICE_NUMBER, deviceNumber, 6);
-			taskWiFi_configureID(deviceNumber);
-
-
-			// TODO recuperar los valores de calibración
-
-
-			ReleaseResource(resEEPROM);
+			loadEEPROM(eeprom);
 
 
 			// Pin que maneja el relay
@@ -402,6 +355,7 @@ TASK(taskSmartPlug)
 				if (events & evFactoryReset)
 				{
 					initEEPROM(eeprom);
+					loadEEPROM (eeprom);
 
 					timesEnabled = 0;
 
@@ -512,6 +466,64 @@ void initEEPROM (void* ee)
 	ioEE25LCxxx_busyPolling(ee);
 	ioEE25LCxxx_setWriteEnable(ee);
 	ioEE25LCxxx_writeData(ee, EE_INIT_FLAG, &valueChar, 1);
+
+	ReleaseResource(resEEPROM);
+}
+
+
+void loadEEPROM (void* ee)
+{
+	uint8_t deviceNumber[6];
+
+
+	GetResource(resEEPROM);
+
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_MONDAY_LOAD_ON_TIME, onTimes[1], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_TUESDAY_LOAD_ON_TIME, onTimes[2], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_WEDNESDAY_LOAD_ON_TIME, onTimes[3], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_THURSDAY_LOAD_ON_TIME, onTimes[4], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_FRIDAY_LOAD_ON_TIME, onTimes[5], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_SATURDAY_LOAD_ON_TIME, onTimes[6], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_SUNDAY_LOAD_ON_TIME, onTimes[0], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_MONDAY_LOAD_OFF_TIME, offTimes[1], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_TUESDAY_LOAD_OFF_TIME, offTimes[2], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_WEDNESDAY_LOAD_OFF_TIME, offTimes[3], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_THURSDAY_LOAD_OFF_TIME, offTimes[4], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_FRIDAY_LOAD_OFF_TIME, offTimes[5], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_SATURDAY_LOAD_OFF_TIME, offTimes[6], 2);
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_SUNDAY_LOAD_OFF_TIME, offTimes[0], 2);
+
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, &timesEnabled, 1);
+
+
+	// Se recupera el puntero de las mediciones históricas de potencia activa y energía
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_BLOCK_PTR, &block_ptr, 1);
+
+
+	// Se recupera el número de dispositivo
+	ioEE25LCxxx_busyPolling(ee);
+	ioEE25LCxxx_readData(ee, EE_DEVICE_NUMBER, deviceNumber, 6);
+	taskWiFi_configureID(deviceNumber);
+
+
+	// TODO recuperar los valores de calibración
+
 
 	ReleaseResource(resEEPROM);
 }
