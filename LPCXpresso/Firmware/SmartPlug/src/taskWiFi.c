@@ -1044,6 +1044,12 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 			ioEE25LCxxx_readData(ee, EE_SUNDAY_LOAD_OFF_TIME, buff, 2);
 			bytesRead = 2;
 		}
+		else if (regEE == REG_ENABLE_ONOFF_TIME)
+		{
+			ioEE25LCxxx_busyPolling(ee);
+			ioEE25LCxxx_readData(ee, EE_ENABLE_ONOFF_TIME, buff, 1);
+			bytesRead = 1;
+		}
 		else
 		{
 			if (blockPointer != 0xFF)
