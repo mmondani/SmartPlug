@@ -51,12 +51,12 @@ float taskMeter_getMeterValue (uint32_t variableID)
 	{
 		case ID_VRMS:
 			conversion = ioCS5490_unsignedFract2Float(vrms, 0, 24);
-			result = conversion * ioCS5490_getIcalibration(cs5490) / ioCS5490_getMeterScale(cs5490);
+			result = conversion * ioCS5490_getVmax(cs5490) / 0.6;
 			break;
 
 		case ID_IRMS:
 			conversion = ioCS5490_unsignedFract2Float(irms, 0, 24);
-			result = conversion * ioCS5490_getVmax(cs5490) / 0.6;
+			result = conversion * ioCS5490_getIcalibration(cs5490) / ioCS5490_getMeterScale(cs5490);
 			break;
 
 		case ID_FREQUENCY:
