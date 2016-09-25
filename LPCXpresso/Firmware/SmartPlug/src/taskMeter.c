@@ -36,7 +36,7 @@ void taskMeter_init (void* _eeprom)
 	eeprom = _eeprom;
 
 	// La tarea taskMeter se va a ejecutar cada 1 s
-	SetRelAlarm(alarmRunTaskMeter, 150, 1000);
+	SetRelAlarm(alarmRunTaskMeter, 150, 1500);
 	//ActivateTask(taskMeter);
 }
 
@@ -129,6 +129,8 @@ TASK(taskMeter)
 			ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CONTINUOUS_CONV);
 
 
+			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+
 			moduleLog_log("CS5490 Inicializado");
 
 			state = STATE_RUNNING_IRMS;
@@ -138,35 +140,35 @@ TASK(taskMeter)
 
 		case STATE_RUNNING_IRMS:
 
-			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			//ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
 			irms = ioCS5490_registerRead(cs5490, IOCS5490_REG_I_RMS);
 			state = STATE_RUNNING_VRMS;
 			break;
 
 		case STATE_RUNNING_VRMS:
 
-			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			//ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
 			vrms = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_RMS);
 			state = STATE_RUNNING_ACTIVE_POWER;
 			break;
 
 		case STATE_RUNNING_ACTIVE_POWER:
 
-			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			//oCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
 			activePower = ioCS5490_registerRead(cs5490, IOCS5490_REG_P_AVG);
 			state = STATE_RUNNING_POWER_FACTOR;
 			break;
 
 		case STATE_RUNNING_POWER_FACTOR:
 
-			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			//ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
 			powerFactor = ioCS5490_registerRead(cs5490, IOCS5490_REG_PF);
 			state = STATE_RUNNING_EPSILON;
 			break;
 
 		case STATE_RUNNING_EPSILON:
 
-			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			//ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
 			epsilon = ioCS5490_registerRead(cs5490, IOCS5490_REG_EPSILON);
 			moduleLog_log("Nuevas mediciones");
 			state = STATE_RUNNING_IRMS;
