@@ -26,7 +26,7 @@ static void* cs5490;
 static uint32_t irms, vrms, activePower, powerFactor, epsilon;
 static uint32_t energyPulses = 0;
 
-static enum {STATE_INIT = 0, STATE_RUNNING};
+static enum {STATE_INIT = 0, STATE_RUNNING_IRMS, STATE_RUNNING_VRMS, STATE_RUNNING_ACTIVE_POWER, STATE_RUNNING_POWER_FACTOR, STATE_RUNNING_EPSILON};
 static uint32_t state = STATE_INIT;
 
 
@@ -35,8 +35,8 @@ void taskMeter_init (void* _eeprom)
 {
 	eeprom = _eeprom;
 
-	// La tarea taskMeter se va a ejecutar cada 5 s
-	SetRelAlarm(alarmRunTaskMeter, 150, 5000);
+	// La tarea taskMeter se va a ejecutar cada 1 s
+	SetRelAlarm(alarmRunTaskMeter, 150, 1000);
 	//ActivateTask(taskMeter);
 }
 
@@ -123,7 +123,7 @@ TASK(taskMeter)
 
 			// Instancia del driver del CS5490
 			cs5490 = cObject_new (ioCS5490, uartCS5490, gpioReset);
-			ioCS5490_init(cs5490, 0xFE5657, 0xFFE0FB, 0x3C7AE1, 0x741857, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
+			ioCS5490_init(cs5490, 0xFE5657, 0xFFE604, 0x3A62AA, 0x73AC71, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
 
 			// Comienza el proceso de conversión continua en el CS5490
 			ioCS5490_instructionWrite(cs5490, IOCS5490_INS_CONTINUOUS_CONV);
@@ -131,26 +131,46 @@ TASK(taskMeter)
 
 			moduleLog_log("CS5490 Inicializado");
 
-			state = STATE_RUNNING;
+			state = STATE_RUNNING_IRMS;
 
 
 			break;
 
-		case STATE_RUNNING:
-
+		case STATE_RUNNING_IRMS:
 
 			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
 			irms = ioCS5490_registerRead(cs5490, IOCS5490_REG_I_RMS);
-			vrms = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_RMS);
-			activePower = ioCS5490_registerRead(cs5490, IOCS5490_REG_P_AVG);
-			powerFactor = ioCS5490_registerRead(cs5490, IOCS5490_REG_PF);
-			epsilon = ioCS5490_registerRead(cs5490, IOCS5490_REG_EPSILON);
-
-
-			moduleLog_log("Nuevas mediciones");
-
+			state = STATE_RUNNING_VRMS;
 			break;
 
+		case STATE_RUNNING_VRMS:
+
+			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			vrms = ioCS5490_registerRead(cs5490, IOCS5490_REG_V_RMS);
+			state = STATE_RUNNING_ACTIVE_POWER;
+			break;
+
+		case STATE_RUNNING_ACTIVE_POWER:
+
+			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			activePower = ioCS5490_registerRead(cs5490, IOCS5490_REG_P_AVG);
+			state = STATE_RUNNING_POWER_FACTOR;
+			break;
+
+		case STATE_RUNNING_POWER_FACTOR:
+
+			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			powerFactor = ioCS5490_registerRead(cs5490, IOCS5490_REG_PF);
+			state = STATE_RUNNING_EPSILON;
+			break;
+
+		case STATE_RUNNING_EPSILON:
+
+			ioCS5490_pageSelect(cs5490, IOCS5490_PAGE_16);
+			epsilon = ioCS5490_registerRead(cs5490, IOCS5490_REG_EPSILON);
+			moduleLog_log("Nuevas mediciones");
+			state = STATE_RUNNING_IRMS;
+			break;
 	}
 
 	TerminateTask();
@@ -172,6 +192,6 @@ ISR(UART3_handler)
 
 ISR(EINT3_handler)
 {
-	Chip_GPIOINT_ClearIntStatus(LPC_GPIOINT, GPIOINT_PORT2, 1 << 0);
+	Chip_GPIOINT_ClearIntStatus(LPC_GPIOINT, GPIOINT_PORT0, 1 << 27);
 	energyPulses++;
 }

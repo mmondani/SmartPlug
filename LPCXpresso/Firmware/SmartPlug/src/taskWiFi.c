@@ -928,7 +928,7 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 	}
 	else if (regEE == REG_CURRENT_HOUR_ENERGY)
 	{
-		floatValue = taskMeter_getMeterValue(ID_IRMS);
+		floatValue = taskMeter_getMeterValue(ID_ENERGY);
 		float2Bytes(buff, floatValue);
 		bytesRead = 4;
 	}

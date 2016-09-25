@@ -134,7 +134,7 @@ TASK(taskSmartPlug)
 
 				if (events & evRelayOn)
 				{
-					ioObject_write(pinRelay, 1);
+					ioObject_write(pinRelay, 0);
 					loadState = 1;
 
 					moduleLog_log("Carga encendida");
@@ -142,7 +142,7 @@ TASK(taskSmartPlug)
 
 				if (events & evRelayOff)
 				{
-					ioObject_write(pinRelay, 0);
+					ioObject_write(pinRelay, 1);
 					loadState = 0;
 
 					moduleLog_log("Carga apagada");
@@ -163,7 +163,7 @@ TASK(taskSmartPlug)
 								if ( (onTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (onTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
 								{
 									// La hora actual coincide con la hora de encendido
-									ioObject_write(pinRelay, 1);
+									ioObject_write(pinRelay, 0);
 									loadState = 1;
 
 									moduleLog_log("Carga encendida");
@@ -172,7 +172,7 @@ TASK(taskSmartPlug)
 								if ( (offTimes[fullTime.dayOfWeek][0] == fullTime.hour) && (offTimes[fullTime.dayOfWeek][1] == fullTime.minute) )
 								{
 									// La hora actual coincide con la hora de apagado
-									ioObject_write(pinRelay, 0);
+									ioObject_write(pinRelay, 1);
 									loadState = 0;
 
 									moduleLog_log("Carga apagada");

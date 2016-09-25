@@ -252,7 +252,7 @@ int main(void) {
 	NVIC_EnableIRQ(UART3_IRQn);
 
 	cs5490 = cObject_new (ioCS5490, uartCS5490, gpioReset);
-	ioCS5490_init(cs5490, 0xFE5657, 0xFFE604, 0x3A62AA, 0x1D0625, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
+	ioCS5490_init(cs5490, 0xFE5657, 0xFFE604, 0x3A62AA, 0x73AC71, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
 	//ioCS5490_init(cs5490, 0xFE5657, 0xFFE0FB, 0x3C7AE1, 0x741857, 4000.0, 220.0, 5.0, 1.75, 5000.0, 8.0);
 	// =====================================================
 
