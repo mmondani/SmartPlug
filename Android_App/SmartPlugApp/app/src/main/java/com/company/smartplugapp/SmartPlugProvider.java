@@ -6,6 +6,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import database.InstantaneousInfoCursoWrapper;
 import database.InstantaneousInfoEntry;
 import database.SmartPlugDb;
@@ -68,6 +71,26 @@ public class SmartPlugProvider {
         ContentValues values = getInstantaneousInfoContentValues(instantaneousInfoEntry);
 
         mDatabase.insert(InstantaneousInfoTable.NAME, null, values);
+    }
+
+
+    public List<SmartPlugListItem> getSmartPlugs () {
+        List<SmartPlugListItem> contacts = new ArrayList<>();
+
+        InstantaneousInfoCursoWrapper cursorInstantaneous = queryInstantaneousInfo(null, null);
+
+        try {
+            cursorInstantaneous.moveToFirst();
+            while (!cursorInstantaneous.isAfterLast()) {
+                InstantaneousInfoEntry instInfoEntry = cursorInstantaneous.getInstantaneousInfoEntry();
+                contacts.add(new SmartPlugListItem(0, instInfoEntry.getId(), null, instInfoEntry.getLastUpdate(), instInfoEntry.getConnectionState(), instInfoEntry.getLoadState()));
+                cursorInstantaneous.moveToNext();
+            }
+        } finally {
+            cursorInstantaneous.close();
+        }
+
+        return contacts;
     }
 
 

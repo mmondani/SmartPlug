@@ -16,9 +16,10 @@
         android:layout_alignParentTop="true">
     </android.support.v7.widget.Toolbar>
 
-    <TextView
-        android:id="@+id/frag_smart_plug_list_text"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/frag_smart_plug_list_recycler"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:padding="3dp"
         android:layout_below="@id/list_fragment_toolbar"/>
 </RelativeLayout>

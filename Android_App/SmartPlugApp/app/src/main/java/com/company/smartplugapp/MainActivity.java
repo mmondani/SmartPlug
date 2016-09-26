@@ -18,7 +18,7 @@ import service.SmartPlugService;
  * Además, MainActivity es la encargada de iniciar el Service que se encarga de comunicarse con
  * los Smart Plugs.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SmartPlugListFragment.OnItemClickedInterface {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,5 +59,11 @@ public class MainActivity extends AppCompatActivity {
          * Se inicia el servicio que se encargará de comunicarse con los Smart Plug.
          */
         startService(new Intent(this, SmartPlugService.class));
+    }
+
+
+    @Override
+    public void onItemClicked(SmartPlugListItem smartPlugItem) {
+        /** TODO implementar el cambio a la vista de detalle del Smart Plug elegido */
     }
 }
