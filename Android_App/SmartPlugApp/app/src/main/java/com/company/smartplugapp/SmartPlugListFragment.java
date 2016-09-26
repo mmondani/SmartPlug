@@ -14,7 +14,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import events.HeartbeatEvent;
@@ -58,17 +57,31 @@ public class SmartPlugListFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        /**
+         * Se registra este framento en el EventBus para empezar a recibir los eventos
+         * a los que esté suscrito.
+         */
         EventBus.getDefault().register(this);
     }
 
     @Override
     public void onStop() {
+        /**
+         * Se des-registra del EventBus para dejar de recibir los eventos.
+         */
         EventBus.getDefault().unregister(this);
         super.onStop();
     }
 
+
+    /**
+     * Se suscribe al evento HeartbeatEvent.
+     * @param ev Instancia del evento HeartbeatEvent.
+     */
     @Subscribe (threadMode = ThreadMode.MAIN)
     public void onHeartbeatEvent (HeartbeatEvent ev) {
-        Toast.makeText(getActivity(), "Heartbeat" + new SimpleDateFormat("HH:mm:ss").format(ev.getDate()), Toast.LENGTH_SHORT).show();
+
+
+        Toast.makeText(getActivity(), "Heartbeat " + ev.getId() + " - " + new SimpleDateFormat("HH:mm:ss").format(ev.getDate()), Toast.LENGTH_SHORT).show();
     }
 }

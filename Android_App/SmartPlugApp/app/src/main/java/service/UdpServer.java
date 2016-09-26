@@ -1,59 +1,72 @@
 package service;
 
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.util.Calendar;
 
+import com.company.smartplugapp.SmartPlugCommHelper;
+import com.company.smartplugapp.SmartPlugCommHelper.HeartbeatFrame;
 import events.HeartbeatEvent;
 
 
+/**
+ * Clase que implementa un servidor UDP que escucha el puerto pasado como
+ * parámetro en su constructor.
+ * Funciona en un thread separado y genera el evento HeartbeatEvent en el EventBus
+ * cuando llega un datagrama en el puerto que se está escuchando.
+ * Para detener su funcionamiento se debe llamar al método kill.
+ */
 public class UdpServer extends Thread {
 
     private int mPort;
     private boolean mRunning = false;
 
-    private static final String BUNDLE_MSG = "msg";
-    private static final String BUNDLE_ADDRESS = "address";
-    private static final String BUNDLE_PORT = "port";
 
-
-
-    public static class Messages {
-        public static final int RECEIVED = 1;
-    }
-
-
-
-
+    /**
+     * Constructor de la clase UdpServer.
+     *
+     * @param port Puerto en el que se debe escuchar.
+     */
     public UdpServer(int port) {
         mPort = port;
     }
 
 
+    /**
+     * Método que se ejecuta al llamar a UdpServer.start(). Implementa la lógica del server UDP.
+     */
     @Override
     public void run() {
         byte[] message = new byte[600];
         DatagramPacket packet = new DatagramPacket(message, message.length);
 
         try {
+            /**
+             * Se crea una instancia de DatagramSocket escuchando en el puerto pasado
+             * en el constructor.
+             */
             DatagramSocket socket = new DatagramSocket(mPort);
             mRunning = true;
 
+            /**
+             * El servidor se ejecutará hasta que se llame al método kill.
+             */
             while (mRunning) {
+                /**
+                 * Se bloquea el thread esperando la recepción de un datagrama.
+                 */
                 socket.receive(packet);
 
+                /**
+                 * Se obtiene el datagrama recibido, la IP desde la que provino
+                 * y el puerto.
+                 */
                 ByteBuffer data = ByteBuffer.allocate(packet.getLength());
                 data.put(packet.getData(), 0, packet.getLength());
                 InetAddress address = packet.getAddress();
@@ -61,10 +74,15 @@ public class UdpServer extends Thread {
 
                 /**
                  * Llegó un heartbeat al puerto que se estaba escuchando.
+                 * Se generará el evento correspondiente.
                  */
                 emitNewPacket(address, port, data.array());
             }
 
+            /**
+             * Cuando termina la ejecución del servidor, si el socket está abierto,
+             * se lo cierra.
+             */
             if (socket != null) {
                 socket.close();
             }
@@ -73,39 +91,40 @@ public class UdpServer extends Thread {
         }
     }
 
-    public void kill () {
+    /**
+     * Detiene la ejecución del servidor.
+     */
+    public void kill() {
         this.interrupt();
         mRunning = false;
     }
 
+    /**
+     * Retorna si el servidor se encuentra ejecutándose o no.
+     * @return false si no se está ejecutando.
+     *          true si se está ejecutando.
+     */
     public boolean isRunning () {
         return (mRunning);
     }
 
-
-    public static String getAddress (Bundle msg) {
-        return msg.getString(BUNDLE_ADDRESS);
-    }
-
-    public static int getPort (Bundle msg) {
-        return msg.getInt(BUNDLE_PORT);
-    }
-
-    public static byte[] getData (Bundle msg) {
-        return msg.getByteArray(BUNDLE_MSG);
-    }
-
+    /**
+     * Postea una instancia del evento HeartbeatEvent en el EventBus.
+     * @param address IP desde la que proviene el heartbeat.
+     * @param port Puerto UDP desde el que proviene el heartbeat.
+     * @param data Payload del datagrama.
+     */
     private void emitNewPacket (InetAddress address, int port, byte[] data) {
 
         /**
          * Se usa la clase SmartPlugCommHelper para parsear la data recibida
-         * TODO: Implementar la clase SmartPlugCommHelper
          */
+        HeartbeatFrame heartbeatFrame = SmartPlugCommHelper.getInstance().parseHeartBeat(data);
 
         /**
          * Se genera un HeartbeatEvent.
          */
-        EventBus.getDefault().post(new HeartbeatEvent("123456", address.toString(), Calendar.getInstance().getTime()));
+        EventBus.getDefault().post(new HeartbeatEvent(heartbeatFrame.getId(), address.toString(), Calendar.getInstance().getTime()));
 
     }
 }
