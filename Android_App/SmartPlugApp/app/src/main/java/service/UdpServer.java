@@ -69,7 +69,7 @@ public class UdpServer extends Thread {
                  */
                 ByteBuffer data = ByteBuffer.allocate(packet.getLength());
                 data.put(packet.getData(), 0, packet.getLength());
-                InetAddress address = packet.getAddress();
+                String address = packet.getAddress().getHostAddress();
                 int port = packet.getPort();
 
                 /**
@@ -114,7 +114,7 @@ public class UdpServer extends Thread {
      * @param port Puerto UDP desde el que proviene el heartbeat.
      * @param data Payload del datagrama.
      */
-    private void emitNewPacket (InetAddress address, int port, byte[] data) {
+    private void emitNewPacket (String address, int port, byte[] data) {
 
         /**
          * Se usa la clase SmartPlugCommHelper para parsear la data recibida
@@ -124,7 +124,7 @@ public class UdpServer extends Thread {
         /**
          * Se genera un HeartbeatEvent.
          */
-        EventBus.getDefault().post(new HeartbeatEvent(heartbeatFrame.getId(), address.toString(), Calendar.getInstance().getTime()));
+        EventBus.getDefault().post(new HeartbeatEvent(heartbeatFrame.getId(), address, Calendar.getInstance().getTime()));
 
     }
 }

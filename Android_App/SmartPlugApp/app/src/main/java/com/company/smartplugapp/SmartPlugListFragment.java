@@ -8,6 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
@@ -16,7 +17,9 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.text.SimpleDateFormat;
 
+import database.InstantaneousInfoEntry;
 import events.HeartbeatEvent;
+import events.UpdateSmartPlugEvent;
 
 
 /**
@@ -25,6 +28,7 @@ import events.HeartbeatEvent;
  */
 public class SmartPlugListFragment extends Fragment {
 
+    private TextView mTextView;
 
     /**
      * No recibe parámetros.
@@ -51,6 +55,8 @@ public class SmartPlugListFragment extends Fragment {
         toolbar.setTitle("Smart Plugs");
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
 
+        mTextView = (TextView)v.findViewById(R.id.frag_smart_plug_list_text);
+
         return v;
     }
 
@@ -73,15 +79,12 @@ public class SmartPlugListFragment extends Fragment {
         super.onStop();
     }
 
-
-    /**
-     * Se suscribe al evento HeartbeatEvent.
-     * @param ev Instancia del evento HeartbeatEvent.
-     */
     @Subscribe (threadMode = ThreadMode.MAIN)
-    public void onHeartbeatEvent (HeartbeatEvent ev) {
+    public void onUpdateSmartPlugEvent (UpdateSmartPlugEvent ev) {
 
+        SmartPlugProvider provider = SmartPlugProvider.getInstance(getActivity());
+        InstantaneousInfoEntry entry = provider.getInstantaneousInfoEntry(ev.getId());
 
-        Toast.makeText(getActivity(), "Heartbeat " + ev.getId() + " - " + new SimpleDateFormat("HH:mm:ss").format(ev.getDate()), Toast.LENGTH_SHORT).show();
+        mTextView.setText(entry.getId() + " - " + entry.getIp() + " - " + new SimpleDateFormat("HH:mm:ss").format(entry.getLastUpdate()));
     }
 }
