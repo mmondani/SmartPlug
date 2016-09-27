@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
                  "THURSDAY_LOAD_ON_TIME" << "THURSDAY_LOAD_OFF_TIME" <<
                  "FRIDAY_LOAD_ON_TIME" << "FRIDAY_LOAD_OFF_TIME" <<
                  "SATURDAY_LOAD_ON_TIME" << "SATURDAY_LOAD_OFF_TIME" <<
-                 "SUNDAY_LOAD_ON_TIME" << "SUNDAY_LOAD_OFF_TIME" << "ENABLE_ONOFF_TIME" <<
+                 "SUNDAY_LOAD_ON_TIME" << "SUNDAY_LOAD_OFF_TIME" << "ENABLE_ONOFF_TIME" << "ONOFF_TIMES" <<
                  "PER_HOUR_ENERGY" << "PER_HOUR_ACIVE_POWER" << "ALL_REGISTERS";
     ui->comboRegister->addItems(registers);
 
@@ -97,6 +97,7 @@ void MainWindow::loadRegisterNameMap()
     registerNameMap["SUNDAY_LOAD_ON_TIME"] = REG_SUNDAY_LOAD_ON_TIME;
     registerNameMap["SUNDAY_LOAD_OFF_TIME"] = REG_SUNDAY_LOAD_OFF_TIME;
     registerNameMap["ENABLE_ONOFF_TIME"] = REG_ENABLE_ONOFF_TIME;
+    registerNameMap["ONOFF_TIMES"] = REG_ONOFF_TIMES;
     registerNameMap["PER_HOUR_ENERGY"] = REG_PER_HOUR_ENERGY;
     registerNameMap["PER_HOUR_ACIVE_POWER"] = REG_PER_HOUR_ACTIVE_POWER;
     registerNameMap["ALL_REGISTERS"] = REG_ALL_REGISTERS;
@@ -126,6 +127,7 @@ void MainWindow::loadRegisterNameMap()
     registerValueMap[REG_SUNDAY_LOAD_ON_TIME] = "SUNDAY_LOAD_ON_TIME";
     registerValueMap[REG_SUNDAY_LOAD_OFF_TIME] = "SUNDAY_LOAD_OFF_TIME";
     registerValueMap[REG_ENABLE_ONOFF_TIME] = "ENABLE_ONOFF_TIME";
+    registerValueMap[REG_ONOFF_TIMES] = "ONOFF_TIMES";
     registerValueMap[REG_PER_HOUR_ENERGY] = "PER_HOUR_ENERGY";
     registerValueMap[REG_PER_HOUR_ACTIVE_POWER] = "PER_HOUR_ACIVE_POWER";
     registerValueMap[REG_ALL_REGISTERS] = "ALL_REGISTERS";
@@ -481,6 +483,25 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
                 payloadStr = "Error";
             else
                 payloadStr = QString::number((unsigned int)msg.rawData.at(0), 2);
+        }
+        else if (msg.reg == REG_ONOFF_TIMES)
+        {
+            // Son 29 bytes que corresponden a las 7 horas de encendido y 7 horas de apagado
+            // de los 7 días de la semana, empezando por el Lunes.
+            // El  último byte es el de ENABLE_ONOFF_TIME.
+            if (msg.len < 29)
+                payloadStr = "Error";
+            else
+            {
+                payloadStr.clear();
+
+                for (int i = 0; i < 14; i++)
+                {
+                    payloadStr += (QString::number(msg.rawData.at(2*i)) + ":" + QString::number(msg.rawData.at(2*i+1)) + " ");
+                }
+
+                payloadStr += " Habilitados: " + QString::number((unsigned int)msg.rawData.at(28), 2);;
+            }
         }
         else if (msg.reg == REG_LOAD_STATE)
         {
