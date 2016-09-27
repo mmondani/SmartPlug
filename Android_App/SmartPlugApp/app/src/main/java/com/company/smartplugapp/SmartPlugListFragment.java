@@ -98,6 +98,7 @@ public class SmartPlugListFragment extends Fragment{
     @Override
     public void onDetach() {
         super.onDetach();
+        mCLickListener = null;
     }
 
     @Override

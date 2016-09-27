@@ -1,6 +1,7 @@
 package com.company.smartplugapp;
 
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -41,8 +42,10 @@ public class SmartPlugDetailsFragment extends Fragment {
     private FloatingActionButton mFloatingItemEnergyReset;
     private FloatingActionButton mFloatingItemFactoryReset;
 
+    private OnFloatingMenuItemClicked mClickListener = null;
 
     private String mId;
+
 
     private static final String ARG_ID = "id";
 
@@ -70,6 +73,24 @@ public class SmartPlugDetailsFragment extends Fragment {
         if(getArguments() != null) {
             mId = getArguments().getString(ARG_ID);
         }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        try {
+            mClickListener = (OnFloatingMenuItemClicked)activity;
+        }
+        catch (ClassCastException cce) {
+            throw new ClassCastException(activity.toString() + " debe implementar OnFloatingMenuItemClicked");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mClickListener = null;
     }
 
     @Override
@@ -129,28 +150,32 @@ public class SmartPlugDetailsFragment extends Fragment {
         mFloatingItemConfig.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /** TODO Llamar al listener de una interface que indique a la Activity que se presionó este item */
+                if (mClickListener != null)
+                    mClickListener.onFlatingMenuConfigClicked();
             }
         });
 
         mFloatingItemHistory.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /** TODO Llamar al listener de una interface que indique a la Activity que se presionó este item */
+                if (mClickListener != null)
+                    mClickListener.onFlatingMenuHistoryClicked();
             }
         });
 
         mFloatingItemEnergyReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /** TODO Llamar al listener de una interface que indique a la Activity que se presionó este item */
+                if (mClickListener != null)
+                    mClickListener.onFlatingMenuEnergyResetClicked();
             }
         });
 
         mFloatingItemFactoryReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /** TODO Llamar al listener de una interface que indique a la Activity que se presionó este item */
+                if (mClickListener != null)
+                    mClickListener.onFlatingMenuFactoryResetClicked();
             }
         });
 
@@ -169,6 +194,14 @@ public class SmartPlugDetailsFragment extends Fragment {
         if(ev.getId() == mId) {
             updateUI();
         }
+    }
+
+
+    public interface OnFloatingMenuItemClicked {
+        void onFlatingMenuConfigClicked ();
+        void onFlatingMenuHistoryClicked ();
+        void onFlatingMenuEnergyResetClicked ();
+        void onFlatingMenuFactoryResetClicked ();
     }
 
     private void updateUI () {

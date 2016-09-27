@@ -18,7 +18,8 @@ import service.SmartPlugService;
  * Además, MainActivity es la encargada de iniciar el Service que se encarga de comunicarse con
  * los Smart Plugs.
  */
-public class MainActivity extends AppCompatActivity implements SmartPlugListFragment.OnItemClickedInterface {
+public class MainActivity extends AppCompatActivity implements SmartPlugListFragment.OnItemClickedInterface,
+                                                                SmartPlugDetailsFragment.OnFloatingMenuItemClicked {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,5 +83,26 @@ public class MainActivity extends AppCompatActivity implements SmartPlugListFrag
         ft.replace(R.id.main_fragment_container, SmartPlugDetailsFragment.getInstance(smartPlugItem.getId()));
         ft.addToBackStack("ToDetailView");
         ft.commit();
+    }
+
+
+    @Override
+    public void onFlatingMenuConfigClicked() {
+        /** TODO Llamar a la Activity de Configuración. */
+    }
+
+    @Override
+    public void onFlatingMenuHistoryClicked() {
+        /** TODO Llamar a la activity de Historial. */
+    }
+
+    @Override
+    public void onFlatingMenuEnergyResetClicked() {
+        /** TODO Llamar al DialogFragment para resetear la energía. */
+    }
+
+    @Override
+    public void onFlatingMenuFactoryResetClicked() {
+        /** TODO Llamar al DialogFragment para resetear a valores de fábrica el Smart Plug. */
     }
 }
