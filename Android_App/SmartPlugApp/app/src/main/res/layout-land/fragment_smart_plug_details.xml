@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.company.smartplugapp.SmartPlugDetailsFragment">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/frag_details_toolbar"
+        android:minHeight="?attr/actionBarSize"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:theme="@style/AppTheme"
+        app:titleTextColor="@android:color/white"
+        android:background="?attr/colorPrimary"
+        android:layout_alignParentLeft="true">
+    </android.support.v7.widget.Toolbar>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="vertical"
+                  android:layout_width="200dp"
+                  android:layout_height="wrap_content"
+                  android:gravity="left"
+                  android:layout_centerVertical="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <ImageView
+                android:id="@+id/frag_details_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/device_tv"/>
+
+            <TextView
+                android:id="@+id/frag_details_icon_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Texto"
+                style="@style/ToolbarText"
+                android:layout_marginTop="10dp"/>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@id/frag_details_toolbar">
+
+        <TableLayout
+            android:id="@+id/frag_details_table"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp">
+
+            <TableRow>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/frag_details_voltage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="220,5 V"
+                        style="@style/GaugeValueText"
+                        android:layout_gravity="center"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="TENSIÓN"
+                        style="@style/GaugeNameText"
+                        android:layout_gravity="center"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginLeft="50dp">
+
+                    <TextView
+                        android:id="@+id/frag_details_current"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3,5 A"
+                        style="@style/GaugeValueText"
+                        android:layout_gravity="center"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="CORRIENTE"
+                        style="@style/GaugeNameText"
+                        android:layout_gravity="center"/>
+                </LinearLayout>
+
+            </TableRow>
+
+            <TableRow
+                android:layout_marginTop="30dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/frag_details_power"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="772 W"
+                        style="@style/GaugeValueText"
+                        android:layout_gravity="center"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="POTENCIA"
+                        style="@style/GaugeNameText"
+                        android:layout_gravity="center"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginLeft="50dp">
+
+                    <TextView
+                        android:id="@+id/frag_details_total_energy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1,25 KWh"
+                        style="@style/GaugeValueText"
+                        android:layout_gravity="center"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ENERGIA TOTAL"
+                        style="@style/GaugeNameText"
+                        android:layout_gravity="center"/>
+                </LinearLayout>
+
+            </TableRow>
+
+        </TableLayout>
+
+        <LinearLayout
+            android:id="@+id/frag_details_comm_state_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/frag_details_table"
+            android:orientation="horizontal"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="50dp">
+
+            <ImageView
+                android:id="@+id/frag_details_comm_state_icon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ok"/>
+
+            <TextView
+                android:id="@+id/frag_details_comm_state_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Funciona correctamente"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/frag_details_comm_state_layout"
+            android:orientation="horizontal"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="10dp">
+
+            <ImageView
+                android:id="@+id/frag_details_schedule_icon"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/clock"/>
+
+            <TextView
+                android:id="@+id/frag_details_schedule_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Programación horaria activada"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
+    <com.github.clans.fab.FloatingActionMenu
+        android:id="@+id/frag_details_float_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:paddingBottom="11dp"
+        android:paddingLeft="11dp"
+        android:paddingRight="11dp"
+        app:menu_animationDelayPerItem="55"
+        app:menu_backgroundColor="#ccffffff"
+        app:menu_buttonSpacing="0dp"
+        app:menu_colorNormal="#2f96da"
+        app:menu_colorPressed="#3fb0dc"
+        app:menu_colorRipple="#99d4d4d4"
+        app:menu_fab_label=""
+        app:menu_fab_size="normal"
+        app:menu_icon="@drawable/fab_add"
+        app:menu_labels_colorNormal="#c6c6c6"
+        app:menu_labels_colorPressed="#e7e7e7"
+        app:menu_labels_colorRipple="#66efecec"
+        app:menu_labels_cornerRadius="3dp"
+        app:menu_labels_ellipsize="none"
+        app:menu_labels_hideAnimation="@anim/fab_slide_out_to_right"
+        app:menu_labels_margin="0dp"
+        app:menu_labels_maxLines="-1"
+        app:menu_labels_padding="8dp"
+        app:menu_labels_position="left"
+        app:menu_labels_showAnimation="@anim/fab_slide_in_from_right"
+        app:menu_labels_showShadow="true"
+        app:menu_labels_singleLine="false"
+        app:menu_labels_textColor="#494949"
+        app:menu_labels_textSize="15sp"
+        app:menu_openDirection="up"
+        app:menu_shadowColor="#664b59da"
+        app:menu_shadowRadius="4dp"
+        app:menu_shadowXOffset="1dp"
+        app:menu_shadowYOffset="4dp"
+        app:menu_showShadow="true">
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/frag_details_float_menu_configuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/config"
+            app:fab_label="CONFIGURACIÓN"
+            app:fab_colorNormal="#2f96da"
+            app:fab_colorPressed="#3fb0dc"
+            app:fab_colorRipple="#99d4d4d4"
+            app:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/frag_details_float_menu_history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/chart"
+            app:fab_label="HISTORIAL"
+            app:fab_colorNormal="#2f96da"
+            app:fab_colorPressed="#3fb0dc"
+            app:fab_colorRipple="#99d4d4d4"
+            app:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/frag_details_float_menu_reset_energy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/reset1"
+            app:fab_label="REINICIAR ENERGIA"
+            app:fab_colorNormal="#2f96da"
+            app:fab_colorPressed="#3fb0dc"
+            app:fab_colorRipple="#99d4d4d4"
+            app:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/frag_details_float_menu_factory_reset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_dialog_map"
+            app:fab_label="VOLVER A VALORES DE FÁBRICA"
+            app:fab_colorNormal="#2f96da"
+            app:fab_colorPressed="#3fb0dc"
+            app:fab_colorRipple="#99d4d4d4"
+            app:fab_size="mini" />
+
+    </com.github.clans.fab.FloatingActionMenu>
+
+</RelativeLayout>

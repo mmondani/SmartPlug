@@ -119,6 +119,12 @@ public class SmartPlugListFragment extends Fragment{
         super.onStop();
     }
 
+
+    /**
+     * Se suscribe al evento UpdateSmartPlugEvent. Cada vez que se produce vuelve a obtener la lista
+     * de Smart Plugs de la base de datos para mostrar la información actualizada.
+     * @param ev Instancia del evento UpdateSmartPlugEvent.
+     */
     @Subscribe (threadMode = ThreadMode.MAIN)
     public void onUpdateSmartPlugEvent (UpdateSmartPlugEvent ev) {
         mSmartPlugAdapter.setSmartPlugs(mSmartPlugProvider.getSmartPlugs());

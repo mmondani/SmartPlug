@@ -69,6 +69,18 @@ public class MainActivity extends AppCompatActivity implements SmartPlugListFrag
 
     @Override
     public void onItemClicked(SmartPlugListItem smartPlugItem) {
-        /** TODO implementar el cambio a la vista de detalle del Smart Plug elegido */
+        /**
+         * Se presionó uno de los Smart Plug de la lista. Se pasa a la vista de detalle de este
+         * Smart Plug
+         */
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+
+        ft.setCustomAnimations(android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right, android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right);
+        ft.replace(R.id.main_fragment_container, SmartPlugDetailsFragment.getInstance(smartPlugItem.getId()));
+        ft.addToBackStack("ToDetailView");
+        ft.commit();
     }
 }
