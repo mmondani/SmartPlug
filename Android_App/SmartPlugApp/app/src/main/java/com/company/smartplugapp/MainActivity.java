@@ -34,25 +34,28 @@ public class MainActivity extends AppCompatActivity implements SmartPlugListFrag
 
             ft.add(R.id.main_fragment_container, SplashScreenFragment.getInstance());
             ft.commit();
+
+
+            /**
+             * Se programa que, dentro de 2 segundos, se muestre el SmartPlugListFragment.
+             */
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    FragmentManager fm = getSupportFragmentManager();
+                    FragmentTransaction ft = fm.beginTransaction();
+
+                    ft.setCustomAnimations(android.R.anim.fade_in,
+                            android.R.anim.fade_out, android.R.anim.fade_in,
+                            android.R.anim.fade_out);
+                    ft.replace(R.id.main_fragment_container, SmartPlugListFragment.getInstance());
+                    ft.commit();
+                }
+            }, 2000);
         }
 
-        /**
-         * Se programa que, dentro de 2 segundos, se muestre el SmartPlugListFragment.
-         */
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                FragmentManager fm = getSupportFragmentManager();
-                FragmentTransaction ft = fm.beginTransaction();
 
-                ft.setCustomAnimations(android.R.anim.fade_in,
-                        android.R.anim.fade_out, android.R.anim.fade_in,
-                        android.R.anim.fade_out);
-                ft.replace(R.id.main_fragment_container, SmartPlugListFragment.getInstance());
-                ft.commit();
-            }
-        }, 2000);
 
 
         /**

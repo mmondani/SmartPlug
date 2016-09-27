@@ -5,11 +5,9 @@ import java.util.Date;
 
 public class UpdateSmartPlugEvent {
     private String mId;
-    private Date mDate;
 
-    public UpdateSmartPlugEvent (String id, Date date) {
+    public UpdateSmartPlugEvent (String id) {
         mId = id;
-        mDate = date;
     }
 
     public String getId() {
@@ -18,13 +16,5 @@ public class UpdateSmartPlugEvent {
 
     public void setId(String id) {
         mId = id;
-    }
-
-    public Date getDate() {
-        return mDate;
-    }
-
-    public void setDate(Date date) {
-        mDate = date;
     }
 }

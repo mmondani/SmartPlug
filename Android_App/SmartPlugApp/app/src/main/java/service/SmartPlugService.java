@@ -7,6 +7,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
+import com.company.smartplugapp.BasicFrame;
+import com.company.smartplugapp.NoParamFrame;
+import com.company.smartplugapp.SmartPlugCommHelper;
 import com.company.smartplugapp.SmartPlugProvider;
 
 import org.greenrobot.eventbus.EventBus;
@@ -15,6 +18,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import database.InstantaneousInfoEntry;
 import events.HeartbeatEvent;
+import events.ResponseEvent;
 import events.UpdateSmartPlugEvent;
 
 
@@ -24,6 +28,7 @@ public class SmartPlugService extends Service {
     private Runnable mRunnable = null;
     private WifiManager.MulticastLock mMulticastLock;
     private UdpWatcher mUdpWatcher;
+    private TcpWatcher mTcpWatcher;
 
 
     public SmartPlugService (){
@@ -58,7 +63,14 @@ public class SmartPlugService extends Service {
              * los Smart Plugs.
              */
             mUdpWatcher = new UdpWatcher();
-            
+
+
+            /**
+             * Se crea una instancia de TcpWatcher, el cual se va a encargar de enviar y recibir los
+             * mensajes TCP con los SmartPlugs.
+             */
+            mTcpWatcher = new TcpWatcher(getApplicationContext());
+
 
             /** Se debe crear un MulticastLock para que la aplicación pueda recibir mensajes UDP en la dirección
              * de broadcast.
@@ -132,6 +144,49 @@ public class SmartPlugService extends Service {
         /**
          * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
          */
-        EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId(), ev.getDate()));
+        EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
+    }
+
+
+    /**
+     * Se suscribe al evento ResponseEvent. Cuando llega una respuesta actualiza los valores en la
+     * base de datos.
+     * @param ev Instancia del evento ResponseEvent.
+     */
+    @Subscribe (threadMode = ThreadMode.POSTING)
+    public void onResponseEvent (ResponseEvent ev) {
+        SmartPlugProvider smartPlugProvider = SmartPlugProvider.getInstance(getApplicationContext());
+
+        /**
+         * Se parsea la data recibida de acuerdo al comando y al registro.
+         */
+        BasicFrame basicFrame = SmartPlugCommHelper.getInstance().parseFrame(ev.getData());
+
+        if (basicFrame != null) {
+            if (basicFrame.getFrameType() == BasicFrame.Types.NO_PARAM) {
+                NoParamFrame frame = (NoParamFrame)basicFrame;
+
+                if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_NODE_ON) {
+                    InstantaneousInfoEntry entry = smartPlugProvider.getInstantaneousInfoEntry(ev.getId());
+                    entry.setLoadState(1);
+                    smartPlugProvider.updateInstantaneousInfoEntry(entry);
+
+                    /**
+                     * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
+                     */
+                    EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
+                }
+                else if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_NODE_OFF) {
+                    InstantaneousInfoEntry entry = smartPlugProvider.getInstantaneousInfoEntry(ev.getId());
+                    entry.setLoadState(0);
+                    smartPlugProvider.updateInstantaneousInfoEntry(entry);
+
+                    /**
+                     * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
+                     */
+                    EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
+                }
+            }
+        }
     }
 }

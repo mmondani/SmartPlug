@@ -10,6 +10,19 @@ import java.util.Arrays;
  */
 public class SmartPlugCommHelper {
 
+    public static final class Commands {
+        public static final byte GET = 0x01;
+        public static final byte SET = 0x02;
+        public static final byte NODE_ON = 0x10;
+        public static final byte NODE_OFF = 0x11;
+        public static final byte RESET = 0x20;
+        public static final byte RESP_GET = 0x30;
+        public static final byte RESP_SET = 0x31;
+        public static final byte RESP_RESET = 0x32;
+        public static final byte RESP_NODE_ON = 0x33;
+        public static final byte RESP_NODE_OFF = 0x34;
+    }
+
     /**
      * Retorna una instancia de SmartPlugCommHelper. Se debe llamar a este método
      * para utilizar las funciones de esta clase.
@@ -49,6 +62,57 @@ public class SmartPlugCommHelper {
         }
         else
             return null;
+    }
+
+    public byte[] getRawData (byte command) {
+        byte[] data = new byte[6];
+
+        data[0] = '#';
+        data[1] = '!';
+        data[2] = 3;        // Longitud del paquete sin contar data[0] y data[1]
+        data[3] = command;
+        data[4] = '#';
+        data[5] = '!';
+
+        return data;
+    }
+
+
+    public BasicFrame parseFrame (byte[] data) {
+        BasicFrame frame = null;
+        int length;
+        int command;
+        int register;
+
+        if (data.length > 3) {
+            if (data[0] == '#' && data[1] == '!') {
+                length = data[2];
+
+                /**
+                 * A la longitud indicada en la trama se le agregan 3 bytes iniciales: #, ! y el byte LEN
+                 */
+                if (data.length >= (length+3)) {
+                    command = data[3];
+
+                    if ( (command != Commands.RESP_NODE_ON) && (command != Commands.RESP_NODE_OFF) ) {
+                        /**
+                         * Si no es un comando RESP_NODE_ON o RESP_NODE_OFF, hay un registro que acompaña al comando
+                         */
+                        register = data[4];
+
+                        /** TODO Parsear el resto de las tramas a partir del comando y el registro */
+                    }
+                    else {
+                        /**
+                         * Si es un comando RESP_NODE_ON o RESP_NODE_OFF ya se puede devolver una instancia de NoParamFame
+                         */
+                        frame = new NoParamFrame((byte)length, (byte)command);
+                    }
+                }
+            }
+        }
+
+        return frame;
     }
 
 

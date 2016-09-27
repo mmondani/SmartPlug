@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import database.InstantaneousInfoEntry;
+import events.CommandEvent;
 import events.HeartbeatEvent;
 import events.UpdateSmartPlugEvent;
 
@@ -153,12 +154,14 @@ public class SmartPlugListFragment extends Fragment{
             mSmartPlugIcon.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mSmartPlugListItem.isOn()) {
-                        /** TODO enviar mensaje para apagar el nodo */
-                    }
-                    else {
-                        /** TODO enviar mensaje para encender el nodo */
-                    }
+                    byte[] data;
+
+                    if (mSmartPlugListItem.isOn())
+                        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.NODE_OFF);
+                    else
+                        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.NODE_ON);
+
+                    EventBus.getDefault().post(new CommandEvent(mSmartPlugListItem.getId(), data));
 
                 }
             });
