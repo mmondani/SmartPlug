@@ -1,6 +1,8 @@
 package service;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -25,7 +27,16 @@ import events.HeartbeatEvent;
 public class UdpServer extends Thread {
 
     private int mPort;
+    private Handler mHandler;
     private boolean mRunning = false;
+
+    private static final String PARAM_DATA = "data";
+    private static final String PARAM_IP = "ip";
+    private static final String PARAM_PORT = "port";
+
+    public static final class Messages {
+        public static final int RECEIVED = 1;
+    }
 
 
     /**
@@ -33,7 +44,8 @@ public class UdpServer extends Thread {
      *
      * @param port Puerto en el que se debe escuchar.
      */
-    public UdpServer(int port) {
+    public UdpServer(Handler handler, int port) {
+        mHandler = handler;
         mPort = port;
     }
 
@@ -108,6 +120,20 @@ public class UdpServer extends Thread {
         return (mRunning);
     }
 
+
+    public static String getResponseIp (Bundle bundle) {
+        return bundle.getString(PARAM_IP);
+    }
+
+    public static int getResponsePort (Bundle bundle) {
+        return bundle.getInt(PARAM_PORT);
+    }
+
+    public static byte[] getResponseData (Bundle bundle) {
+        return bundle.getByteArray(PARAM_DATA);
+    }
+
+
     /**
      * Postea una instancia del evento HeartbeatEvent en el EventBus.
      * @param address IP desde la que proviene el heartbeat.
@@ -116,15 +142,19 @@ public class UdpServer extends Thread {
      */
     private void emitNewPacket (String address, int port, byte[] data) {
 
-        /**
-         * Se usa la clase SmartPlugCommHelper para parsear la data recibida
-         */
-        HeartbeatFrame heartbeatFrame = SmartPlugCommHelper.getInstance().parseHeartBeat(data);
+        if (mHandler != null) {
+            Message msg = new Message();
 
-        /**
-         * Se genera un HeartbeatEvent.
-         */
-        EventBus.getDefault().post(new HeartbeatEvent(heartbeatFrame.getId(), address, Calendar.getInstance().getTime()));
+            msg.what = Messages.RECEIVED;
 
+            Bundle bundle = new Bundle();
+            bundle.putByteArray(PARAM_DATA, data);
+            bundle.putString(PARAM_IP, address);
+            bundle.putInt(PARAM_PORT, port);
+
+            msg.setData(bundle);
+
+            mHandler.sendMessage(msg);
+        }
     }
 }

@@ -22,8 +22,8 @@ public class SmartPlugService extends Service {
 
     private static boolean sRunning = false;
     private Runnable mRunnable = null;
-    private UdpServer mUdpServer = null;
     private WifiManager.MulticastLock mMulticastLock;
+    private UdpWatcher mUdpWatcher;
 
 
     public SmartPlugService (){
@@ -54,11 +54,11 @@ public class SmartPlugService extends Service {
             EventBus.getDefault().register(this);
 
             /**
-             * Se crea una instancia del servidor UDP para escuchar los heartbeats de los Smart Plugs
+             * Se crea una instancia de UdpWatcher, el cual va a recibir los heartbeat UDP desde
+             * los Smart Plugs.
              */
-            if (mUdpServer == null)
-                mUdpServer = new UdpServer(55555);
-
+            mUdpWatcher = new UdpWatcher();
+            
 
             /** Se debe crear un MulticastLock para que la aplicación pueda recibir mensajes UDP en la dirección
              * de broadcast.
@@ -69,11 +69,6 @@ public class SmartPlugService extends Service {
 
             mMulticastLock.acquire();
 
-            /**
-             * Si el servidor UDP no está corriendo, se lo inicia.
-             */
-            if (!mUdpServer.isRunning())
-                mUdpServer.start();
 
 
             mRunnable = new Runnable() {
