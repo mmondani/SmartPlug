@@ -82,17 +82,20 @@ public class SmartPlugService extends Service {
             mMulticastLock.acquire();
 
 
-
+            /**
+             * Cada N minutos, la aplicación consulta a todos los Smart Plugs que tiene conectados para
+             * conocer sus nuevos valores.
+             */
             mRunnable = new Runnable() {
                 @Override
                 public void run() {
 
 
-                    mHandler.postDelayed(mRunnable, 5 * 1000);
+                    mHandler.postDelayed(mRunnable, 5 * 60 * 1000);
                 }
             };
 
-            mHandler.postDelayed(mRunnable, 5 * 1000);
+            mHandler.postDelayed(mRunnable, 5 * 60 * 1000);
         }
         return Service.START_STICKY;
 
