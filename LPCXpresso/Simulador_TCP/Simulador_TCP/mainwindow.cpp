@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // Agregar registros
     QStringList registers;
     registers << "V_RMS" <<"I_RMS" << "POWER_FACTOR" << "FREQUENCY" << "ACTIVE_POWER" << "TOTAL_ENERGY" <<
-                 "CURRENT_HOUR_ENERGY" << "DEVICE_ID" << "LOAD_STATE" <<
+                 "CURRENT_HOUR_ENERGY" << "CURRENT_MEASUREMENTS" << "DEVICE_ID" << "LOAD_STATE" <<
                  "MONDAY_LOAD_ON_TIME" << "MONDAY_LOAD_OFF_TIME" <<
                  "TUESDAY_LOAD_ON_TIME" << "TUESDAY_LOAD_OFF_TIME" <<
                  "WEDNESDAY_LOAD_ON_TIME" << "WEDNESDAY_LOAD_OFF_TIME" <<
@@ -80,6 +80,7 @@ void MainWindow::loadRegisterNameMap()
     registerNameMap["ACTIVE_POWER"] = REG_ACTIVE_POWER;
     registerNameMap["TOTAL_ENERGY"] = REG_TOTAL_ENERGY;
     registerNameMap["CURRENT_HOUR_ENERGY"] = REG_CURRENT_HOUR_ENERGY;
+    registerNameMap["CURRENT_MEASUREMENTS"] = REG_CURRENT_MEASUREMENTS;
     registerNameMap["DEVICE_ID"] = REG_DEVICE_ID;
     registerNameMap["LOAD_STATE"] = REG_LOAD_STATE;
     registerNameMap["MONDAY_LOAD_ON_TIME"] = REG_MONDAY_LOAD_ON_TIME;
@@ -110,6 +111,7 @@ void MainWindow::loadRegisterNameMap()
     registerValueMap[REG_ACTIVE_POWER] = "ACTIVE_POWER";
     registerValueMap[REG_TOTAL_ENERGY] = "TOTAL_ENERGY";
     registerValueMap[REG_CURRENT_HOUR_ENERGY] = "CURRENT_HOUR_ENERGY";
+    registerValueMap[REG_CURRENT_MEASUREMENTS] = "CURRENT_MEASUREMENTS";
     registerValueMap[REG_DEVICE_ID] = "DEVICE_ID";
     registerValueMap[REG_LOAD_STATE] = "LOAD_STATE";
     registerValueMap[REG_MONDAY_LOAD_ON_TIME] = "MONDAY_LOAD_ON_TIME";
@@ -454,6 +456,19 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
             else
             {
                 payloadStr = QString::number(hexToFloat(msg.rawData.mid(0, 4)));
+            }
+        }
+        else if (msg.reg == REG_CURRENT_MEASUREMENTS)
+        {
+            // Son 16 bytes que representan 4 valores float: tensión, corriente, potencia activa y energía total acumulada.
+            if (msg.len < 16)
+                payloadStr = "Error";
+            else
+            {
+                payloadStr = "Tensión: " + QString::number(hexToFloat(msg.rawData.mid(0, 4))) + " ";
+                payloadStr += "Corriente: " + QString::number(hexToFloat(msg.rawData.mid(4, 4))) + " ";
+                payloadStr += "Potencia: " + QString::number(hexToFloat(msg.rawData.mid(8, 4))) + " ";
+                payloadStr += "Energía total: " + QString::number(hexToFloat(msg.rawData.mid(12, 4)));
             }
         }
         else if (msg.reg == REG_DEVICE_ID)
