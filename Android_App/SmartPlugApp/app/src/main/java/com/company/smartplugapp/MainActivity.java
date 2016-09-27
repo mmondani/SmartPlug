@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements SmartPlugListFrag
         startService(new Intent(this, SmartPlugService.class));
     }
 
+    /** TODO chequear si está conectado a WiFi o no*/
+
 
     @Override
     public void onItemClicked(SmartPlugListItem smartPlugItem) {

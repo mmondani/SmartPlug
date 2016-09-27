@@ -18,5 +18,15 @@ public class SmartPlugDb {
         }
     }
 
-    /** TODO definir las otras 3 tablas que componen la base de datos */
+    public static final class StaticInfoTable {
+        public static final String NAME = "staticInfo";
+
+        public static final class Cols {
+            public static final String ID = "id";
+            public static final String NAME = "name";
+            public static final String ICON_ID = "icon_id";
+        }
+    }
+
+    /** TODO definir las otras 2 tablas que componen la base de datos */
 }

@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import database.SmartPlugDb.InstantaneousInfoTable;
+import database.SmartPlugDb.StaticInfoTable;
 
 
 public class SmartPlugDbHelper extends SQLiteOpenHelper {
@@ -29,7 +30,13 @@ public class SmartPlugDbHelper extends SQLiteOpenHelper {
                 InstantaneousInfoTable.Cols.POWER + ", " +
                 InstantaneousInfoTable.Cols.TOTAL_ENERGY + ")");
 
-        /** TODO crear las otras 3 tablas en la base de datos */
+        db.execSQL("create table " + StaticInfoTable.NAME + " (" +
+                "_id integer primary key autoincrement, " +
+                StaticInfoTable.Cols.ID + ", " +
+                StaticInfoTable.Cols.NAME + ", " +
+                StaticInfoTable.Cols.ICON_ID + ")");
+
+        /** TODO crear las otras 2 tablas en la base de datos */
     }
 
     @Override
