@@ -21,6 +21,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 
 import database.InstantaneousInfoEntry;
@@ -207,11 +209,10 @@ public class SmartPlugService extends Service {
         }
 
         /**
-         * Si ya está en la base de datos se actualiza la información de la IP y del last update.
+         * Si ya está en la base de datos se actualiza la información de la IP.
          */
         InstantaneousInfoEntry entry = smartPlugProvider.getInstantaneousInfoEntry(ev.getId());
         entry.setIp(ev.getIp());
-        entry.setLastUpdate(ev.getDate());
 
         smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
@@ -243,6 +244,7 @@ public class SmartPlugService extends Service {
                 if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_NODE_ON) {
                     InstantaneousInfoEntry entry = smartPlugProvider.getInstantaneousInfoEntry(ev.getId());
                     entry.setLoadState(1);
+                    entry.setLastUpdate(Calendar.getInstance().getTime());
                     smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
                     /**
@@ -253,6 +255,7 @@ public class SmartPlugService extends Service {
                 else if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_NODE_OFF) {
                     InstantaneousInfoEntry entry = smartPlugProvider.getInstantaneousInfoEntry(ev.getId());
                     entry.setLoadState(0);
+                    entry.setLastUpdate(Calendar.getInstance().getTime());
                     smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
                     /**
@@ -301,6 +304,7 @@ public class SmartPlugService extends Service {
                         else
                             entry.setTotalEnergy(frame.getData()[3]);
 
+                        entry.setLastUpdate(Calendar.getInstance().getTime());
                         smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
                         /**
@@ -337,6 +341,8 @@ public class SmartPlugService extends Service {
                         entry.setLoadState(0);
                     else
                         entry.setLoadState(1);
+
+                    entry.setLastUpdate(Calendar.getInstance().getTime());
                     smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
                     /**
