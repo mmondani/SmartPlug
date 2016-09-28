@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import database.SmartPlugDb.InstantaneousInfoTable;
+import database.SmartPlugDb.OnOffTimesTable;
 import database.SmartPlugDb.StaticInfoTable;
 
 
@@ -36,7 +37,26 @@ public class SmartPlugDbHelper extends SQLiteOpenHelper {
                 StaticInfoTable.Cols.NAME + ", " +
                 StaticInfoTable.Cols.ICON_ID + ")");
 
-        /** TODO crear las otras 2 tablas en la base de datos */
+        db.execSQL("create table " + OnOffTimesTable.NAME + " (" +
+                "_id integer primary key autoincrement, " +
+                OnOffTimesTable.Cols.ID + ", " +
+                OnOffTimesTable.Cols.ENABLED_TIMES + ", " +
+                OnOffTimesTable.Cols.MONDAY_LOAD_ON_TIME + ", " +
+                OnOffTimesTable.Cols.MONDAY_LOAD_OFF_TIME + ", " +
+                OnOffTimesTable.Cols.TUESDAY_LOAD_ON_TIME + ", " +
+                OnOffTimesTable.Cols.TUESDAY_LOAD_OFF_TIME + ", " +
+                OnOffTimesTable.Cols.WEDNESDAY_LOAD_ON_TIME + ", " +
+                OnOffTimesTable.Cols.WEDNESDAY_LOAD_OFF_TIME + ", " +
+                OnOffTimesTable.Cols.THURSDAY_LOAD_ON_TIME + ", " +
+                OnOffTimesTable.Cols.THURSDAY_LOAD_OFF_TIME + ", " +
+                OnOffTimesTable.Cols.FRIDAY_LOAD_ON_TIME + ", " +
+                OnOffTimesTable.Cols.FRIDAY_LOAD_OFF_TIME + ", " +
+                OnOffTimesTable.Cols.SATURDAY_LOAD_ON_TIME + ", " +
+                OnOffTimesTable.Cols.SATURDAY_LOAD_OFF_TIME + ", " +
+                OnOffTimesTable.Cols.SUNDAY_LOAD_ON_TIME + ", " +
+                OnOffTimesTable.Cols.SUNDAY_LOAD_OFF_TIME + ")");
+
+        /** TODO crear la otra tabla en la base de datos */
     }
 
     @Override

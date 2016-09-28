@@ -20,6 +20,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import database.InstantaneousInfoEntry;
+import database.OnOffTimesEntry;
+import database.SmartPlugDb;
 import database.StaticInfoEntry;
 import events.UpdateSmartPlugEvent;
 
@@ -216,7 +218,7 @@ public class SmartPlugDetailsFragment extends Fragment {
 
         InstantaneousInfoEntry instantaneousInfoEntry = provider.getInstantaneousInfoEntry(mId);
         StaticInfoEntry staticInfoEntry = provider.getStaticInfoEntry(mId);
-        /** TODO Falta obtener la entrada de la tabla OnOffTimes*/
+        OnOffTimesEntry onOffTimesEntry = provider.getOnOffTimesEntry(mId);
 
         /**
          * Se actualiza la UI a partir de la información en la base de datos.
@@ -237,7 +239,18 @@ public class SmartPlugDetailsFragment extends Fragment {
             mCommStateText.setText("Error de comunicación");
         }
 
-        /** TODO Falta determinar si está habilitada la programación horaria o no */
+        /**
+         * Si todos los días están deshabilitados, no hay programción horaria
+         */
+        if (onOffTimesEntry.getEnabledTimes() == 0) {
+            mScheduleIconView.setImageResource(R.drawable.no_clock);
+            mScheduleText.setText("Programación horaria desactivada");
+        }
+        else {
+            mScheduleIconView.setImageResource(R.drawable.clock);
+            mScheduleText.setText("Programación horaria activada");
+        }
+
 
     }
 }

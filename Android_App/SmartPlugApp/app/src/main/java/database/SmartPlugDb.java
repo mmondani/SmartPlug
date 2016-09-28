@@ -28,5 +28,28 @@ public class SmartPlugDb {
         }
     }
 
-    /** TODO definir las otras 2 tablas que componen la base de datos */
+    public static final class OnOffTimesTable {
+        public static final String NAME = "onOffTimes";
+
+        public static final class Cols {
+            public static final String ID = "id";
+            public static final String ENABLED_TIMES = "enabled_times";
+            public static final String MONDAY_LOAD_ON_TIME = "monday_load_on_time";
+            public static final String MONDAY_LOAD_OFF_TIME = "monday_load_off_tine";
+            public static final String TUESDAY_LOAD_ON_TIME = "tuesday_load_on_time";
+            public static final String TUESDAY_LOAD_OFF_TIME = "tuesday_load_off_tine";
+            public static final String WEDNESDAY_LOAD_ON_TIME = "wednesday_load_on_time";
+            public static final String WEDNESDAY_LOAD_OFF_TIME = "wednesday_load_off_tine";
+            public static final String THURSDAY_LOAD_ON_TIME = "thursday_load_on_time";
+            public static final String THURSDAY_LOAD_OFF_TIME = "thursday_load_off_tine";
+            public static final String FRIDAY_LOAD_ON_TIME = "friday_load_on_time";
+            public static final String FRIDAY_LOAD_OFF_TIME = "friday_load_off_tine";
+            public static final String SATURDAY_LOAD_ON_TIME = "saturday_load_on_time";
+            public static final String SATURDAY_LOAD_OFF_TIME = "saturday_load_off_tine";
+            public static final String SUNDAY_LOAD_ON_TIME = "sunday_load_on_time";
+            public static final String SUNDAY_LOAD_OFF_TIME = "sunday_load_off_tine";
+        }
+    }
+
+    /** TODO definir las otra tabla que compone la base de datos */
 }

@@ -11,8 +11,11 @@ import java.util.List;
 
 import database.InstantaneousInfoCursoWrapper;
 import database.InstantaneousInfoEntry;
+import database.OnOffTimesCursorWraper;
+import database.OnOffTimesEntry;
 import database.SmartPlugDb;
 import database.SmartPlugDb.InstantaneousInfoTable;
+import database.SmartPlugDb.OnOffTimesTable;
 import database.SmartPlugDb.StaticInfoTable;
 import database.SmartPlugDbHelper;
 import database.StaticInfoCursorWraper;
@@ -66,7 +69,6 @@ public class SmartPlugProvider {
     public void addSmartPlug (String id, String ip) {
         /**
          * Se agrega una entrada en las tablas: InstantaneousInfo, StaticInfo y OnOffTimes.
-         * TODO agregar la entrada en OnOffTimes.
          */
         ContentValues values;
 
@@ -87,6 +89,15 @@ public class SmartPlugProvider {
         staticInfoEntry.setId(id);
         values = getStaticInfoContentValues(staticInfoEntry);
         mDatabase.insert(StaticInfoTable.NAME, null, values);
+
+
+        /**
+         * Nueva entrada en la tabla OnOffTimesTable.
+         */
+        OnOffTimesEntry onOffTimesEntry = new OnOffTimesEntry();
+        onOffTimesEntry.setId(id);
+        values = getOnOffTimesContentValues(onOffTimesEntry);
+        mDatabase.insert(OnOffTimesTable.NAME, null, values);
     }
 
 
@@ -243,6 +254,75 @@ public class SmartPlugProvider {
         values.put(StaticInfoTable.Cols.ID, entry.getId());
         values.put(StaticInfoTable.Cols.NAME, entry.getName());
         values.put(StaticInfoTable.Cols.ICON_ID, entry.getIconId());
+
+        return values;
+    }
+
+
+    /**
+     * *********************************************************************************************
+     * Métodos para acceder a la tabla OnOffTimesTable
+     * *********************************************************************************************
+     */
+
+    public OnOffTimesEntry getOnOffTimesEntry (String id) {
+        OnOffTimesCursorWraper cursor = queryOnOffTimes(
+                OnOffTimesTable.Cols.ID + " = ?",
+                new String[]{id}
+        );
+
+        try {
+            if (cursor.getCount() == 0)
+                return null;
+
+            cursor.moveToFirst();
+            return cursor.getOnOffTimesEntry();
+        }finally {
+            cursor.close();
+        }
+    }
+
+
+    public void updateOnOffTimesEntry (OnOffTimesEntry entry) {
+        ContentValues values = getOnOffTimesContentValues(entry);
+
+        mDatabase.update(OnOffTimesTable.NAME, values, OnOffTimesTable.Cols.ID + " = ?",
+                new String[]{entry.getId()});
+    }
+
+    private OnOffTimesCursorWraper queryOnOffTimes (String whereClause, String[] whereArgs) {
+        Cursor cursor = mDatabase.query(
+                OnOffTimesTable.NAME,
+                null,
+                whereClause,
+                whereArgs,
+                null,
+                null,
+                null
+        );
+
+        return new OnOffTimesCursorWraper(cursor);
+    }
+
+    private static ContentValues getOnOffTimesContentValues (OnOffTimesEntry entry) {
+        ContentValues values = new ContentValues();
+
+        values.put(OnOffTimesTable.Cols.ID, entry.getId());
+        values.put(OnOffTimesTable.Cols.ENABLED_TIMES, entry.getEnabledTimes());
+        values.put(OnOffTimesTable.Cols.MONDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.MONDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.TUESDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.TUESDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.WEDNESDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.WEDNESDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.THURSDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.THURSDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.FRIDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.FRIDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.SATURDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.SATURDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.SUNDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.SUNDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
 
         return values;
     }

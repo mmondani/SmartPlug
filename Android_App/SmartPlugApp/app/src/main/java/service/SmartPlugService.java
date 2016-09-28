@@ -26,6 +26,8 @@ import java.util.Calendar;
 import java.util.List;
 
 import database.InstantaneousInfoEntry;
+import database.OnOffTimesEntry;
+import database.SimpleTime;
 import database.StaticInfoEntry;
 import events.CommandEvent;
 import events.HeartbeatEvent;
@@ -148,6 +150,7 @@ public class SmartPlugService extends Service {
 
             /**
              * La primera vez se ejecuta a los 2 segundos de iniciado el servicio.
+             * TODO Cambiarlo a 6 segundos para permitir que haya recibido los heartbeats la primera vez que se instala la aplicación.
              */
             mHandler.postDelayed(mRunnableBasicInfo, 2 * 1000);
 
@@ -323,7 +326,14 @@ public class SmartPlugService extends Service {
                      * Se recibe un byte en el que cada bit representa si está habilitada la programación
                      * horaria para cada día. El bit 0 corresponde al domingo y el 6 al sábado.
                      */
-                    /** TODO Implementar la actualización de la base de datos OnOffTimes para este ID */
+                    OnOffTimesEntry entry = smartPlugProvider.getOnOffTimesEntry(ev.getId());
+                    entry.setEnabledTimes(frame.getData());
+                    smartPlugProvider.updateOnOffTimesEntry(entry);
+
+                    /**
+                     * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
+                     */
+                    EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
                 }
                 else if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET &&
                         frame.getRegister() == SmartPlugCommHelper.Registers.LOAD_STATE) {
@@ -360,7 +370,51 @@ public class SmartPlugService extends Service {
                      * (hora y minutos), 7 horarios de apagado (hora y minutos) y 1 byte que indica
                      * los días que está habilitada la programación horaria.
                      */
-                    /** TODO Implementar la actualización de la base de datos OnOffTimes para este ID */
+                    if (frame.getData().length == 29) {
+                        OnOffTimesEntry entry = smartPlugProvider.getOnOffTimesEntry(ev.getId());
+                        entry.getMondayLoadOnTime().setHours(frame.getData()[0]);
+                        entry.getMondayLoadOnTime().setMinutes(frame.getData()[1]);
+                        entry.getMondayLoadOffTime().setHours(frame.getData()[2]);
+                        entry.getMondayLoadOffTime().setMinutes(frame.getData()[3]);
+
+                        entry.getTuesdayLoadOnTime().setHours(frame.getData()[4]);
+                        entry.getTuesdayLoadOnTime().setMinutes(frame.getData()[5]);
+                        entry.getTuesdayLoadOffTime().setHours(frame.getData()[6]);
+                        entry.getTuesdayLoadOffTime().setMinutes(frame.getData()[7]);
+
+                        entry.getWednesdayLoadOnTime().setHours(frame.getData()[8]);
+                        entry.getWednesdayLoadOnTime().setMinutes(frame.getData()[9]);
+                        entry.getWednesdayLoadOffTime().setHours(frame.getData()[10]);
+                        entry.getWednesdayLoadOffTime().setMinutes(frame.getData()[11]);
+
+                        entry.getThursdayLoadOnTime().setHours(frame.getData()[12]);
+                        entry.getThursdayLoadOnTime().setMinutes(frame.getData()[13]);
+                        entry.getThursdayLoadOffTime().setHours(frame.getData()[14]);
+                        entry.getThursdayLoadOffTime().setMinutes(frame.getData()[15]);
+
+                        entry.getFridayLoadOnTime().setHours(frame.getData()[16]);
+                        entry.getFridayLoadOnTime().setMinutes(frame.getData()[17]);
+                        entry.getFridayLoadOffTime().setHours(frame.getData()[18]);
+                        entry.getFridayLoadOffTime().setMinutes(frame.getData()[19]);
+
+                        entry.getSaturdayLoadOnTime().setHours(frame.getData()[20]);
+                        entry.getSaturdayLoadOnTime().setMinutes(frame.getData()[21]);
+                        entry.getSaturdayLoadOnTime().setHours(frame.getData()[22]);
+                        entry.getSaturdayLoadOnTime().setMinutes(frame.getData()[23]);
+
+                        entry.getSundayLoadOnTime().setHours(frame.getData()[24]);
+                        entry.getSundayLoadOnTime().setMinutes(frame.getData()[25]);
+                        entry.getSundayLoadOnTime().setHours(frame.getData()[26]);
+                        entry.getSundayLoadOnTime().setMinutes(frame.getData()[27]);
+
+                        entry.setEnabledTimes(frame.getData()[28]);
+                        smartPlugProvider.updateOnOffTimesEntry(entry);
+
+                        /**
+                         * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
+                         */
+                        EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
+                    }
                 }
                 /** TODO Implementar la lectura de la trama para GET(*_LOAD_ON_TIME) y GET(*_LOAD_OFF_TIME) */
             }
