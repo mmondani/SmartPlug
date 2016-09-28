@@ -93,9 +93,17 @@ public class SmartPlugDetailsFragment extends Fragment {
         mClickListener = null;
     }
 
+
+
     @Override
     public void onStart() {
         super.onStart();
+
+        /**
+         * Cada vez que se muestra el Fragment se actualiza la información del Smart Plug.
+         */
+        updateUI();
+
         /**
          * Se registra este framento en el EventBus para empezar a recibir los eventos
          * a los que esté suscrito.
@@ -140,11 +148,6 @@ public class SmartPlugDetailsFragment extends Fragment {
         toolbar.setTitle("Smart Plugs");
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("");
-
-        /**
-         * Se actualiza la UI
-         */
-        updateUI();
 
 
         mFloatingItemConfig.setOnClickListener(new View.OnClickListener() {

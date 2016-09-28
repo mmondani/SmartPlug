@@ -78,8 +78,6 @@ public class SmartPlugListFragment extends Fragment{
         mSmartPlugAdapter = new SmartPlugAdapter();
         mSmartPlugsList.setAdapter(mSmartPlugAdapter);
 
-        mSmartPlugAdapter.setSmartPlugs(mSmartPlugProvider.getInstance(getActivity()).getSmartPlugs());
-
         return v;
     }
 
@@ -104,6 +102,12 @@ public class SmartPlugListFragment extends Fragment{
     @Override
     public void onStart() {
         super.onStart();
+
+        /**
+         * Cada vez que se vuelve a mostrarel Fragment se actualiza la información de los SmartPlugs.
+         */
+        mSmartPlugAdapter.setSmartPlugs(mSmartPlugProvider.getInstance(getActivity()).getSmartPlugs());
+
         /**
          * Se registra este framento en el EventBus para empezar a recibir los eventos
          * a los que esté suscrito.

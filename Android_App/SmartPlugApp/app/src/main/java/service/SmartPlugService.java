@@ -215,11 +215,6 @@ public class SmartPlugService extends Service {
         entry.setIp(ev.getIp());
 
         smartPlugProvider.updateInstantaneousInfoEntry(entry);
-
-        /**
-         * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
-         */
-        EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
     }
 
 
