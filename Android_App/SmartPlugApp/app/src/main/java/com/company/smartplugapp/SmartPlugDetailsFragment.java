@@ -191,7 +191,7 @@ public class SmartPlugDetailsFragment extends Fragment {
      */
     @Subscribe (threadMode = ThreadMode.MAIN)
     public void onUpdateSmartPlugEvent (UpdateSmartPlugEvent ev) {
-        if(ev.getId() == mId) {
+        if(ev.getId().compareTo(mId) == 0) {
             updateUI();
         }
     }

@@ -23,6 +23,38 @@ public class SmartPlugCommHelper {
         public static final byte RESP_NODE_OFF = 0x34;
     }
 
+    public static final class Registers {
+        public static final byte V_RMS = 0x01;
+        public static final byte I_RMS = 0x02;
+        public static final byte POWER_FACTOR = 0x03;
+        public static final byte FREQUENCY = 0x04;
+        public static final byte ACTIVE_POWER = 0x05;
+        public static final byte TOTAL_ENERGY = 0x06;
+        public static final byte CURRENT_HOUR_ENERGY = 0x07;
+        public static final byte CURRENT_MEASUREMENTS = 0x08;
+        public static final byte DEVICE_ID = 0x10;
+        public static final byte LOAD_STATE = 0x15;
+        public static final byte MONDAY_LOAD_ON_TIME = 0x20;
+        public static final byte MONDAY_LOAD_OFF_TIME = 0x21;
+        public static final byte TUESDAY_LOAD_ON_TIME = 0x22;
+        public static final byte TUESDAY_LOAD_OFF_TIME = 0x23;
+        public static final byte WEDNESDAY_LOAD_ON_TIME = 0x24;
+        public static final byte WEDNESDAY_LOAD_OFF_TIME = 0x25;
+        public static final byte THURSDAY_LOAD_ON_TIME = 0x26;
+        public static final byte THURSDAY_LOAD_OFF_TIME = 0x27;
+        public static final byte FRIDAY_LOAD_ON_TIME = 0x28;
+        public static final byte FRIDAY_LOAD_OFF_TIME = 0x29;
+        public static final byte SATURDAY_LOAD_ON_TIME = 0x2A;
+        public static final byte SATURDAY_LOAD_OFF_TIME = 0x2B;
+        public static final byte SUNDAY_LOAD_ON_TIME = 0x2C;
+        public static final byte SUNDAY_LOAD_OFF_TIME = 0x2D;
+        public static final byte ENABLE_ONOFF_TIME = 0x2E;
+        public static final byte ONOFF_TIMES = 0x2F;
+        public static final byte PER_HOUR_ENERGY = 0x30;
+        public static final byte PER_HOUR_ACTIVE_POWER = 0x31;
+        public static final byte ALL_REGISTERS = 0x70;
+    }
+
     /**
      * Retorna una instancia de SmartPlugCommHelper. Se debe llamar a este método
      * para utilizar las funciones de esta clase.
@@ -77,6 +109,20 @@ public class SmartPlugCommHelper {
         return data;
     }
 
+    public byte[] getRawData (byte command, byte register) {
+        byte[] data = new byte[7];
+
+        data[0] = '#';
+        data[1] = '!';
+        data[2] = 4;        // Longitud del paquete sin contar data[0] y data[1]
+        data[3] = command;
+        data[4] = register;
+        data[5] = '#';
+        data[6] = '!';
+
+        return data;
+    }
+
 
     public BasicFrame parseFrame (byte[] data) {
         BasicFrame frame = null;
@@ -100,7 +146,68 @@ public class SmartPlugCommHelper {
                          */
                         register = data[4];
 
-                        /** TODO Parsear el resto de las tramas a partir del comando y el registro */
+                        if (command == Commands.RESP_GET) {
+                            if ((register == Registers.V_RMS) || (register == Registers.I_RMS) || (register == Registers.POWER_FACTOR) ||
+                                    (register == Registers.FREQUENCY) || (register == Registers.ACTIVE_POWER) || (register == Registers.TOTAL_ENERGY) ||
+                                    (register == Registers.CURRENT_HOUR_ENERGY)) {
+                                /**
+                                 * El payload de estos registros es un solo float.
+                                 */
+                                frame = new FloatFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if (register == Registers.CURRENT_MEASUREMENTS) {
+                                /**
+                                 * El payload son 4 floats: tensión, corriente, potencia, energía total acumulada
+                                 */
+                                frame = new FloatArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if (register == Registers.DEVICE_ID) {
+                                /**
+                                 * El payload es un string de 32 caracteres.
+                                 */
+                                frame = new StringFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if ( (register == Registers.MONDAY_LOAD_ON_TIME) || (register == Registers.MONDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.TUESDAY_LOAD_ON_TIME) || (register == Registers.TUESDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.WEDNESDAY_LOAD_ON_TIME) || (register == Registers.WEDNESDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.THURSDAY_LOAD_ON_TIME) || (register == Registers.THURSDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.FRIDAY_LOAD_ON_TIME) || (register == Registers.FRIDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.SATURDAY_LOAD_ON_TIME) || (register == Registers.SATURDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.SUNDAY_LOAD_ON_TIME) || (register == Registers.SUNDAY_LOAD_OFF_TIME)) {
+                                /**
+                                 * El payload son 2 bytes que indican la hora y los minutos.
+                                 */
+                                frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if (register == Registers.ENABLE_ONOFF_TIME) {
+                                /**
+                                 * El payload es 1 byte que en que cada bit indica si la programación
+                                 * horaria del día está habilitada o no. El bit 0 es el domingo y
+                                 * el 6 es el sábado.
+                                 */
+                                frame = new ByteFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if (register == Registers.ONOFF_TIMES) {
+                                /**
+                                 * EL payload se compone de 7 horas de encendido, 7 horas de apagado
+                                 * y 1 byte que indica que días están habilitados para la programación
+                                 * horaria. El orden de las horas es: lunes encendido, martes encendido, ...
+                                 * domingo encendido, lunes apagado, ...., domingo apagado.
+                                 * Totalizan 29 bytes.
+                                 */
+                                frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if (register == Registers.LOAD_STATE) {
+                                /**
+                                 * El payload es 1 byte que indica si la carga está encendida (1) o
+                                 * apagada (0).
+                                 */
+                                frame = new ByteFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if ( (register == Registers.PER_HOUR_ACTIVE_POWER) || (register == Registers.PER_HOUR_ENERGY) ) {
+                                /** TODO implementar el parseo del float array que acompaña a estos registro. Vienen al revés los bytes ????? */
+                            }
+                        }
                     }
                     else {
                         /**
