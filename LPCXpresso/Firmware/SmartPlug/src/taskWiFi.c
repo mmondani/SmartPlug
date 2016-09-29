@@ -730,9 +730,10 @@ TASK(taskWiFi)
 
                 ioObject_write(rn1723, '#');
                 ioObject_write(rn1723, '!');
-                ioObject_write(rn1723, 4);
+                ioObject_write(rn1723, counter + 4);			// Se agrega el byte del campo COMANDO, el byte del campo REGISTRO y los #! finales.
                 ioObject_write(rn1723, CMD_RESP_SET);
                 ioObject_write(rn1723, reg);
+                ioComm_writeBytes(rn1723, counter, buffer);
                 ioObject_write(rn1723, '#');
                 ioObject_write(rn1723, '!');
             }
