@@ -21,6 +21,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ConfigurationActivity"
+                  android:parentActivityName=".MainActivity">
+        </activity>
+
         <service
             android:name="service.SmartPlugService"
             android:enabled="true"
@@ -28,8 +32,6 @@
             android:stopWithTask="false" >
         </service>
 
-        <activity android:name=".ConfigurationActivity" >
-        </activity>
     </application>
 
 </manifest>
