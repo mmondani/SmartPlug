@@ -2,8 +2,11 @@ package com.company.smartplugapp;
 
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -20,7 +23,9 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import database.InstantaneousInfoEntry;
 import database.OnOffTimesEntry;
+import database.SimpleTime;
 import database.StaticInfoEntry;
+import events.CommandEvent;
 import events.UpdateSmartPlugEvent;
 
 
@@ -46,8 +51,11 @@ public class ConfigurationFragment extends Fragment {
 
     private String mId;
     private OnIconClickedInterface mClickListener = null;
+    private String mWeekDayToConfig;
 
     private static final String ARG_ID = "id";
+    private static final int REQUEST_ON_TIME = 0;
+    private static final int REQUEST_OFF_TIME = 1;
 
 
     public static ConfigurationFragment getInstance (String id) {
@@ -200,7 +208,19 @@ public class ConfigurationFragment extends Fragment {
         mScheduleMondayBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /** TODO Llamar al DialogFragment para configurar las horas */
+
+                /**
+                 * Si está deshabilitada la programación horaria del día (alpha != 1.0f)
+                 * se muestran los DialogFragment para elegir las horas.
+                 * Si está habilitada, se la deshabilita.
+                 */
+                if (mScheduleMondayBox.getAlpha() != 1.0f) {
+                    String timeString = mScheduleMondayText.getText().toString();
+                    showTimePickerDialog("monday", timeString, true);
+                }
+                else {
+                    resetScheduleTime ("monday");
+                }
             }
         });
 
@@ -268,6 +288,95 @@ public class ConfigurationFragment extends Fragment {
     }
 
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_ON_TIME) {
+            /**
+             * Se muestra el DialogFragment para la hora de apagado se haya aceptado la hora de encendido
+             * o se la haya pasado.
+             */
+            String timeString = mScheduleMondayText.getText().toString();
+            if (mWeekDayToConfig.compareTo("monday") == 0)
+                timeString = mScheduleMondayText.getText().toString();
+            else if (mWeekDayToConfig.compareTo("tuesday") == 0)
+                timeString = mScheduleTuesdayText.getText().toString();
+            else if (mWeekDayToConfig.compareTo("wednesday") == 0)
+                timeString = mScheduleWednesdayText.getText().toString();
+            else if (mWeekDayToConfig.compareTo("thursday") == 0)
+                timeString = mScheduleThursdayText.getText().toString();
+            else if (mWeekDayToConfig.compareTo("friday") == 0)
+                timeString = mScheduleFridayText.getText().toString();
+            else if (mWeekDayToConfig.compareTo("saturday") == 0)
+                timeString = mScheduleSaturdayText.getText().toString();
+            else if (mWeekDayToConfig.compareTo("sunday") == 0)
+                timeString = mScheduleSundayText.getText().toString();
+
+
+            showTimePickerDialog(mWeekDayToConfig, timeString, false);
+        }
+
+
+
+
+        if ( (resultCode == Activity.RESULT_OK) && (requestCode == REQUEST_ON_TIME) ) {
+            /**
+             * Se envía el comando SET(*_LOAD_ON_TIME) al Smart Plug
+             */
+            byte register = SmartPlugCommHelper.Registers.MONDAY_LOAD_ON_TIME;
+
+            if (mWeekDayToConfig.compareTo("monday") == 0)
+                register = SmartPlugCommHelper.Registers.MONDAY_LOAD_ON_TIME;
+            else if (mWeekDayToConfig.compareTo("tuesday") == 0)
+                register = SmartPlugCommHelper.Registers.TUESDAY_LOAD_ON_TIME;
+            else if (mWeekDayToConfig.compareTo("wednesday") == 0)
+                register = SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_ON_TIME;
+            else if (mWeekDayToConfig.compareTo("thursday") == 0)
+                register = SmartPlugCommHelper.Registers.THURSDAY_LOAD_ON_TIME;
+            else if (mWeekDayToConfig.compareTo("friday") == 0)
+                register = SmartPlugCommHelper.Registers.FRIDAY_LOAD_ON_TIME;
+            else if (mWeekDayToConfig.compareTo("saturday") == 0)
+                register = SmartPlugCommHelper.Registers.SATURDAY_LOAD_ON_TIME;
+            else if (mWeekDayToConfig.compareTo("sunday") == 0)
+                register = SmartPlugCommHelper.Registers.SUNDAY_LOAD_ON_TIME;
+
+
+            SimpleTime onTime = TimePickerDialog.getIntentTime(data);
+
+            EventBus.getDefault().post(new CommandEvent(mId, SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.SET,
+                                                                                                            register,
+                                                                                                            new byte[]{onTime.getHours(), onTime.getMinutes()})));
+
+        }
+        else if ((resultCode == Activity.RESULT_OK) && (requestCode == REQUEST_OFF_TIME) ) {
+            /**
+             * Se envía el comando SET(*_LOAD_OFF_TIME) al Smart Plug
+             */
+            byte register = SmartPlugCommHelper.Registers.MONDAY_LOAD_OFF_TIME;
+
+            if (mWeekDayToConfig.compareTo("monday") == 0)
+                register = SmartPlugCommHelper.Registers.MONDAY_LOAD_OFF_TIME;
+            else if (mWeekDayToConfig.compareTo("tuesday") == 0)
+                register = SmartPlugCommHelper.Registers.TUESDAY_LOAD_OFF_TIME;
+            else if (mWeekDayToConfig.compareTo("wednesday") == 0)
+                register = SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_OFF_TIME;
+            else if (mWeekDayToConfig.compareTo("thursday") == 0)
+                register = SmartPlugCommHelper.Registers.THURSDAY_LOAD_OFF_TIME;
+            else if (mWeekDayToConfig.compareTo("friday") == 0)
+                register = SmartPlugCommHelper.Registers.FRIDAY_LOAD_OFF_TIME;
+            else if (mWeekDayToConfig.compareTo("saturday") == 0)
+                register = SmartPlugCommHelper.Registers.SATURDAY_LOAD_OFF_TIME;
+            else if (mWeekDayToConfig.compareTo("sunday") == 0)
+                register = SmartPlugCommHelper.Registers.SUNDAY_LOAD_OFF_TIME;
+
+            SimpleTime offTime = TimePickerDialog.getIntentTime(data);
+
+            EventBus.getDefault().post(new CommandEvent(mId, SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.SET,
+                    register,
+                    new byte[]{offTime.getHours(), offTime.getMinutes()})));
+        }
+    }
+
+
     private void updateUI () {
         /**
          * A partir del ID pasado como parámetro al Fragment se lee la base de datos para obtener
@@ -290,18 +399,38 @@ public class ConfigurationFragment extends Fragment {
          */
         if( (onOffTimesEntry.getEnabledTimes() & 0x01) == 0 )
             mScheduleSundayBox.setAlpha(0.3f);
+        else
+            mScheduleSundayBox.setAlpha(1.0f);
+
         if( (onOffTimesEntry.getEnabledTimes() & 0x02) == 0 )
             mScheduleMondayBox.setAlpha(0.3f);
+        else
+            mScheduleMondayBox.setAlpha(1.0f);
+
         if( (onOffTimesEntry.getEnabledTimes() & 0x04) == 0 )
             mScheduleTuesdayBox.setAlpha(0.3f);
+        else
+            mScheduleTuesdayBox.setAlpha(1.0f);
+
         if( (onOffTimesEntry.getEnabledTimes() & 0x08) == 0 )
             mScheduleWednesdayBox.setAlpha(0.3f);
+        else
+            mScheduleWednesdayBox.setAlpha(1.0f);
+
         if( (onOffTimesEntry.getEnabledTimes() & 0x10) == 0 )
             mScheduleThursdayBox.setAlpha(0.3f);
+        else
+            mScheduleThursdayBox.setAlpha(1.0f);
+
         if( (onOffTimesEntry.getEnabledTimes() & 0x20) == 0 )
             mScheduleFridayBox.setAlpha(0.3f);
+        else
+            mScheduleFridayBox.setAlpha(1.0f);
+
         if( (onOffTimesEntry.getEnabledTimes() & 0x40) == 0 )
             mScheduleSaturdayBox.setAlpha(0.3f);
+        else
+            mScheduleSaturdayBox.setAlpha(1.0f);
 
         /**
          * Se cargan las horas de encendido y apagado esté o no habilitado el día.
@@ -320,5 +449,68 @@ public class ConfigurationFragment extends Fragment {
                 onOffTimesEntry.getSaturdayLoadOffTime().toHourMinutes());
         mScheduleSundayText.setText(onOffTimesEntry.getSundayLoadOnTime().toHourMinutes() + " - " +
                 onOffTimesEntry.getSundayLoadOffTime().toHourMinutes());
+    }
+
+
+    private void showTimePickerDialog(String weekDayToConfig, String timeString, boolean isOnTime) {
+        mWeekDayToConfig = weekDayToConfig;
+
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+
+        TimePickerDialog tp = TimePickerDialog.getInstance("Hora de encendido", timeString + ":0");
+
+        if (isOnTime) {
+            tp.setTargetFragment(ConfigurationFragment.this, REQUEST_ON_TIME);
+            tp.show(fm, "timePickerOn");
+        }
+        else {
+            tp.setTargetFragment(ConfigurationFragment.this, REQUEST_OFF_TIME);
+            tp.show(fm, "timePickerOff");
+        }
+    }
+
+
+    private void resetScheduleTime (String weekDayToReset) {
+        /**
+         * Se envian dos comandos de RESET: RESET(*_LOAD_ON_TIME) y RESET(*_LOAD_OFF_TIME)
+         * para el día correspondiente.
+         */
+        byte register1 = SmartPlugCommHelper.Registers.MONDAY_LOAD_ON_TIME;
+        byte register2 = SmartPlugCommHelper.Registers.MONDAY_LOAD_OFF_TIME;
+
+        if (weekDayToReset.compareTo("monday") == 0) {
+            register1 = SmartPlugCommHelper.Registers.MONDAY_LOAD_ON_TIME;
+            register2 = SmartPlugCommHelper.Registers.MONDAY_LOAD_OFF_TIME;
+        }
+        else if (weekDayToReset.compareTo("tuesday") == 0) {
+            register1 = SmartPlugCommHelper.Registers.TUESDAY_LOAD_ON_TIME;
+            register2 = SmartPlugCommHelper.Registers.TUESDAY_LOAD_OFF_TIME;
+        }
+        else if (weekDayToReset.compareTo("wednesday") == 0) {
+            register1 = SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_ON_TIME;
+            register2 = SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_OFF_TIME;
+        }
+        else if (weekDayToReset.compareTo("thursday") == 0) {
+            register1 = SmartPlugCommHelper.Registers.THURSDAY_LOAD_ON_TIME;
+            register2 = SmartPlugCommHelper.Registers.THURSDAY_LOAD_OFF_TIME;
+        }
+        else if (weekDayToReset.compareTo("friday") == 0) {
+            register1 = SmartPlugCommHelper.Registers.FRIDAY_LOAD_ON_TIME;
+            register2 = SmartPlugCommHelper.Registers.FRIDAY_LOAD_OFF_TIME;
+        }
+        else if (weekDayToReset.compareTo("saturday") == 0) {
+            register1 = SmartPlugCommHelper.Registers.SATURDAY_LOAD_ON_TIME;
+            register2 = SmartPlugCommHelper.Registers.SATURDAY_LOAD_OFF_TIME;
+        }
+        else if (weekDayToReset.compareTo("sunday") == 0) {
+            register1 = SmartPlugCommHelper.Registers.SUNDAY_LOAD_ON_TIME;
+            register2 = SmartPlugCommHelper.Registers.SUNDAY_LOAD_OFF_TIME;
+        }
+
+        EventBus.getDefault().post(new CommandEvent(mId, SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.RESET,
+                register1)));
+
+        EventBus.getDefault().post(new CommandEvent(mId, SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.RESET,
+                register2)));
     }
 }

@@ -261,6 +261,99 @@ public class SmartPlugService extends Service {
                      */
                     EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
                 }
+                else if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_RESET) {
+                    if ( (frame.getRegister() == SmartPlugCommHelper.Registers.MONDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.MONDAY_LOAD_OFF_TIME) ||
+                            (frame.getRegister() == SmartPlugCommHelper.Registers.TUESDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.TUESDAY_LOAD_OFF_TIME) ||
+                            (frame.getRegister() == SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_OFF_TIME) ||
+                            (frame.getRegister() == SmartPlugCommHelper.Registers.THURSDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.THURSDAY_LOAD_OFF_TIME) ||
+                            (frame.getRegister() == SmartPlugCommHelper.Registers.FRIDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.FRIDAY_LOAD_OFF_TIME) ||
+                            (frame.getRegister() == SmartPlugCommHelper.Registers.SATURDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.SATURDAY_LOAD_OFF_TIME) ||
+                            (frame.getRegister() == SmartPlugCommHelper.Registers.SUNDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.SUNDAY_LOAD_OFF_TIME) ) {
+                        /**
+                         * Si se resetea una de estas horas de debe poner en 0 los minutos y los segundos
+                         * y clerear el bit de enabledTimes
+                         */
+                        OnOffTimesEntry entry = smartPlugProvider.getOnOffTimesEntry(ev.getId());
+
+                        if (frame.getRegister() == SmartPlugCommHelper.Registers.MONDAY_LOAD_ON_TIME) {
+                            entry.getMondayLoadOnTime().setHours((byte)0);
+                            entry.getMondayLoadOnTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x02));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.MONDAY_LOAD_OFF_TIME){
+                            entry.getMondayLoadOffTime().setHours((byte)0);
+                            entry.getMondayLoadOffTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x02));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.TUESDAY_LOAD_ON_TIME) {
+                            entry.getTuesdayLoadOnTime().setHours((byte)0);
+                            entry.getTuesdayLoadOnTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x04));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.TUESDAY_LOAD_OFF_TIME){
+                            entry.getTuesdayLoadOffTime().setHours((byte)0);
+                            entry.getTuesdayLoadOffTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x04));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_ON_TIME) {
+                            entry.getWednesdayLoadOnTime().setHours((byte)0);
+                            entry.getWednesdayLoadOnTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x08));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_OFF_TIME){
+                            entry.getWednesdayLoadOffTime().setHours((byte)0);
+                            entry.getWednesdayLoadOffTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x08));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.THURSDAY_LOAD_ON_TIME) {
+                            entry.getThursdayLoadOnTime().setHours((byte)0);
+                            entry.getThursdayLoadOnTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x10));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.THURSDAY_LOAD_OFF_TIME){
+                            entry.getThursdayLoadOffTime().setHours((byte)0);
+                            entry.getThursdayLoadOffTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x10));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.FRIDAY_LOAD_ON_TIME) {
+                            entry.getFridayLoadOnTime().setHours((byte)0);
+                            entry.getFridayLoadOnTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x20));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.FRIDAY_LOAD_OFF_TIME){
+                            entry.getFridayLoadOffTime().setHours((byte)0);
+                            entry.getFridayLoadOffTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x20));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.SATURDAY_LOAD_ON_TIME) {
+                            entry.getSaturdayLoadOnTime().setHours((byte)0);
+                            entry.getSaturdayLoadOnTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x40));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.SATURDAY_LOAD_OFF_TIME){
+                            entry.getSaturdayLoadOffTime().setHours((byte)0);
+                            entry.getSaturdayLoadOffTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x40));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.SUNDAY_LOAD_ON_TIME) {
+                            entry.getSundayLoadOnTime().setHours((byte)0);
+                            entry.getSundayLoadOnTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x01));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.SUNDAY_LOAD_OFF_TIME){
+                            entry.getSundayLoadOffTime().setHours((byte)0);
+                            entry.getSundayLoadOffTime().setMinutes((byte)0);
+                            entry.setEnabledTimes((byte) (entry.getEnabledTimes() & ~0x01));
+                        }
+
+                        smartPlugProvider.updateOnOffTimesEntry(entry);
+
+                        /**
+                         * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
+                         */
+                        EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
+                    }
+                }
             }
             else if (basicFrame.getFrameType() == BasicFrame.Types.FLOAT_ARRAY_PARAM) {
                 FloatArrayFrame frame = (FloatArrayFrame)basicFrame;
@@ -361,7 +454,8 @@ public class SmartPlugService extends Service {
 
                 /**
                  * Los comandos que pueden devolver este tipo de trama son los GET de los registros:
-                 * *_LOAD_ON_TIME, *_LOAD_OFF_TIME y ONOFF_TIMES
+                 * *_LOAD_ON_TIME, *_LOAD_OFF_TIME y ONOFF_TIMES.
+                 * Además lo pueden devolver los SET de los registros: *_LOAD_ON_TIME, *_LOAD_OFF_TIME.
                  */
                 if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET &&
                         frame.getRegister() == SmartPlugCommHelper.Registers.ONOFF_TIMES) {
@@ -416,15 +510,136 @@ public class SmartPlugService extends Service {
                         EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
                     }
                 }
-                /** TODO Implementar la lectura de la trama para GET(*_LOAD_ON_TIME) y GET(*_LOAD_OFF_TIME) */
+                else if ( (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET  || frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET) &&
+                        ((frame.getRegister() == SmartPlugCommHelper.Registers.MONDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.MONDAY_LOAD_OFF_TIME) ||
+                        (frame.getRegister() == SmartPlugCommHelper.Registers.TUESDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.TUESDAY_LOAD_OFF_TIME) ||
+                        (frame.getRegister() == SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_OFF_TIME) ||
+                        (frame.getRegister() == SmartPlugCommHelper.Registers.THURSDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.THURSDAY_LOAD_OFF_TIME) ||
+                        (frame.getRegister() == SmartPlugCommHelper.Registers.FRIDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.FRIDAY_LOAD_OFF_TIME) ||
+                        (frame.getRegister() == SmartPlugCommHelper.Registers.SATURDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.SATURDAY_LOAD_OFF_TIME) ||
+                        (frame.getRegister() == SmartPlugCommHelper.Registers.SUNDAY_LOAD_ON_TIME) || (frame.getRegister() == SmartPlugCommHelper.Registers.SUNDAY_LOAD_OFF_TIME)) ) {
+                    /**
+                     * Si es un GET o un SET de *_LOAD_ON_TIME, *_LOAD_OFF_TIME, la trama tiene que
+                     * tener 2 bytes: horas y minutos.
+                     */
+                    if (frame.getData().length == 2) {
+                        OnOffTimesEntry entry = smartPlugProvider.getOnOffTimesEntry(ev.getId());
+
+                        if (frame.getRegister() == SmartPlugCommHelper.Registers.MONDAY_LOAD_ON_TIME) {
+                            entry.getMondayLoadOnTime().setHours(frame.getData()[0]);
+                            entry.getMondayLoadOnTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x02));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.MONDAY_LOAD_OFF_TIME){
+                            entry.getMondayLoadOffTime().setHours(frame.getData()[0]);
+                            entry.getMondayLoadOffTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x02));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.TUESDAY_LOAD_ON_TIME) {
+                            entry.getTuesdayLoadOnTime().setHours(frame.getData()[0]);
+                            entry.getTuesdayLoadOnTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x04));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.TUESDAY_LOAD_OFF_TIME){
+                            entry.getTuesdayLoadOffTime().setHours(frame.getData()[0]);
+                            entry.getTuesdayLoadOffTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x04));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_ON_TIME) {
+                            entry.getWednesdayLoadOnTime().setHours(frame.getData()[0]);
+                            entry.getWednesdayLoadOnTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x08));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.WEDNESDAY_LOAD_OFF_TIME){
+                            entry.getWednesdayLoadOffTime().setHours(frame.getData()[0]);
+                            entry.getWednesdayLoadOffTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x08));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.THURSDAY_LOAD_ON_TIME) {
+                            entry.getThursdayLoadOnTime().setHours(frame.getData()[0]);
+                            entry.getThursdayLoadOnTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x10));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.THURSDAY_LOAD_OFF_TIME){
+                            entry.getThursdayLoadOffTime().setHours(frame.getData()[0]);
+                            entry.getThursdayLoadOffTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x10));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.FRIDAY_LOAD_ON_TIME) {
+                            entry.getFridayLoadOnTime().setHours(frame.getData()[0]);
+                            entry.getFridayLoadOnTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x20));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.FRIDAY_LOAD_OFF_TIME){
+                            entry.getFridayLoadOffTime().setHours(frame.getData()[0]);
+                            entry.getFridayLoadOffTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x20));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.SATURDAY_LOAD_ON_TIME) {
+                            entry.getSaturdayLoadOnTime().setHours(frame.getData()[0]);
+                            entry.getSaturdayLoadOnTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x40));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.SATURDAY_LOAD_OFF_TIME){
+                            entry.getSaturdayLoadOffTime().setHours(frame.getData()[0]);
+                            entry.getSaturdayLoadOffTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x40));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.SUNDAY_LOAD_ON_TIME) {
+                            entry.getSundayLoadOnTime().setHours(frame.getData()[0]);
+                            entry.getSundayLoadOnTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x01));
+                        }
+                        else if (frame.getRegister() == SmartPlugCommHelper.Registers.SUNDAY_LOAD_OFF_TIME){
+                            entry.getSundayLoadOffTime().setHours(frame.getData()[0]);
+                            entry.getSundayLoadOffTime().setMinutes(frame.getData()[1]);
+
+                            if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET)
+                                entry.setEnabledTimes((byte) (entry.getEnabledTimes() | 0x01));
+                        }
+
+                        smartPlugProvider.updateOnOffTimesEntry(entry);
+
+                        /**
+                         * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
+                         */
+                        EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
+                    }
+                }
             }
             else if (basicFrame.getFrameType() == BasicFrame.Types.STRING_PARAM) {
                 StringFrame frame = (StringFrame)basicFrame;
 
                 /**
-                 * El comando que puede devolcer este tipo de trama es el GET(DEVICE_ID)
+                 * El comando que puede devolver este tipo de trama es el GET(DEVICE_ID) o SET(DEVICE_ID)
                  */
-                if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET &&
+                if ( (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET || frame.getCommand() == SmartPlugCommHelper.Commands.RESP_SET) &&
                         frame.getRegister() == SmartPlugCommHelper.Registers.DEVICE_ID) {
                     /**
                      * Si es un GET(DEVICE_ID) la trama tiene que tener un String de 32 caracteres

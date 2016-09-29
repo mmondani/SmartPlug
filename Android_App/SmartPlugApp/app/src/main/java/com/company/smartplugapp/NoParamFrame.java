@@ -5,7 +5,19 @@ package com.company.smartplugapp;
  */
 public class NoParamFrame extends BasicFrame {
 
-    public NoParamFrame (byte length, byte command) {
+    private byte mRegister;
+
+    public NoParamFrame (byte length, byte command, byte register) {
         super(Types.NO_PARAM, length, command);
+
+        mRegister = register;
+    }
+
+    public byte getRegister() {
+        return mRegister;
+    }
+
+    public void setRegister(byte register) {
+        mRegister = register;
     }
 }

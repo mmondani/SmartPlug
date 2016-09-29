@@ -66,11 +66,13 @@ public class SimpleTime {
 
     @Override
     public String toString() {
-        return (mHours + ":" + mMinutes + ":" + mSeconds);
+        return (String.format("%02d", mHours) + ":" +
+                String.format("%02d", mMinutes) + ":" +
+                String.format("%02d", mSeconds));
     }
 
     public String toHourMinutes() {
-        return (mHours + ":" + mMinutes);
+        return (String.format("%02d", mHours) + ":" + String.format("%02d", mMinutes));
     }
 
     public byte getHours() {

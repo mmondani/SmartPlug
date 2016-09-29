@@ -16,7 +16,7 @@ public class StringFrame extends BasicFrame {
         mRegister = register;
 
         /**
-         * El payload se compone de un String de 32 caracteres.
+         * El payload se compone de un String de 33 caracteres.
          */
         if (payload.length == 33)
             mData = new String(payload);

@@ -123,6 +123,25 @@ public class SmartPlugCommHelper {
         return data;
     }
 
+    public byte[] getRawData (byte command, byte register, byte[] payload) {
+        byte[] data = new byte[payload.length + 7];
+
+        data[0] = '#';
+        data[1] = '!';
+        data[2] = (byte) (payload.length + 4);          /** Longitud del paquete sin contar data[0] y data[1] */
+        data[3] = command;
+        data[4] = register;
+
+        int  i;
+        for (i = 0; i < payload.length; i++)            /** Se carga el payload. */
+            data[i+5] = payload[i];
+
+        data[i+5] = '#';
+        data[i+6] = '!';
+
+        return data;
+    }
+
 
     public BasicFrame parseFrame (byte[] data) {
         BasicFrame frame = null;
@@ -140,9 +159,9 @@ public class SmartPlugCommHelper {
                 if (data.length >= (length+3)) {
                     command = data[3];
 
-                    if ( (command != Commands.RESP_NODE_ON) && (command != Commands.RESP_NODE_OFF) ) {
+                    if ( (command != Commands.RESP_NODE_ON) && (command != Commands.RESP_NODE_OFF)  && (command != Commands.RESP_RESET)) {
                         /**
-                         * Si no es un comando RESP_NODE_ON o RESP_NODE_OFF, hay un registro que acompaña al comando
+                         * Si no es un comando RESP_NODE_ON, RESP_NODE_OFF o RESP_RESET, hay un registro que acompaña al comando
                          */
                         register = data[4];
 
@@ -163,7 +182,7 @@ public class SmartPlugCommHelper {
                             }
                             else if (register == Registers.DEVICE_ID) {
                                 /**
-                                 * El payload es un string de 32 caracteres.
+                                 * El payload es un string de 33 caracteres.
                                  */
                                 frame = new StringFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
@@ -208,12 +227,36 @@ public class SmartPlugCommHelper {
                                 /** TODO implementar el parseo del float array que acompaña a estos registro. Vienen al revés los bytes ????? */
                             }
                         }
+                        else if (command == Commands.RESP_SET) {
+                            if (register == Registers.DEVICE_ID) {
+                                /**
+                                 * El payload es un string de 33 caracteres.
+                                 */
+                                frame = new StringFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if ( (register == Registers.MONDAY_LOAD_ON_TIME) || (register == Registers.MONDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.TUESDAY_LOAD_ON_TIME) || (register == Registers.TUESDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.WEDNESDAY_LOAD_ON_TIME) || (register == Registers.WEDNESDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.THURSDAY_LOAD_ON_TIME) || (register == Registers.THURSDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.FRIDAY_LOAD_ON_TIME) || (register == Registers.FRIDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.SATURDAY_LOAD_ON_TIME) || (register == Registers.SATURDAY_LOAD_OFF_TIME) ||
+                                    (register == Registers.SUNDAY_LOAD_ON_TIME) || (register == Registers.SUNDAY_LOAD_OFF_TIME)) {
+                                /**
+                                 * El payload son 2 bytes que indican la hora y los minutos.
+                                 */
+                                frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                        }
                     }
                     else {
                         /**
                          * Si es un comando RESP_NODE_ON o RESP_NODE_OFF ya se puede devolver una instancia de NoParamFame
+                         * Si es un comando RESP_RESET, se tiene que extraer el registro de la trama.
                          */
-                        frame = new NoParamFrame((byte)length, (byte)command);
+                        if (command == Commands.RESP_RESET)
+                            frame = new NoParamFrame((byte)length, (byte)command, data[4]);
+                        else
+                            frame = new NoParamFrame((byte)length, (byte)command, (byte)0);
                     }
                 }
             }
