@@ -19,7 +19,7 @@ public class StringFrame extends BasicFrame {
          * El payload se compone de un String de 33 caracteres.
          */
         if (payload.length == 33)
-            mData = new String(payload);
+            mData = new String(payload).trim();
     }
 
     public byte getRegister() {

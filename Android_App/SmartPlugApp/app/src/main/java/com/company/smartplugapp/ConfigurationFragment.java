@@ -21,6 +21,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.util.Arrays;
+
 import database.InstantaneousInfoEntry;
 import database.OnOffTimesEntry;
 import database.SimpleTime;
@@ -51,9 +53,11 @@ public class ConfigurationFragment extends Fragment {
 
     private String mId;
     private OnIconClickedInterface mClickListener = null;
-    private String mWeekDayToConfig;        /** TODO guardarlo en el bundle para que sobreviva a los cambios de configuración */
+    private String mWeekDayToConfig;
+    private String mNewName;
 
     private static final String SAVE_BUNDLE_WEEK_DAY = "week_day";
+    private static final String SAVE_BUNDLE_NEW_NAME = "new_name";
     private static final String ARG_ID = "id";
     private static final int REQUEST_ON_TIME = 0;
     private static final int REQUEST_OFF_TIME = 1;
@@ -81,6 +85,7 @@ public class ConfigurationFragment extends Fragment {
 
         if (savedInstanceState != null) {
             mWeekDayToConfig = savedInstanceState.getString(SAVE_BUNDLE_WEEK_DAY);
+            mNewName = savedInstanceState.getString(SAVE_BUNDLE_NEW_NAME);
         }
 
         if (getArguments() != null) {
@@ -94,6 +99,7 @@ public class ConfigurationFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putString(SAVE_BUNDLE_WEEK_DAY, mWeekDayToConfig);
+        outState.putString(SAVE_BUNDLE_NEW_NAME, mNewName);
     }
 
     @Override
@@ -171,22 +177,6 @@ public class ConfigurationFragment extends Fragment {
         mScheduleSundayBox = (LinearLayout)v.findViewById(R.id.frag_configuration_sunday_box);
 
 
-        mNameEdit.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-
-            }
-        });
 
 
         /**
@@ -195,7 +185,15 @@ public class ConfigurationFragment extends Fragment {
         mSendNameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /** TODO Enviar el mensaje con SET(DEVICE_ID) */
+                /**
+                 * Se genera un evento CommandEvent para enviar el comando SET(DEVICE_ID).
+                 * En este comando siempre se envían 33 bytes.
+                 */
+                byte[] newDeviceName = Arrays.copyOf(mNameEdit.getText().toString().getBytes(), 33);
+                //byte[] newDeviceName = mNameEdit.getText().toString().getBytes();
+                EventBus.getDefault().post(new CommandEvent(mId, SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.SET,
+                                                                                                                SmartPlugCommHelper.Registers.DEVICE_ID,
+                                                                                                                newDeviceName)));
             }
         });
 
@@ -230,54 +228,123 @@ public class ConfigurationFragment extends Fragment {
             }
         });
 
+        /**
+         * Si se mantiene presionado uno de los días, se elimina la programación horaria.
+         */
         mScheduleMondayBox.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                resetScheduleTime ("monday");
+                resetScheduleTime("monday");
 
                 return true;
             }
         });
 
+
         mScheduleTuesdayBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                String timeString = mScheduleTuesdayText.getText().toString().split(" - ")[0];
+                showTimePickerDialog("tuesday", timeString, true);
             }
         });
+
+        mScheduleTuesdayBox.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetScheduleTime("tuesday");
+
+                return true;
+            }
+        });
+
 
         mScheduleWednesdayBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                String timeString = mScheduleWednesdayText.getText().toString().split(" - ")[0];
+                showTimePickerDialog("wednesday", timeString, true);
             }
         });
+
+        mScheduleWednesdayBox.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetScheduleTime("wednesday");
+
+                return true;
+            }
+        });
+
 
         mScheduleThursdayBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                String timeString = mScheduleThursdayText.getText().toString().split(" - ")[0];
+                showTimePickerDialog("thursday", timeString, true);
             }
         });
+
+        mScheduleThursdayBox.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetScheduleTime("thursday");
+
+                return true;
+            }
+        });
+
 
         mScheduleFridayBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                String timeString = mScheduleFridayText.getText().toString().split(" - ")[0];
+                showTimePickerDialog("friday", timeString, true);
             }
         });
+
+        mScheduleFridayBox.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetScheduleTime("friday");
+
+                return true;
+            }
+        });
+
 
         mScheduleSaturdayBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                String timeString = mScheduleSaturdayText.getText().toString().split(" - ")[0];
+                showTimePickerDialog("saturday", timeString, true);
             }
         });
+
+        mScheduleSaturdayBox.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetScheduleTime("saturday");
+
+                return true;
+            }
+        });
+
 
         mScheduleSundayBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String timeString = mScheduleSundayText.getText().toString().split(" - ")[0];
+                showTimePickerDialog("sunday", timeString, true);
+            }
+        });
 
+        mScheduleSundayBox.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetScheduleTime("sunday");
+
+                return true;
             }
         });
 

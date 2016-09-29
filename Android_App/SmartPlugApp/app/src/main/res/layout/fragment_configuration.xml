@@ -39,7 +39,8 @@
                     android:text="Smart Plug"
                     android:textSize="35dp"
                     android:textColor="#777777"
-                    android:layout_marginRight="5dp"/>
+                    android:layout_marginRight="5dp"
+                    android:inputType="textNoSuggestions"/>
 
                 <ImageView
                     android:id="@+id/frag_configuration_send_name"
