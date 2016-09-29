@@ -311,18 +311,18 @@ public class SmartPlugProvider {
         values.put(OnOffTimesTable.Cols.ENABLED_TIMES, entry.getEnabledTimes());
         values.put(OnOffTimesTable.Cols.MONDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
         values.put(OnOffTimesTable.Cols.MONDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
-        values.put(OnOffTimesTable.Cols.TUESDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
-        values.put(OnOffTimesTable.Cols.TUESDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
-        values.put(OnOffTimesTable.Cols.WEDNESDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
-        values.put(OnOffTimesTable.Cols.WEDNESDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
-        values.put(OnOffTimesTable.Cols.THURSDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
-        values.put(OnOffTimesTable.Cols.THURSDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
-        values.put(OnOffTimesTable.Cols.FRIDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
-        values.put(OnOffTimesTable.Cols.FRIDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
-        values.put(OnOffTimesTable.Cols.SATURDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
-        values.put(OnOffTimesTable.Cols.SATURDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
-        values.put(OnOffTimesTable.Cols.SUNDAY_LOAD_ON_TIME, entry.getMondayLoadOnTime().toString());
-        values.put(OnOffTimesTable.Cols.SUNDAY_LOAD_OFF_TIME, entry.getMondayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.TUESDAY_LOAD_ON_TIME, entry.getTuesdayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.TUESDAY_LOAD_OFF_TIME, entry.getTuesdayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.WEDNESDAY_LOAD_ON_TIME, entry.getWednesdayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.WEDNESDAY_LOAD_OFF_TIME, entry.getWednesdayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.THURSDAY_LOAD_ON_TIME, entry.getThursdayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.THURSDAY_LOAD_OFF_TIME, entry.getThursdayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.FRIDAY_LOAD_ON_TIME, entry.getFridayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.FRIDAY_LOAD_OFF_TIME, entry.getFridayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.SATURDAY_LOAD_ON_TIME, entry.getSaturdayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.SATURDAY_LOAD_OFF_TIME, entry.getSaturdayLoadOffTime().toString());
+        values.put(OnOffTimesTable.Cols.SUNDAY_LOAD_ON_TIME, entry.getSundayLoadOnTime().toString());
+        values.put(OnOffTimesTable.Cols.SUNDAY_LOAD_OFF_TIME, entry.getSundayLoadOffTime().toString());
 
         return values;
     }

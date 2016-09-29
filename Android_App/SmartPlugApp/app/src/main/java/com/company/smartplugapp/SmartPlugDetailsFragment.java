@@ -156,7 +156,7 @@ public class SmartPlugDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null)
-                    mClickListener.onFlatingMenuConfigClicked();
+                    mClickListener.onFlatingMenuConfigClicked(mId);
             }
         });
 
@@ -164,7 +164,7 @@ public class SmartPlugDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null)
-                    mClickListener.onFlatingMenuHistoryClicked();
+                    mClickListener.onFlatingMenuHistoryClicked(mId);
             }
         });
 
@@ -172,7 +172,7 @@ public class SmartPlugDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null)
-                    mClickListener.onFlatingMenuEnergyResetClicked();
+                    mClickListener.onFlatingMenuEnergyResetClicked(mId);
             }
         });
 
@@ -180,7 +180,7 @@ public class SmartPlugDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null)
-                    mClickListener.onFlatingMenuFactoryResetClicked();
+                    mClickListener.onFlatingMenuFactoryResetClicked(mId);
             }
         });
 
@@ -203,10 +203,10 @@ public class SmartPlugDetailsFragment extends Fragment {
 
 
     public interface OnFloatingMenuItemClicked {
-        void onFlatingMenuConfigClicked ();
-        void onFlatingMenuHistoryClicked ();
-        void onFlatingMenuEnergyResetClicked ();
-        void onFlatingMenuFactoryResetClicked ();
+        void onFlatingMenuConfigClicked (String id);
+        void onFlatingMenuHistoryClicked (String id);
+        void onFlatingMenuEnergyResetClicked (String id);
+        void onFlatingMenuFactoryResetClicked (String id);
     }
 
     private void updateUI () {

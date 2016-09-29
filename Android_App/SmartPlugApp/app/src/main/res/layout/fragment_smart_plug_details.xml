@@ -159,7 +159,7 @@
         android:layout_below="@id/frag_details_table"
         android:orientation="horizontal"
         android:layout_marginLeft="30dp"
-        android:layout_marginTop="40dp">
+        android:layout_marginTop="20dp">
 
         <ImageView
             android:id="@+id/frag_details_comm_state_icon"

@@ -104,7 +104,7 @@ public class SmartPlugListFragment extends Fragment{
         super.onStart();
 
         /**
-         * Cada vez que se vuelve a mostrarel Fragment se actualiza la información de los SmartPlugs.
+         * Cada vez que se vuelve a mostrar el Fragment se actualiza la información de los SmartPlugs.
          */
         mSmartPlugAdapter.setSmartPlugs(mSmartPlugProvider.getInstance(getActivity()).getSmartPlugs());
 

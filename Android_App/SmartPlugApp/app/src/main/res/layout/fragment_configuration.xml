@@ -1,0 +1,271 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="com.company.smartplugapp.ConfigurationFragment"
+             android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:scrollbars="none"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nombre del equipo"
+                style="@style/ConfigurationSubSectionName"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/frag_configuration_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="2"
+                    android:text="Smart Plug"
+                    android:textSize="35dp"
+                    android:textColor="#777777"
+                    android:layout_marginRight="5dp"/>
+
+                <ImageView
+                    android:id="@+id/frag_configuration_send_name"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@drawable/right_arrow_2"
+                    android:layout_weight="1"
+                    android:layout_gravity="center_vertical"/>
+            </LinearLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ícono"
+                style="@style/ConfigurationSubSectionName"
+                android:layout_marginTop="30dp"/>
+
+            <ImageView
+                android:id="@+id/frag_configuration_icon"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/device_tv"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Programación horaria"
+                style="@style/ConfigurationSubSectionName"
+                android:layout_marginTop="40dp"/>
+
+            <LinearLayout
+                android:id="@+id/frag_configuration_monday_box"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                style="@style/ConfigurationScheduleTimeBox">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText"
+                    android:text="Lunes"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:id="@+id/frag_configuration_schedule_monday"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText.Right"
+                    android:text="12:10 - 13:30"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginRight="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/frag_configuration_tuesday_box"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                style="@style/ConfigurationScheduleTimeBox">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText"
+                    android:text="Martes"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:id="@+id/frag_configuration_schedule_tuesday"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText.Right"
+                    android:text="12:10 - 13:30"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginRight="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/frag_configuration_wednesday_box"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                style="@style/ConfigurationScheduleTimeBox">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText"
+                    android:text="Miércoles"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:id="@+id/frag_configuration_schedule_wednesday"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText.Right"
+                    android:text="12:10 - 13:30"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginRight="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/frag_configuration_thursday_box"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                style="@style/ConfigurationScheduleTimeBox">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText"
+                    android:text="Jueves"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:id="@+id/frag_configuration_schedule_thursday"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText.Right"
+                    android:text="12:10 - 13:30"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginRight="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/frag_configuration_friday_box"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                style="@style/ConfigurationScheduleTimeBox">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText"
+                    android:text="Viernes"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:id="@+id/frag_configuration_schedule_friday"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText.Right"
+                    android:text="12:10 - 13:30"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginRight="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/frag_configuration_saturday_box"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                style="@style/ConfigurationScheduleTimeBox">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText"
+                    android:text="Sábado"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:id="@+id/frag_configuration_schedule_saturday"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText.Right"
+                    android:text="12:10 - 13:30"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginRight="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/frag_configuration_sunday_box"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                style="@style/ConfigurationScheduleTimeBox">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText"
+                    android:text="Domingo"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginLeft="10dp"/>
+
+                <TextView
+                    android:id="@+id/frag_configuration_schedule_sunday"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    style="@style/ConfigurationScheduleTimeText.Right"
+                    android:text="12:10 - 13:30"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:layout_marginRight="10dp"/>
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

@@ -37,4 +37,24 @@
         <item name="android:textSize">15dp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
+
+    <style name="ConfigurationSubSectionName">
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textSize">15dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="ConfigurationScheduleTimeText">
+        <item name="android:textColor">#eeeeee</item>
+        <item name="android:textSize">25dp</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
+    <style name="ConfigurationScheduleTimeText.Right" parent="ConfigurationScheduleTimeText">
+        <item name="android:textAlignment">textEnd</item>
+    </style>
+
+    <style name="ConfigurationScheduleTimeBox">
+        <item name="android:background">@color/colorPrimary</item>
+    </style>
 </resources>

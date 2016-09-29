@@ -399,13 +399,13 @@ public class SmartPlugService extends Service {
 
                         entry.getSaturdayLoadOnTime().setHours(frame.getData()[20]);
                         entry.getSaturdayLoadOnTime().setMinutes(frame.getData()[21]);
-                        entry.getSaturdayLoadOnTime().setHours(frame.getData()[22]);
-                        entry.getSaturdayLoadOnTime().setMinutes(frame.getData()[23]);
+                        entry.getSaturdayLoadOffTime().setHours(frame.getData()[22]);
+                        entry.getSaturdayLoadOffTime().setMinutes(frame.getData()[23]);
 
                         entry.getSundayLoadOnTime().setHours(frame.getData()[24]);
                         entry.getSundayLoadOnTime().setMinutes(frame.getData()[25]);
-                        entry.getSundayLoadOnTime().setHours(frame.getData()[26]);
-                        entry.getSundayLoadOnTime().setMinutes(frame.getData()[27]);
+                        entry.getSundayLoadOffTime().setHours(frame.getData()[26]);
+                        entry.getSundayLoadOffTime().setMinutes(frame.getData()[27]);
 
                         entry.setEnabledTimes(frame.getData()[28]);
                         smartPlugProvider.updateOnOffTimesEntry(entry);

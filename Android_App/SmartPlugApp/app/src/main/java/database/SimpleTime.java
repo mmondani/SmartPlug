@@ -69,6 +69,10 @@ public class SimpleTime {
         return (mHours + ":" + mMinutes + ":" + mSeconds);
     }
 
+    public String toHourMinutes() {
+        return (mHours + ":" + mMinutes);
+    }
+
     public byte getHours() {
         return mHours;
     }
