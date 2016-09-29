@@ -53,6 +53,7 @@ public class ConfigurationFragment extends Fragment {
     private OnIconClickedInterface mClickListener = null;
     private String mWeekDayToConfig;        /** TODO guardarlo en el bundle para que sobreviva a los cambios de configuración */
 
+    private static final String SAVE_BUNDLE_WEEK_DAY = "week_day";
     private static final String ARG_ID = "id";
     private static final int REQUEST_ON_TIME = 0;
     private static final int REQUEST_OFF_TIME = 1;
@@ -78,11 +79,22 @@ public class ConfigurationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (savedInstanceState != null) {
+            mWeekDayToConfig = savedInstanceState.getString(SAVE_BUNDLE_WEEK_DAY);
+        }
+
         if (getArguments() != null) {
             mId = getArguments().getString(ARG_ID);
         }
     }
 
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putString(SAVE_BUNDLE_WEEK_DAY, mWeekDayToConfig);
+    }
 
     @Override
     public void onAttach(Activity activity) {
