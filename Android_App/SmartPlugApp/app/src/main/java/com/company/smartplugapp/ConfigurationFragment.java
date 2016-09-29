@@ -51,7 +51,7 @@ public class ConfigurationFragment extends Fragment {
 
     private String mId;
     private OnIconClickedInterface mClickListener = null;
-    private String mWeekDayToConfig;
+    private String mWeekDayToConfig;        /** TODO guardarlo en el bundle para que sobreviva a los cambios de configuración */
 
     private static final String ARG_ID = "id";
     private static final int REQUEST_ON_TIME = 0;
@@ -210,17 +210,20 @@ public class ConfigurationFragment extends Fragment {
             public void onClick(View v) {
 
                 /**
-                 * Si está deshabilitada la programación horaria del día (alpha != 1.0f)
-                 * se muestran los DialogFragment para elegir las horas.
-                 * Si está habilitada, se la deshabilita.
+                 * Al hacer click se muestran los DialogFragments para elegir las horas
+                 * de encendido y apagado.
                  */
-                if (mScheduleMondayBox.getAlpha() != 1.0f) {
-                    String timeString = mScheduleMondayText.getText().toString();
-                    showTimePickerDialog("monday", timeString, true);
-                }
-                else {
-                    resetScheduleTime ("monday");
-                }
+                String timeString = mScheduleMondayText.getText().toString().split(" - ")[0];
+                showTimePickerDialog("monday", timeString, true);
+            }
+        });
+
+        mScheduleMondayBox.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                resetScheduleTime ("monday");
+
+                return true;
             }
         });
 
@@ -295,21 +298,21 @@ public class ConfigurationFragment extends Fragment {
              * Se muestra el DialogFragment para la hora de apagado se haya aceptado la hora de encendido
              * o se la haya pasado.
              */
-            String timeString = mScheduleMondayText.getText().toString();
+            String timeString = mScheduleMondayText.getText().toString().split(" - ")[1];
             if (mWeekDayToConfig.compareTo("monday") == 0)
-                timeString = mScheduleMondayText.getText().toString();
+                timeString = mScheduleMondayText.getText().toString().split(" - ")[1];
             else if (mWeekDayToConfig.compareTo("tuesday") == 0)
-                timeString = mScheduleTuesdayText.getText().toString();
+                timeString = mScheduleTuesdayText.getText().toString().split(" - ")[1];
             else if (mWeekDayToConfig.compareTo("wednesday") == 0)
-                timeString = mScheduleWednesdayText.getText().toString();
+                timeString = mScheduleWednesdayText.getText().toString().split(" - ")[1];
             else if (mWeekDayToConfig.compareTo("thursday") == 0)
-                timeString = mScheduleThursdayText.getText().toString();
+                timeString = mScheduleThursdayText.getText().toString().split(" - ")[1];
             else if (mWeekDayToConfig.compareTo("friday") == 0)
-                timeString = mScheduleFridayText.getText().toString();
+                timeString = mScheduleFridayText.getText().toString().split(" - ")[1];
             else if (mWeekDayToConfig.compareTo("saturday") == 0)
-                timeString = mScheduleSaturdayText.getText().toString();
+                timeString = mScheduleSaturdayText.getText().toString().split(" - ")[1];
             else if (mWeekDayToConfig.compareTo("sunday") == 0)
-                timeString = mScheduleSundayText.getText().toString();
+                timeString = mScheduleSundayText.getText().toString().split(" - ")[1];
 
 
             showTimePickerDialog(mWeekDayToConfig, timeString, false);
