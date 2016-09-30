@@ -1,4 +1,4 @@
-package com.company.smartplugapp;
+package smartPlugComm;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;

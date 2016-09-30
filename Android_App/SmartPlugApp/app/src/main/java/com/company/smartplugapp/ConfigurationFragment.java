@@ -6,9 +6,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,12 +20,12 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Arrays;
 
-import database.InstantaneousInfoEntry;
 import database.OnOffTimesEntry;
 import database.SimpleTime;
 import database.StaticInfoEntry;
 import events.CommandEvent;
 import events.UpdateSmartPlugEvent;
+import smartPlugComm.SmartPlugCommHelper;
 
 
 /** TODO Cuando se modifica el nombre del Smart Plug indicarle al usuario que la operación fue exitosa */

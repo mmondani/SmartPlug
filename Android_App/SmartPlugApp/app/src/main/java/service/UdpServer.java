@@ -4,17 +4,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-import org.greenrobot.eventbus.EventBus;
-
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.util.Calendar;
-
-import com.company.smartplugapp.SmartPlugCommHelper;
-import com.company.smartplugapp.SmartPlugCommHelper.HeartbeatFrame;
-import events.HeartbeatEvent;
 
 
 /**

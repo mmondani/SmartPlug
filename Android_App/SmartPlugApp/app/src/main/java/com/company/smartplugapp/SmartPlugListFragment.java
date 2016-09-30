@@ -13,20 +13,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.w3c.dom.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-import database.InstantaneousInfoEntry;
 import events.CommandEvent;
-import events.HeartbeatEvent;
 import events.UpdateSmartPlugEvent;
+import smartPlugComm.SmartPlugCommHelper;
 
 
 /**

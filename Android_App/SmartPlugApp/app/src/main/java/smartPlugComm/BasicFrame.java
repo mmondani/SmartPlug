@@ -1,4 +1,4 @@
-package com.company.smartplugapp;
+package smartPlugComm;
 
 /**
  * Created by mariano on 27/09/16.

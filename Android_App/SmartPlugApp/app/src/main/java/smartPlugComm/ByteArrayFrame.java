@@ -1,7 +1,4 @@
-package com.company.smartplugapp;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+package smartPlugComm;
 
 /**
  * Created by mariano on 28/09/16.

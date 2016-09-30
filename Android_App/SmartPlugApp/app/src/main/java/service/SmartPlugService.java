@@ -7,27 +7,25 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 
-import com.company.smartplugapp.BasicFrame;
-import com.company.smartplugapp.ByteArrayFrame;
-import com.company.smartplugapp.ByteFrame;
-import com.company.smartplugapp.FloatArrayFrame;
-import com.company.smartplugapp.NoParamFrame;
-import com.company.smartplugapp.SmartPlugCommHelper;
+import smartPlugComm.BasicFrame;
+import smartPlugComm.ByteArrayFrame;
+import smartPlugComm.ByteFrame;
+import smartPlugComm.FloatArrayFrame;
+import smartPlugComm.NoParamFrame;
+import smartPlugComm.SmartPlugCommHelper;
 import com.company.smartplugapp.SmartPlugListItem;
 import com.company.smartplugapp.SmartPlugProvider;
-import com.company.smartplugapp.StringFrame;
+import smartPlugComm.StringFrame;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
 import database.InstantaneousInfoEntry;
 import database.OnOffTimesEntry;
-import database.SimpleTime;
 import database.StaticInfoEntry;
 import events.CommandEvent;
 import events.HeartbeatEvent;
