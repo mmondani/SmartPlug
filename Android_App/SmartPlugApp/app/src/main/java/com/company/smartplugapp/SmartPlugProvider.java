@@ -339,6 +339,15 @@ public class SmartPlugProvider {
      * *********************************************************************************************
      */
 
+    public void addMeasurementsEntry (MeasurementsEntry entry) {
+        /**
+         * Se agrega una entrada en las tabla MeasurementsTable.
+         */
+        ContentValues values = getMeasurementsContentValues(entry);
+
+        mDatabase.insert(MeasurementsTable.NAME, null, values);
+    }
+
     /**
      * Devuelve la entrada de la tabla MeasurementsTable que tenga ID = id, DATE = date y
      * MEASUREMENT_TYPE = measurementType

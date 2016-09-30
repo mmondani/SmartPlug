@@ -6,9 +6,12 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
+import database.MeasurementsEntry;
 import smartPlugComm.BasicFrame;
 import smartPlugComm.ByteArrayFrame;
+import smartPlugComm.ByteFloatArrayFrame;
 import smartPlugComm.ByteFrame;
 import smartPlugComm.FloatArrayFrame;
 import smartPlugComm.NoParamFrame;
@@ -416,14 +419,78 @@ public class SmartPlugService extends Service {
                         EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
                     }
                 }
-                else if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET &&
+
+            }
+            else if (basicFrame.getFrameType() == BasicFrame.Types.BYTE_FLOAT_ARRAY_PARAM) {
+                ByteFloatArrayFrame frame = (ByteFloatArrayFrame) basicFrame;
+
+                /**
+                 * Los comandos que pueden devolver este tipo de trama son los GET de los registros:
+                 * PER_HOUR_ACTIVE_POWER y PER_HOUR_ENERGY.
+                 */
+
+                if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET &&
                         (frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER ||
                                 frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ENERGY) ) {
                     /**
                      * Si es un GET de PER_HOUR_ACTIVE_POWER o PER_HOUR_ENERGY, lo que se reciben son
-                     * 24 floats con las mediciones de las 24 horas
+                     * 3 bytes con la fecha y 24 floats con las mediciones de las 24 horas
+                     *
+                     * Se arma la fecha a partir de los bytes recibidos en la trama
                      */
-                    /** TODO Implementar la lectura de la trama. */
+                    if (frame.getDataBytes().length == 3 && frame.getDataFloats().length == 24) {
+                        String date = String.format("%d/%d/%d", frame.getDataBytes()[0],
+                                                                frame.getDataBytes()[1],
+                                                                frame.getDataBytes()[2]);
+
+                        /**
+                         * Se chequea si existe la entrada en la tabla Measurements para este ID, esta fehca
+                         * y este tipo de medición.
+                         * Si existe, se la actualiza. Si no existe se la crea.
+                         */
+                        if (frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER) {
+                            if (smartPlugProvider.existMeasurementsEntry(ev.getId(), date, MeasurementsEntry.MeasurementType.ACTIVE_POWER)) {
+                                MeasurementsEntry entry = smartPlugProvider.getMeasurementsEntry(ev.getId(), date, MeasurementsEntry.MeasurementType.ACTIVE_POWER);
+
+                                entry.setMeasurements(frame.joinFloats("-"));
+
+                                smartPlugProvider.updateMeasurementsEntry(entry);
+                            }
+                            else {
+                                MeasurementsEntry entry = new MeasurementsEntry();
+                                entry.setId(ev.getId());
+                                entry.setDate(date);
+                                entry.setMeasurementType(MeasurementsEntry.MeasurementType.ACTIVE_POWER);
+                                entry.setMeasurements(frame.joinFloats("-"));
+
+                                smartPlugProvider.addMeasurementsEntry(entry);
+                            }
+                        }
+                        else {
+                            if (smartPlugProvider.existMeasurementsEntry(ev.getId(), date, MeasurementsEntry.MeasurementType.ENERGY)) {
+                                MeasurementsEntry entry = smartPlugProvider.getMeasurementsEntry(ev.getId(), date, MeasurementsEntry.MeasurementType.ENERGY);
+
+                                entry.setMeasurements(frame.joinFloats("-"));
+
+                                smartPlugProvider.updateMeasurementsEntry(entry);
+                            }
+                            else {
+                                MeasurementsEntry entry = new MeasurementsEntry();
+                                entry.setId(ev.getId());
+                                entry.setDate(date);
+                                entry.setMeasurementType(MeasurementsEntry.MeasurementType.ENERGY);
+                                entry.setMeasurements(frame.joinFloats("-"));
+
+                                smartPlugProvider.addMeasurementsEntry(entry);
+                            }
+                        }
+
+                        /**
+                         * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
+                         */
+                        EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
+                    }
+
                 }
             }
             else if (basicFrame.getFrameType() == BasicFrame.Types.BYTE_PARAM) {

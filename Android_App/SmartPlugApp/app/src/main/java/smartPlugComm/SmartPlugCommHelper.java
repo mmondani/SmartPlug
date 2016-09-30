@@ -234,10 +234,9 @@ public class SmartPlugCommHelper {
                                 /**
                                  * El payload son 3 bytes y 24 mediciones float de energía o potencia activa.
                                  * Totalizan 99 bytes.
-                                 * TODO Implementar un nuevo tipo de Frame que permita tener byte array y float array 
                                  */
-                                //if ( (data.length - 7) == 99 )
-                                    //frame = new FloatArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 99 )
+                                    frame = new ByteFloatArrayFrame ((byte)length, (byte)command, (byte)register, 3, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                         }
                         else if (command == Commands.RESP_SET) {
