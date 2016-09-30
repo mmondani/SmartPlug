@@ -172,19 +172,22 @@ public class SmartPlugCommHelper {
                                 /**
                                  * El payload de estos registros es un solo float.
                                  */
-                                frame = new FloatFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 4 )
+                                    frame = new FloatFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                             else if (register == Registers.CURRENT_MEASUREMENTS) {
                                 /**
                                  * El payload son 4 floats: tensión, corriente, potencia, energía total acumulada
                                  */
-                                frame = new FloatArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 16 )
+                                    frame = new FloatArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                             else if (register == Registers.DEVICE_ID) {
                                 /**
                                  * El payload es un string de 33 caracteres.
                                  */
-                                frame = new StringFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 33 )
+                                    frame = new StringFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                             else if ( (register == Registers.MONDAY_LOAD_ON_TIME) || (register == Registers.MONDAY_LOAD_OFF_TIME) ||
                                     (register == Registers.TUESDAY_LOAD_ON_TIME) || (register == Registers.TUESDAY_LOAD_OFF_TIME) ||
@@ -196,7 +199,8 @@ public class SmartPlugCommHelper {
                                 /**
                                  * El payload son 2 bytes que indican la hora y los minutos.
                                  */
-                                frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 2 )
+                                    frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                             else if (register == Registers.ENABLE_ONOFF_TIME) {
                                 /**
@@ -204,7 +208,8 @@ public class SmartPlugCommHelper {
                                  * horaria del día está habilitada o no. El bit 0 es el domingo y
                                  * el 6 es el sábado.
                                  */
-                                frame = new ByteFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 1 )
+                                    frame = new ByteFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                             else if (register == Registers.ONOFF_TIMES) {
                                 /**
@@ -214,17 +219,25 @@ public class SmartPlugCommHelper {
                                  * domingo encendido, lunes apagado, ...., domingo apagado.
                                  * Totalizan 29 bytes.
                                  */
-                                frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 29 )
+                                    frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                             else if (register == Registers.LOAD_STATE) {
                                 /**
                                  * El payload es 1 byte que indica si la carga está encendida (1) o
                                  * apagada (0).
                                  */
-                                frame = new ByteFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 1 )
+                                    frame = new ByteFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                             else if ( (register == Registers.PER_HOUR_ACTIVE_POWER) || (register == Registers.PER_HOUR_ENERGY) ) {
-                                /** TODO implementar el parseo del float array que acompaña a estos registro. Vienen al revés los bytes ????? */
+                                /**
+                                 * El payload son 3 bytes y 24 mediciones float de energía o potencia activa.
+                                 * Totalizan 99 bytes.
+                                 * TODO Implementar un nuevo tipo de Frame que permita tener byte array y float array 
+                                 */
+                                //if ( (data.length - 7) == 99 )
+                                    //frame = new FloatArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                         }
                         else if (command == Commands.RESP_SET) {
@@ -232,7 +245,8 @@ public class SmartPlugCommHelper {
                                 /**
                                  * El payload es un string de 33 caracteres.
                                  */
-                                frame = new StringFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 33 )
+                                    frame = new StringFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                             else if ( (register == Registers.MONDAY_LOAD_ON_TIME) || (register == Registers.MONDAY_LOAD_OFF_TIME) ||
                                     (register == Registers.TUESDAY_LOAD_ON_TIME) || (register == Registers.TUESDAY_LOAD_OFF_TIME) ||
@@ -244,7 +258,8 @@ public class SmartPlugCommHelper {
                                 /**
                                  * El payload son 2 bytes que indican la hora y los minutos.
                                  */
-                                frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                                if ( (data.length - 7) == 2 )
+                                    frame = new ByteArrayFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
                             }
                         }
                     }

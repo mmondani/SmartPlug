@@ -416,7 +416,15 @@ public class SmartPlugService extends Service {
                         EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
                     }
                 }
-                /** TODO Implementar la lectura de la trama de GET(PER_HOUR_ACTIVE_POWER) y GET(PER_HOUR_ENERGY) */
+                else if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET &&
+                        (frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER ||
+                                frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ENERGY) ) {
+                    /**
+                     * Si es un GET de PER_HOUR_ACTIVE_POWER o PER_HOUR_ENERGY, lo que se reciben son
+                     * 24 floats con las mediciones de las 24 horas
+                     */
+                    /** TODO Implementar la lectura de la trama. */
+                }
             }
             else if (basicFrame.getFrameType() == BasicFrame.Types.BYTE_PARAM) {
                 ByteFrame frame = (ByteFrame)basicFrame;
