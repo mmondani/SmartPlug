@@ -87,24 +87,29 @@ public class MainActivity extends AppCompatActivity implements SmartPlugListFrag
 
 
     @Override
-    public void onFlatingMenuConfigClicked(String id) {
+    public void onFloatingMenuConfigClicked(String id) {
         Intent i = ConfigurationActivity.newIntent(this, id);
 
         startActivity(i);
     }
 
     @Override
-    public void onFlatingMenuHistoryClicked(String id) {
+    public void onFloatingMenuHistoryClicked(String id) {
         /** TODO Llamar a la activity de Historial. */
     }
 
     @Override
-    public void onFlatingMenuEnergyResetClicked(String id) {
+    public void onFloatingMenuRefreshClicked(String id) {
+        /** TODO Realizar un refrsh de todos los valores del Smart Plug */
+    }
+
+    @Override
+    public void onFloatingMenuMeasurementsResetClicked (String id) {
         /** TODO Llamar al DialogFragment para resetear la energía. */
     }
 
     @Override
-    public void onFlatingMenuFactoryResetClicked(String id) {
+    public void onFloatingMenuFactoryResetClicked(String id) {
         /** TODO Llamar al DialogFragment para resetear a valores de fábrica el Smart Plug. */
     }
 }

@@ -266,12 +266,24 @@
             app:fab_size="mini" />
 
         <com.github.clans.fab.FloatingActionButton
-            android:id="@+id/frag_details_float_menu_reset_energy"
+            android:id="@+id/frag_details_float_menu_refresh"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/reset1"
             android:scaleType="centerCrop"
-            app:fab_label="REINICIAR ENERGIA"
+            app:fab_label="ACTUALIZAR"
+            app:fab_colorNormal="#2f96da"
+            app:fab_colorPressed="#3fb0dc"
+            app:fab_colorRipple="#99d4d4d4"
+            app:fab_size="mini" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/frag_details_float_menu_reset_measurements"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/reset2"
+            android:scaleType="centerCrop"
+            app:fab_label="REINICIAR MEDICIONES"
             app:fab_colorNormal="#2f96da"
             app:fab_colorPressed="#3fb0dc"
             app:fab_colorRipple="#99d4d4d4"

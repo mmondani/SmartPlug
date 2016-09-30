@@ -41,7 +41,8 @@ public class SmartPlugDetailsFragment extends Fragment {
     private FloatingActionMenu mFloatingMenu;
     private FloatingActionButton mFloatingItemConfig;
     private FloatingActionButton mFloatingItemHistory;
-    private FloatingActionButton mFloatingItemEnergyReset;
+    private FloatingActionButton mFloatingItemRefresh;
+    private FloatingActionButton mFloatingItemMeasurementsReset;
     private FloatingActionButton mFloatingItemFactoryReset;
 
     private OnFloatingMenuItemClicked mClickListener = null;
@@ -142,12 +143,12 @@ public class SmartPlugDetailsFragment extends Fragment {
         mFloatingMenu = (FloatingActionMenu)v.findViewById(R.id.frag_details_float_menu);
         mFloatingItemConfig = (FloatingActionButton)v.findViewById(R.id.frag_details_float_menu_configuration);
         mFloatingItemHistory = (FloatingActionButton)v.findViewById(R.id.frag_details_float_menu_history);
-        mFloatingItemEnergyReset = (FloatingActionButton)v.findViewById(R.id.frag_details_float_menu_reset_energy);
+        mFloatingItemRefresh = (FloatingActionButton)v.findViewById(R.id.frag_details_float_menu_refresh);
+        mFloatingItemMeasurementsReset = (FloatingActionButton)v.findViewById(R.id.frag_details_float_menu_reset_measurements);
         mFloatingItemFactoryReset = (FloatingActionButton)v.findViewById(R.id.frag_details_float_menu_factory_reset);
 
 
         Toolbar toolbar = (Toolbar)v.findViewById(R.id.frag_details_toolbar);
-        toolbar.setTitle("Smart Plugs");
         ((AppCompatActivity)getActivity()).setSupportActionBar(toolbar);
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("");
 
@@ -156,7 +157,7 @@ public class SmartPlugDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null)
-                    mClickListener.onFlatingMenuConfigClicked(mId);
+                    mClickListener.onFloatingMenuConfigClicked(mId);
             }
         });
 
@@ -164,15 +165,23 @@ public class SmartPlugDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null)
-                    mClickListener.onFlatingMenuHistoryClicked(mId);
+                    mClickListener.onFloatingMenuHistoryClicked(mId);
             }
         });
 
-        mFloatingItemEnergyReset.setOnClickListener(new View.OnClickListener() {
+        mFloatingItemRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null)
-                    mClickListener.onFlatingMenuEnergyResetClicked(mId);
+                    mClickListener.onFloatingMenuRefreshClicked(mId);
+            }
+        });
+
+        mFloatingItemMeasurementsReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mClickListener != null)
+                    mClickListener.onFloatingMenuMeasurementsResetClicked(mId);
             }
         });
 
@@ -180,7 +189,7 @@ public class SmartPlugDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mClickListener != null)
-                    mClickListener.onFlatingMenuFactoryResetClicked(mId);
+                    mClickListener.onFloatingMenuFactoryResetClicked(mId);
             }
         });
 
@@ -203,10 +212,11 @@ public class SmartPlugDetailsFragment extends Fragment {
 
 
     public interface OnFloatingMenuItemClicked {
-        void onFlatingMenuConfigClicked (String id);
-        void onFlatingMenuHistoryClicked (String id);
-        void onFlatingMenuEnergyResetClicked (String id);
-        void onFlatingMenuFactoryResetClicked (String id);
+        void onFloatingMenuConfigClicked (String id);
+        void onFloatingMenuHistoryClicked (String id);
+        void onFloatingMenuRefreshClicked (String id);
+        void onFloatingMenuMeasurementsResetClicked (String id);
+        void onFloatingMenuFactoryResetClicked (String id);
     }
 
     private void updateUI () {
