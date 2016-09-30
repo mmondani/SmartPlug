@@ -10,7 +10,7 @@ import android.support.v7.widget.Toolbar;
 
 import database.StaticInfoEntry;
 
-public class HistoryActivity extends AppCompatActivity {
+public class HistoryActivity extends AppCompatActivity implements HistorySelectionFragment.OnDateSelectedInterface{
 
     private String mId;
 
@@ -29,7 +29,7 @@ public class HistoryActivity extends AppCompatActivity {
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
 
-            ft.add(R.id.act_history_fragment_container, HistorySelectionFragment.getInstace(mId));
+            ft.add(R.id.act_history_fragment_container, HistorySelectionFragment.getInstance(mId));
             ft.commit();
         }
 
@@ -51,5 +51,19 @@ public class HistoryActivity extends AppCompatActivity {
         i.putExtra(EXTRA_ID, id);
 
         return i;
+    }
+
+
+    @Override
+    public void onDateSelected(String date, int measurementType) {
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+
+        ft.setCustomAnimations(android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right, android.R.anim.slide_in_left,
+                android.R.anim.slide_out_right);
+        ft.replace(R.id.act_history_fragment_container, HistoryPlotFragment.getInstance(mId, date, measurementType));
+        ft.addToBackStack("ToPlotView");
+        ft.commit();
     }
 }

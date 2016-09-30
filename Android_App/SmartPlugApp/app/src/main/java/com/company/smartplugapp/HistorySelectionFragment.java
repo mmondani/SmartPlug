@@ -1,6 +1,7 @@
 package com.company.smartplugapp;
 
 
+import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -29,11 +30,12 @@ public class HistorySelectionFragment extends Fragment {
     List<String> mEnergySpinnerElements;
 
     private String mId;
+    private OnDateSelectedInterface mSelectedListener;
 
     private static final String ARG_ID = "id";
 
 
-    public static HistorySelectionFragment getInstace (String id) {
+    public static HistorySelectionFragment getInstance (String id) {
         HistorySelectionFragment fragment = new HistorySelectionFragment();
 
         Bundle args = new Bundle();
@@ -57,6 +59,23 @@ public class HistorySelectionFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        try {
+            mSelectedListener = (OnDateSelectedInterface)activity;
+        } catch (ClassCastException cce) {
+            throw new ClassCastException(activity.toString() + " debe implementar OnDateSelectedInterface");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+
+        mSelectedListener = null;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -64,13 +83,25 @@ public class HistorySelectionFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_history_selection, container, false);
 
-        mPowerDateSpinner = (Spinner)v.findViewById(R.id.frag_history_selection_spin_power);
-        mEnergyDateSpinner = (Spinner)v.findViewById(R.id.frag_history_selection_spin_energy);
+        /**
+         * Este Fragment se muestra siempre en portrait.
+         * En el AndroidManifest se agregó la línea:
+         * android:configChanges="keyboardHidden|orientation|screenSize"
+         * en HistoryActivity para evitar que el usuario pueda cambiar la orientación.
+         */
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
+
 
         /**
          * Los spinner se llenan a partir de las fechas de las entradas en la tabla Measurement para
          * el ID mId.
          */
+        mPowerDateSpinner = (Spinner)v.findViewById(R.id.frag_history_selection_spin_power);
+        mEnergyDateSpinner = (Spinner)v.findViewById(R.id.frag_history_selection_spin_energy);
+
+
+
         List<MeasurementsEntry> powerMeasurementsEntries = SmartPlugProvider.getInstance(getActivity()).
                 getMeasurementsEntries(mId, MeasurementsEntry.MeasurementType.ACTIVE_POWER);
 
@@ -110,8 +141,18 @@ public class HistorySelectionFragment extends Fragment {
                  * se evita llamar al Fragment del plot cuando se crea el Spinner.
                  */
                 if (position != 0) {
-                    Toast.makeText(getActivity(), mPowerSpinnerElements.get(position), Toast.LENGTH_SHORT).show();
-                    /** TODO Remover el Toast y llamar al Fragment que muestre el plot */
+                    if (mSelectedListener != null) {
+                        /**
+                         * Se vuelve a seleccionar el elemento 0 de la lista ("Elija una fecha"),
+                         * para que cuando el usuario presione el botón de Back y se vuelva a crear
+                         * la vista de este Fragment, se muestren los Spinner correctamente y no
+                         * con la última fecha elegida.
+                         */
+                        mPowerDateSpinner.setSelection(0);
+
+                        mSelectedListener.onDateSelected(mPowerSpinnerElements.get(position),
+                                MeasurementsEntry.MeasurementType.ACTIVE_POWER);
+                    }
                 }
             }
 
@@ -129,8 +170,18 @@ public class HistorySelectionFragment extends Fragment {
                  * se evita llamar al Fragment del plot cuando se crea el Spinner.
                  */
                 if (position != 0) {
-                    Toast.makeText(getActivity(), mEnergySpinnerElements.get(position), Toast.LENGTH_SHORT).show();
-                    /** TODO Remover el Toast y llamar al Fragment que muestre el plot */
+                    if (mSelectedListener != null) {
+                        /**
+                         * Se vuelve a seleccionar el elemento 0 de la lista ("Elija una fecha"),
+                         * para que cuando el usuario presione el botón de Back y se vuelva a crear
+                         * la vista de este Fragment, se muestren los Spinner correctamente y no
+                         * con la última fecha elegida.
+                         */
+                        mEnergyDateSpinner.setSelection(0);
+
+                        mSelectedListener.onDateSelected(mPowerSpinnerElements.get(position),
+                                MeasurementsEntry.MeasurementType.ENERGY);
+                    }
                 }
             }
 
@@ -140,10 +191,11 @@ public class HistorySelectionFragment extends Fragment {
             }
         });
 
-        //getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-
         return v;
     }
 
 
+    public interface OnDateSelectedInterface {
+        void onDateSelected (String date, int measurementType);
+    }
 }
