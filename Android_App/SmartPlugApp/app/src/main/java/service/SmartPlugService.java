@@ -164,7 +164,38 @@ public class SmartPlugService extends Service {
             mRunnableMeasurements = new Runnable() {
                 @Override
                 public void run() {
+                    /**
+                     * Se determianan todos los Smart Plugs dados de alta en la base de datos.
+                     */
+                    List<SmartPlugListItem> smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
 
+                    for (SmartPlugListItem smartPlug : smartPlugList) {
+                        byte[] data;
+                        Calendar calendar = Calendar.getInstance();
+
+                        /**
+                         * Se piden las mediciones del día de la fecha
+                         */
+                        calendar.add(Calendar.DAY_OF_YEAR, -1);
+                        byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+                        byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
+                        byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+                        EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
+                                getRawData(SmartPlugCommHelper.Commands.GET,
+                                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                                        new byte[]{day, month, year}
+                                )
+                        ));
+
+                        EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
+                                getRawData(SmartPlugCommHelper.Commands.GET,
+                                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                                        new byte[]{day, month, year}
+                                )
+                        ));
+                    }
 
                     mHandler.postDelayed(mRunnableMeasurements, 10 * 60 * 1000);
                 }
@@ -451,7 +482,7 @@ public class SmartPlugService extends Service {
                                                                 frame.getDataBytes()[2]);
 
                         /**
-                         * Se chequea si existe la entrada en la tabla Measurements para este ID, esta fehca
+                         * Se chequea si existe la entrada en la tabla Measurements para este ID, esta fecha
                          * y este tipo de medición.
                          * Si existe, se la actualiza. Si no existe se la crea.
                          */
