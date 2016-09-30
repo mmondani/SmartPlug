@@ -4,9 +4,9 @@ import android.database.Cursor;
 import android.database.CursorWrapper;
 
 
-public class StaticInfoCursorWraper extends CursorWrapper {
+public class StaticInfoCursorWrapper extends CursorWrapper {
 
-    public StaticInfoCursorWraper (Cursor cursor) {
+    public StaticInfoCursorWrapper(Cursor cursor) {
         super (cursor);
     }
 

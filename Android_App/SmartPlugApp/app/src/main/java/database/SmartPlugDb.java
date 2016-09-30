@@ -51,5 +51,14 @@ public class SmartPlugDb {
         }
     }
 
-    /** TODO definir las otra tabla que compone la base de datos */
+    public static final class MeasurementsTable {
+        public static final String NAME = "measurements";
+
+        public static final class Cols {
+            public static final String ID = "id";
+            public static final String DATE = "date";
+            public static final String MEASUREMENT_TYPE = "measurement_type";
+            public static final String MEASUREMENTS = "measurements";
+        }
+    }
 }

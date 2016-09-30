@@ -4,9 +4,9 @@ import android.database.Cursor;
 import android.database.CursorWrapper;
 
 
-public class OnOffTimesCursorWraper extends CursorWrapper {
+public class OnOffTimesCursorWrapper extends CursorWrapper {
 
-    public OnOffTimesCursorWraper (Cursor cursor) {
+    public OnOffTimesCursorWrapper(Cursor cursor) {
         super (cursor);
     }
 

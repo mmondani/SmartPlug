@@ -11,14 +11,17 @@ import java.util.List;
 
 import database.InstantaneousInfoCursoWrapper;
 import database.InstantaneousInfoEntry;
-import database.OnOffTimesCursorWraper;
+import database.MeasurementsCursorWrapper;
+import database.MeasurementsEntry;
+import database.OnOffTimesCursorWrapper;
 import database.OnOffTimesEntry;
 import database.SmartPlugDb;
 import database.SmartPlugDb.InstantaneousInfoTable;
+import database.SmartPlugDb.MeasurementsTable;
 import database.SmartPlugDb.OnOffTimesTable;
 import database.SmartPlugDb.StaticInfoTable;
 import database.SmartPlugDbHelper;
-import database.StaticInfoCursorWraper;
+import database.StaticInfoCursorWrapper;
 import database.StaticInfoEntry;
 
 
@@ -105,7 +108,7 @@ public class SmartPlugProvider {
         List<SmartPlugListItem> contacts = new ArrayList<>();
 
         InstantaneousInfoCursoWrapper cursorInstantaneous = queryInstantaneousInfo(null, null);
-        StaticInfoCursorWraper cursorStatic = queryStaticInfo(null, null);
+        StaticInfoCursorWrapper cursorStatic = queryStaticInfo(null, null);
 
         /**
          * Se leen en paralelo ambos cursores ya que tienen que tener la misma cantidad de filas
@@ -130,6 +133,7 @@ public class SmartPlugProvider {
             }
         } finally {
             cursorInstantaneous.close();
+            cursorStatic.close();
         }
 
 
@@ -210,7 +214,7 @@ public class SmartPlugProvider {
      */
 
     public StaticInfoEntry getStaticInfoEntry (String id) {
-        StaticInfoCursorWraper cursor = queryStaticInfo(
+        StaticInfoCursorWrapper cursor = queryStaticInfo(
                 StaticInfoTable.Cols.ID + " = ?",
                 new String[]{id}
         );
@@ -234,7 +238,7 @@ public class SmartPlugProvider {
                 new String[]{entry.getId()});
     }
 
-    private StaticInfoCursorWraper queryStaticInfo (String whereClause, String[] whereArgs) {
+    private StaticInfoCursorWrapper queryStaticInfo (String whereClause, String[] whereArgs) {
         Cursor cursor = mDatabase.query(
                 StaticInfoTable.NAME,
                 null,
@@ -245,7 +249,7 @@ public class SmartPlugProvider {
                 null
         );
 
-        return new StaticInfoCursorWraper(cursor);
+        return new StaticInfoCursorWrapper(cursor);
     }
 
     private static ContentValues getStaticInfoContentValues (StaticInfoEntry entry) {
@@ -266,7 +270,7 @@ public class SmartPlugProvider {
      */
 
     public OnOffTimesEntry getOnOffTimesEntry (String id) {
-        OnOffTimesCursorWraper cursor = queryOnOffTimes(
+        OnOffTimesCursorWrapper cursor = queryOnOffTimes(
                 OnOffTimesTable.Cols.ID + " = ?",
                 new String[]{id}
         );
@@ -290,7 +294,7 @@ public class SmartPlugProvider {
                 new String[]{entry.getId()});
     }
 
-    private OnOffTimesCursorWraper queryOnOffTimes (String whereClause, String[] whereArgs) {
+    private OnOffTimesCursorWrapper queryOnOffTimes (String whereClause, String[] whereArgs) {
         Cursor cursor = mDatabase.query(
                 OnOffTimesTable.NAME,
                 null,
@@ -301,7 +305,7 @@ public class SmartPlugProvider {
                 null
         );
 
-        return new OnOffTimesCursorWraper(cursor);
+        return new OnOffTimesCursorWrapper(cursor);
     }
 
     private static ContentValues getOnOffTimesContentValues (OnOffTimesEntry entry) {
@@ -323,6 +327,150 @@ public class SmartPlugProvider {
         values.put(OnOffTimesTable.Cols.SATURDAY_LOAD_OFF_TIME, entry.getSaturdayLoadOffTime().toString());
         values.put(OnOffTimesTable.Cols.SUNDAY_LOAD_ON_TIME, entry.getSundayLoadOnTime().toString());
         values.put(OnOffTimesTable.Cols.SUNDAY_LOAD_OFF_TIME, entry.getSundayLoadOffTime().toString());
+
+        return values;
+    }
+
+
+
+    /**
+     * *********************************************************************************************
+     * Métodos para acceder a la tabla MeasurementsTable
+     * *********************************************************************************************
+     */
+
+    /**
+     * Devuelve la entrada de la tabla MeasurementsTable que tenga ID = id, DATE = date y
+     * MEASUREMENT_TYPE = measurementType
+     * @param id ID del Smart Plug que se quiere consultar.
+     * @param date Fecha de las mediciones que se quieren consultar. Formato: DD/MM/AA
+     * @param measurementType Tipo de medición que se está consultando: MeasurementsEntry.MeasurementType.ACTIVE_POWER
+     *                        o MeasurementsEntry.MeasurementType.ENERGY.
+     * @return instancia de MeasurementsEntry si se la encontró o null si no se la encontró
+     */
+    public MeasurementsEntry getMeasurementsEntry (String id, String date, int measurementType) {
+        MeasurementsCursorWrapper cursor = queryMeasurements(
+                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " + MeasurementsTable.Cols.MEASUREMENT_TYPE + " = ?",
+                new String[]{id, date, Integer.toString(measurementType)}
+        );
+
+        try {
+            if (cursor.getCount() == 0)
+                return null;
+
+            cursor.moveToFirst();
+            return cursor.getMeasurementsEntry();
+        }finally {
+            cursor.close();
+        }
+    }
+
+    /**
+     * Devuelve una lista de MeasurementsEntry con todas las entradas de la tabla MeasurementsTable
+     * que tengan ID = id y MEASUREMENT_TYPE = measurementType.
+     * @param id ID del Smart Plug que se quiere consultar.
+     * @param measurementType Tipo de medición que se está consultando: MeasurementsEntry.MeasurementType.ACTIVE_POWER
+     *                        o MeasurementsEntry.MeasurementType.ENERGY.
+     * @return instancia de List<MeasurementsEntry> o null si no encontró ninguna entrada.
+     */
+    public List<MeasurementsEntry> getMeasurementsEntries (String id, int measurementType) {
+        List<MeasurementsEntry> measurementsEntries = new ArrayList<>();
+
+        MeasurementsCursorWrapper cursor = queryMeasurements(
+                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.MEASUREMENT_TYPE + " = ?",
+                new String[]{id, Integer.toString(measurementType)}
+        );
+
+        try {
+            if (cursor.getCount() == 0)
+                return null;
+
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                MeasurementsEntry entry = cursor.getMeasurementsEntry();
+                measurementsEntries.add(entry);
+
+                cursor.moveToNext();
+            }
+        }finally {
+            cursor.close();
+        }
+
+        return measurementsEntries;
+    }
+
+
+    /**
+     * Actualiza la entrada correspondiente en la tabla MeasurementsTable.
+     * @param entry Entrada que se quiere actualizar.
+     */
+    public void updateMeasurementsEntry (MeasurementsEntry entry) {
+        ContentValues values = getMeasurementsContentValues(entry);
+
+        mDatabase.update(MeasurementsTable.NAME, values,
+                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " + MeasurementsTable.Cols.MEASUREMENT_TYPE + " = ?",
+                new String[]{entry.getId(), entry.getDate(), Integer.toString(entry.getMeasurementType())});
+    }
+
+
+    /**
+     * Devuelve si existe una entrada en la tabla MeasurementsTable o no.
+     * @param id ID del dispositivo que se quiere consultar.
+     * @param date Fecha de la medición que se quiere consultar.
+     * @param measurementType Tipo de medición que se quiere consultar.
+     * @return true si la entrada existe, false en caso contrario.
+     */
+    public boolean existMeasurementsEntry (String id, String date, int measurementType) {
+        MeasurementsCursorWrapper cursor = queryMeasurements(
+                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " + MeasurementsTable.Cols.MEASUREMENT_TYPE + " = ?",
+                new String[]{id, date, Integer.toString(measurementType)}
+        );
+
+        try {
+            if (cursor.getCount() == 0)
+                return false;
+            else
+                return true;
+        }finally {
+            cursor.close();
+        }
+    }
+
+
+    /**
+     * Realiza una consulta (SELECT) sobre la tabla MeasurementsTable devolviendo las entradas que cumplan
+     * con whereClause.
+     * @param whereClause Where clause de la consulta SELECT usada para filtrar el resultado.
+     * @param whereArgs Parámetros que completan la where clause.
+     * @return instancia de MeasurementsCursorWrapper apuntando al principio del resultado del SELECT.
+     */
+    private MeasurementsCursorWrapper queryMeasurements (String whereClause, String[] whereArgs) {
+        Cursor cursor = mDatabase.query(
+                MeasurementsTable.NAME,
+                null,
+                whereClause,
+                whereArgs,
+                null,
+                null,
+                null
+        );
+
+        return new MeasurementsCursorWrapper(cursor);
+    }
+
+    /**
+     * Devuelve los ContentValues de la entrda entry.
+     * @param entry Entrada con la que cargar la instancia de ContentValues.
+     * @return instancia de ContentValues con los valores de entry cargados.
+     */
+    private static ContentValues getMeasurementsContentValues (MeasurementsEntry entry) {
+        ContentValues values = new ContentValues();
+
+        values.put(MeasurementsTable.Cols.ID, entry.getId());
+        values.put(MeasurementsTable.Cols.DATE, entry.getDate());
+        values.put(MeasurementsTable.Cols.MEASUREMENT_TYPE, entry.getMeasurementType());
+        values.put(MeasurementsTable.Cols.MEASUREMENTS, entry.getMeasurements());
+
 
         return values;
     }

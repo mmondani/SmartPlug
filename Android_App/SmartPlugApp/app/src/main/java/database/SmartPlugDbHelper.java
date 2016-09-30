@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import database.SmartPlugDb.InstantaneousInfoTable;
+import database.SmartPlugDb.MeasurementsTable;
 import database.SmartPlugDb.OnOffTimesTable;
 import database.SmartPlugDb.StaticInfoTable;
 
@@ -56,7 +57,12 @@ public class SmartPlugDbHelper extends SQLiteOpenHelper {
                 OnOffTimesTable.Cols.SUNDAY_LOAD_ON_TIME + ", " +
                 OnOffTimesTable.Cols.SUNDAY_LOAD_OFF_TIME + ")");
 
-        /** TODO crear la otra tabla en la base de datos */
+        db.execSQL("create table " + MeasurementsTable.NAME + " (" +
+                "_id integer primary key autoincrement, " +
+                MeasurementsTable.Cols.ID + ", " +
+                MeasurementsTable.Cols.DATE + ", " +
+                MeasurementsTable.Cols.MEASUREMENT_TYPE + ", " +
+                MeasurementsTable.Cols.MEASUREMENTS + ")");
     }
 
     @Override
