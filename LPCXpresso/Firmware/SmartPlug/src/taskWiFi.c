@@ -1075,21 +1075,23 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 			if (blockPointer != 0xFF)
 			{
 				// Se encontró el bloque correspondiente a la fecha buscada.
+				// En buff[0], buff[1] y buff[2] está el día, mes y año que fue pedido.
+				// Estos valores también se envían en la trama.
 				if (regEE == REG_PER_HOUR_ACTIVE_POWER)
 				{
 					ioEE25LCxxx_busyPolling(ee);
-					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_00, &buff[3], 48);			// Primeras 12 horas del día
 					ioEE25LCxxx_busyPolling(ee);
-					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
-					bytesRead = 96;
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);			// Últimas 12 horas del día
+					bytesRead = 99;
 				}
 				else if (regEE == REG_PER_HOUR_ENERGY)
 				{
 					ioEE25LCxxx_busyPolling(ee);
-					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_00, &buff[3], 48);			// Primeras 12 horas del día
 					ioEE25LCxxx_busyPolling(ee);
-					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
-					bytesRead = 96;
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);			// Últimas 12 horas del día
+					bytesRead = 99;
 				}
 			}
 			else

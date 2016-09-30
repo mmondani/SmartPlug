@@ -533,12 +533,14 @@ void MainWindow::newSmartPlugMsgReceived(SmartPlugMsg_t msg)
         }
         else if (msg.reg == REG_PER_HOUR_ACTIVE_POWER || msg.reg == REG_PER_HOUR_ENERGY)
         {
-            // Son 24 valores float (tiene que haber 96 bytes)
-            if (msg.len < 96)
+            // Son 3 bytes de la fecha y 24 valores float (tiene que haber 99 bytes)
+            if (msg.len < 99)
                 payloadStr = "Error";
             else
             {
-                for (int i = 0; i < msg.rawData.length(); i = i+4)
+                payloadStr.append("Fecha: " + QString("%1/%2/%3").arg((int)msg.rawData.at(0)).arg((int)msg.rawData.at(1)).arg((int)msg.rawData.at(2)) + " - ");
+
+                for (int i = 3; i < msg.rawData.length(); i = i+4)
                 {
                     // Agarra de a 4 bytes y los convierte a float.
                     // Los 4 bytes de cada float vienen al reves!!!!!
