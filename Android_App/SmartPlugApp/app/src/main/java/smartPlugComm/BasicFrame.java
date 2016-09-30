@@ -15,7 +15,7 @@ public class BasicFrame {
         public static final int BYTE_PARAM = 4;
         public static final int BYTE_ARRAY_PARAM = 5;
         public static final int FLOAT_ARRAY_PARAM = 6;
-        public static final int BYTE_FLOAT_ARRAY_PARAM = 6;
+        public static final int BYTE_FLOAT_ARRAY_PARAM = 7;
     }
 
     public BasicFrame () {

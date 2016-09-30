@@ -358,8 +358,12 @@ public class SmartPlugProvider {
      * @return instancia de MeasurementsEntry si se la encontró o null si no se la encontró
      */
     public MeasurementsEntry getMeasurementsEntry (String id, String date, int measurementType) {
+        /**
+         * Se castea la columna MEASUREMENT_TYPE a TEXT para poder compararla con un string.
+         */
         MeasurementsCursorWrapper cursor = queryMeasurements(
-                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " + MeasurementsTable.Cols.MEASUREMENT_TYPE + " = ?",
+                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " +
+                        "CAST(" + MeasurementsTable.Cols.MEASUREMENT_TYPE + " as TEXT) = ?",
                 new String[]{id, date, Integer.toString(measurementType)}
         );
 
@@ -385,8 +389,12 @@ public class SmartPlugProvider {
     public List<MeasurementsEntry> getMeasurementsEntries (String id, int measurementType) {
         List<MeasurementsEntry> measurementsEntries = new ArrayList<>();
 
+        /**
+         * Se castea la columna MEASUREMENT_TYPE a TEXT para poder compararla con un string.
+         */
         MeasurementsCursorWrapper cursor = queryMeasurements(
-                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.MEASUREMENT_TYPE + " = ?",
+                MeasurementsTable.Cols.ID + " = ? AND " +
+                        "CAST(" + MeasurementsTable.Cols.MEASUREMENT_TYPE  + " as TEXT) = ?",
                 new String[]{id, Integer.toString(measurementType)}
         );
 
@@ -416,8 +424,13 @@ public class SmartPlugProvider {
     public void updateMeasurementsEntry (MeasurementsEntry entry) {
         ContentValues values = getMeasurementsContentValues(entry);
 
+        /**
+         * Se castea la columna MEASUREMENT_TYPE a TEXT para poder compararla con un string.
+         */
         mDatabase.update(MeasurementsTable.NAME, values,
-                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " + MeasurementsTable.Cols.MEASUREMENT_TYPE + " = ?",
+                MeasurementsTable.Cols.ID + " = ? AND " +
+                        MeasurementsTable.Cols.DATE + " = ? AND " +
+                        "CAST(" + MeasurementsTable.Cols.MEASUREMENT_TYPE  + " as TEXT) = ?",
                 new String[]{entry.getId(), entry.getDate(), Integer.toString(entry.getMeasurementType())});
     }
 
@@ -430,8 +443,12 @@ public class SmartPlugProvider {
      * @return true si la entrada existe, false en caso contrario.
      */
     public boolean existMeasurementsEntry (String id, String date, int measurementType) {
+        /**
+         * Se castea la columna MEASUREMENT_TYPE a TEXT para poder compararla con un string.
+         */
         MeasurementsCursorWrapper cursor = queryMeasurements(
-                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " + MeasurementsTable.Cols.MEASUREMENT_TYPE + " = ?",
+                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " +
+                        "CAST(" + MeasurementsTable.Cols.MEASUREMENT_TYPE  + " as TEXT) = ?",
                 new String[]{id, date, Integer.toString(measurementType)}
         );
 

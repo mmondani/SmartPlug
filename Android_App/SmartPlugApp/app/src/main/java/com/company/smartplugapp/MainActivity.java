@@ -95,7 +95,9 @@ public class MainActivity extends AppCompatActivity implements SmartPlugListFrag
 
     @Override
     public void onFloatingMenuHistoryClicked(String id) {
-        /** TODO Llamar a la activity de Historial. */
+        Intent i = HistoryActivity.newIntent(this, id);
+
+        startActivity(i);
     }
 
     @Override

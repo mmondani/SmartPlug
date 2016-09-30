@@ -176,7 +176,6 @@ public class SmartPlugService extends Service {
                         /**
                          * Se piden las mediciones del día de la fecha
                          */
-                        calendar.add(Calendar.DAY_OF_YEAR, -1);
                         byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
                         byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
                         byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
@@ -490,7 +489,7 @@ public class SmartPlugService extends Service {
                             if (smartPlugProvider.existMeasurementsEntry(ev.getId(), date, MeasurementsEntry.MeasurementType.ACTIVE_POWER)) {
                                 MeasurementsEntry entry = smartPlugProvider.getMeasurementsEntry(ev.getId(), date, MeasurementsEntry.MeasurementType.ACTIVE_POWER);
 
-                                entry.setMeasurements(frame.joinFloats("-"));
+                                entry.setMeasurements(frame.joinFloats(";"));
 
                                 smartPlugProvider.updateMeasurementsEntry(entry);
                             }
@@ -499,7 +498,7 @@ public class SmartPlugService extends Service {
                                 entry.setId(ev.getId());
                                 entry.setDate(date);
                                 entry.setMeasurementType(MeasurementsEntry.MeasurementType.ACTIVE_POWER);
-                                entry.setMeasurements(frame.joinFloats("-"));
+                                entry.setMeasurements(frame.joinFloats(";"));
 
                                 smartPlugProvider.addMeasurementsEntry(entry);
                             }
@@ -508,7 +507,7 @@ public class SmartPlugService extends Service {
                             if (smartPlugProvider.existMeasurementsEntry(ev.getId(), date, MeasurementsEntry.MeasurementType.ENERGY)) {
                                 MeasurementsEntry entry = smartPlugProvider.getMeasurementsEntry(ev.getId(), date, MeasurementsEntry.MeasurementType.ENERGY);
 
-                                entry.setMeasurements(frame.joinFloats("-"));
+                                entry.setMeasurements(frame.joinFloats(";"));
 
                                 smartPlugProvider.updateMeasurementsEntry(entry);
                             }
@@ -517,7 +516,7 @@ public class SmartPlugService extends Service {
                                 entry.setId(ev.getId());
                                 entry.setDate(date);
                                 entry.setMeasurementType(MeasurementsEntry.MeasurementType.ENERGY);
-                                entry.setMeasurements(frame.joinFloats("-"));
+                                entry.setMeasurements(frame.joinFloats(";"));
 
                                 smartPlugProvider.addMeasurementsEntry(entry);
                             }

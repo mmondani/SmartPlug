@@ -21,8 +21,13 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ConfigurationActivity"
-                  android:parentActivityName=".MainActivity">
+        <activity
+            android:name=".ConfigurationActivity"
+            android:parentActivityName=".MainActivity" >
+        </activity>
+
+        <activity android:name=".HistoryActivity"
+                  android:configChanges="keyboardHidden|orientation|screenSize">
         </activity>
 
         <service
