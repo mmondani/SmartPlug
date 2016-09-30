@@ -22,11 +22,11 @@ public class FloatArrayFrame extends BasicFrame {
         if ( (payload.length % 4) == 0 ) {
             mData = new float[payload.length / 4];
 
-            for (int i = 0; i < mData.length; i++) {
-                byte[] data = Arrays.copyOfRange(payload, i*4, i*4 + 4);
+            for (int i = 0; i < payload.length; i += 4) {
+                byte[] data = Arrays.copyOfRange(payload, i, i + 4);
                 ByteBuffer buff = ByteBuffer.wrap(data);
                 buff.order(ByteOrder.BIG_ENDIAN);
-                mData[i] = buff.getFloat();
+                mData[i/4] = buff.getFloat();
             }
         }
     }

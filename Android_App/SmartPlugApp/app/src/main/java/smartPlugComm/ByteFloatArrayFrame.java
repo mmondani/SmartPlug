@@ -20,7 +20,8 @@ public class ByteFloatArrayFrame extends BasicFrame {
         mRegister = register;
 
         /**
-         * El payload se compone de numberOfBytes bytes al principio y N floats (N * 4 bytes) después
+         * El payload se compone de numberOfBytes bytes al principio y N floats (N * 4 bytes) después.
+         * Los 4 bytes de los float vienen al revés (vienen en LITTLE ENDIAN)
          */
         if ( ( (payload.length-numberOfBytes) % 4) == 0 ) {
             mDataBytes = new byte[numberOfBytes];
@@ -29,11 +30,11 @@ public class ByteFloatArrayFrame extends BasicFrame {
 
             mDataFloats = new float[(payload.length-numberOfBytes) / 4];
 
-            for (int i = numberOfBytes; i < mDataFloats.length; i++) {
-                byte[] data = Arrays.copyOfRange(payload, i * 4, i * 4 + 4);
+            for (int i = numberOfBytes; i < payload.length; i+=4) {
+                byte[] data = Arrays.copyOfRange(payload, i, i + 4);
                 ByteBuffer buff = ByteBuffer.wrap(data);
-                buff.order(ByteOrder.BIG_ENDIAN);
-                mDataFloats[i] = buff.getFloat();
+                buff.order(ByteOrder.LITTLE_ENDIAN);
+                mDataFloats[i/4] = buff.getFloat();
             }
         }
     }

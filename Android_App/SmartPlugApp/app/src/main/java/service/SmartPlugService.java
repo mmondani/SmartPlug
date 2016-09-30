@@ -25,6 +25,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import database.InstantaneousInfoEntry;
@@ -210,6 +211,12 @@ public class SmartPlugService extends Service {
              * Si el ID que se recibió no está en la base de datos, se lo agrega
              */
             smartPlugProvider.addSmartPlug(ev.getId(), ev.getIp());
+
+            /**
+             * Se le van a pedir las mediciones históricas de los últimos 7 días tanto de potencia
+             * como de enegía.
+             */
+            queryWeekMeasurements (ev.getId());
         }
 
         /**
@@ -742,5 +749,173 @@ public class SmartPlugService extends Service {
                 }
             }
         }
+    }
+
+
+    private void queryWeekMeasurements (String id) {
+        /**
+         * Se le van a pedir las mediciones históricas de los últimos 7 días tanto de potencia
+         * como de enegía.
+         *
+         * Se obtiene la fecha actual
+         */
+        Calendar calendar = Calendar.getInstance();
+        byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+        byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
+        byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        /**
+         * Se pregunta por las mediciones del día anterior
+         */
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+        month = (byte) (calendar.get(Calendar.MONTH) + 1);
+        year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        /**
+         * Se pregunta por las mediciones del día anterior
+         */
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+        month = (byte) (calendar.get(Calendar.MONTH) + 1);
+        year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        /**
+         * Se pregunta por las mediciones del día anterior
+         */
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+        month = (byte) (calendar.get(Calendar.MONTH) + 1);
+        year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        /**
+         * Se pregunta por las mediciones del día anterior
+         */
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+        month = (byte) (calendar.get(Calendar.MONTH) + 1);
+        year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        /**
+         * Se pregunta por las mediciones del día anterior
+         */
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+        month = (byte) (calendar.get(Calendar.MONTH) + 1);
+        year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        /**
+         * Se pregunta por las mediciones del día anterior
+         */
+        calendar.add(Calendar.DAY_OF_YEAR, -1);
+        day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+        month = (byte) (calendar.get(Calendar.MONTH) + 1);
+        year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        EventBus.getDefault().post(new CommandEvent(id, SmartPlugCommHelper.getInstance().
+                getRawData(SmartPlugCommHelper.Commands.GET,
+                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                        new byte[]{day, month, year}
+                )
+        ));
+
+        /** TODO Preguntar por lo otros 5 días. */
     }
 }
