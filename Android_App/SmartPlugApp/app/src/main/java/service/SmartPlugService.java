@@ -111,38 +111,7 @@ public class SmartPlugService extends Service {
                     List<SmartPlugListItem> smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
 
                     for (SmartPlugListItem smartPlug : smartPlugList) {
-                        byte[] data;
-
-                        /**
-                         * Se pide el nombre del Smart Plug para ver si cambió.
-                         */
-                        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
-                                                                            SmartPlugCommHelper.Registers.DEVICE_ID);
-                        EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), data));
-
-
-                        /**
-                         * Se piden todos los horarios de encendido y apagado para ver si alguno cambió.
-                         */
-                        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
-                                                                                    SmartPlugCommHelper.Registers.ONOFF_TIMES);
-                        EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), data));
-
-
-                        /**
-                         * Se piden las mediciones de tensión, corriente, potencia activa y energía total acumulada.
-                         */
-                        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
-                                                                            SmartPlugCommHelper.Registers.CURRENT_MEASUREMENTS);
-                        EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), data));
-
-
-                        /**
-                         * Se pide si está encendida la carga o no.
-                         */
-                        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
-                                SmartPlugCommHelper.Registers.LOAD_STATE);
-                        EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), data));
+                        queryInitialValues (smartPlug.getId());
                     }
 
 
@@ -782,7 +751,7 @@ public class SmartPlugService extends Service {
     }
 
 
-    private void queryWeekMeasurements (String id) {
+    public static void queryWeekMeasurements (String id) {
         /**
          * Se le van a pedir las mediciones históricas de los últimos 7 días tanto de potencia
          * como de enegía.
@@ -947,5 +916,40 @@ public class SmartPlugService extends Service {
         ));
 
         /** TODO Preguntar por lo otros 5 días. */
+    }
+
+    public static void queryInitialValues (String id) {
+        byte[] data;
+
+        /**
+         * Se pide el nombre del Smart Plug para ver si cambió.
+         */
+        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
+                SmartPlugCommHelper.Registers.DEVICE_ID);
+        EventBus.getDefault().post(new CommandEvent(id, data));
+
+
+        /**
+         * Se piden todos los horarios de encendido y apagado para ver si alguno cambió.
+         */
+        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
+                SmartPlugCommHelper.Registers.ONOFF_TIMES);
+        EventBus.getDefault().post(new CommandEvent(id, data));
+
+
+        /**
+         * Se piden las mediciones de tensión, corriente, potencia activa y energía total acumulada.
+         */
+        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
+                SmartPlugCommHelper.Registers.CURRENT_MEASUREMENTS);
+        EventBus.getDefault().post(new CommandEvent(id, data));
+
+
+        /**
+         * Se pide si está encendida la carga o no.
+         */
+        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
+                SmartPlugCommHelper.Registers.LOAD_STATE);
+        EventBus.getDefault().post(new CommandEvent(id, data));
     }
 }

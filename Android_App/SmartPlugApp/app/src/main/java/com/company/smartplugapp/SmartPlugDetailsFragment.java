@@ -25,7 +25,10 @@ import database.InstantaneousInfoEntry;
 import database.OnOffTimesEntry;
 import database.SmartPlugDb;
 import database.StaticInfoEntry;
+import events.CommandEvent;
 import events.UpdateSmartPlugEvent;
+import service.SmartPlugService;
+import smartPlugComm.SmartPlugCommHelper;
 
 
 public class SmartPlugDetailsFragment extends Fragment {
@@ -235,7 +238,9 @@ public class SmartPlugDetailsFragment extends Fragment {
              * Se va a solicitar: nombre del dispositivo, estado de la carga, mediciones instantaneas,
              * horarios de encendido y apagado, mediciones de los últimos 7 días.
              */
-            /** TODO envíar los comandos al Smart Plug */
+            SmartPlugService.queryInitialValues(mId);
+
+            SmartPlugService.queryWeekMeasurements(mId);
         }
         else if (requestCode == REQ_RESET_MEASUREMENTS) {
             /**
