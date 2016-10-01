@@ -223,7 +223,7 @@ public class ConfigurationFragment extends Fragment {
                  * de encendido y apagado.
                  */
                 String timeString = mScheduleMondayText.getText().toString().split(" - ")[0];
-                showTimePickerDialog("monday", timeString, true);
+                showTimePickerDialog("monday", "Hora de encendido", timeString, true);
             }
         });
 
@@ -244,7 +244,7 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String timeString = mScheduleTuesdayText.getText().toString().split(" - ")[0];
-                showTimePickerDialog("tuesday", timeString, true);
+                showTimePickerDialog("tuesday", "Hora de encendido", timeString, true);
             }
         });
 
@@ -262,7 +262,7 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String timeString = mScheduleWednesdayText.getText().toString().split(" - ")[0];
-                showTimePickerDialog("wednesday", timeString, true);
+                showTimePickerDialog("wednesday", "Hora de encendido", timeString, true);
             }
         });
 
@@ -280,7 +280,7 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String timeString = mScheduleThursdayText.getText().toString().split(" - ")[0];
-                showTimePickerDialog("thursday", timeString, true);
+                showTimePickerDialog("thursday", "Hora de encendido", timeString, true);
             }
         });
 
@@ -298,7 +298,7 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String timeString = mScheduleFridayText.getText().toString().split(" - ")[0];
-                showTimePickerDialog("friday", timeString, true);
+                showTimePickerDialog("friday", "Hora de encendido", timeString, true);
             }
         });
 
@@ -316,7 +316,7 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String timeString = mScheduleSaturdayText.getText().toString().split(" - ")[0];
-                showTimePickerDialog("saturday", timeString, true);
+                showTimePickerDialog("saturday", "Hora de encendido", timeString, true);
             }
         });
 
@@ -334,7 +334,7 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 String timeString = mScheduleSundayText.getText().toString().split(" - ")[0];
-                showTimePickerDialog("sunday", timeString, true);
+                showTimePickerDialog("sunday", "Hora de encendido", timeString, true);
             }
         });
 
@@ -393,7 +393,7 @@ public class ConfigurationFragment extends Fragment {
                 timeString = mScheduleSundayText.getText().toString().split(" - ")[1];
 
 
-            showTimePickerDialog(mWeekDayToConfig, timeString, false);
+            showTimePickerDialog(mWeekDayToConfig, "Hora de apagado", timeString, false);
         }
 
 
@@ -533,12 +533,12 @@ public class ConfigurationFragment extends Fragment {
     }
 
 
-    private void showTimePickerDialog(String weekDayToConfig, String timeString, boolean isOnTime) {
+    private void showTimePickerDialog(String weekDayToConfig, String title, String timeString, boolean isOnTime) {
         mWeekDayToConfig = weekDayToConfig;
 
         FragmentManager fm = getActivity().getSupportFragmentManager();
 
-        TimePickerDialog tp = TimePickerDialog.getInstance("Hora de encendido", timeString + ":0");
+        TimePickerDialog tp = TimePickerDialog.getInstance(title, timeString + ":0");
 
         if (isOnTime) {
             tp.setTargetFragment(ConfigurationFragment.this, REQUEST_ON_TIME);

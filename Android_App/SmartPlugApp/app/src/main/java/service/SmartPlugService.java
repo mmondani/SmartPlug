@@ -360,20 +360,65 @@ public class SmartPlugService extends Service {
                          */
                         EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
                     }
-                }
-                else if (frame.getRegister() == SmartPlugCommHelper.Registers.DEVICE_ID) {
-                    /**
-                     * Si se resetea el Device ID se debe enviar un GET(DEVICE_ID) para
-                     * averiguar cuál es el nuevo ID.
-                     */
-                    EventBus.getDefault().post(new CommandEvent(ev.getId(), SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
-                                                                                                                        SmartPlugCommHelper.Registers.DEVICE_ID)));
-                }
-                else if (frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER) {
-                    /** TODO borrar todas las entradas de tipo mediciones de potencia de la tabla Measurements de este ID */
-                }
-                else if (frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ENERGY) {
-                    /** TODO borrar todas las entradas de tipo energía de la tabla Measurements de este ID */
+                    else if (frame.getRegister() == SmartPlugCommHelper.Registers.DEVICE_ID) {
+                        /**
+                         * Si se resetea el Device ID se debe enviar un GET(DEVICE_ID) para
+                         * averiguar cuál es el nuevo ID.
+                         */
+                        EventBus.getDefault().post(new CommandEvent(ev.getId(),
+                                SmartPlugCommHelper.getInstance().getRawData(
+                                        SmartPlugCommHelper.Commands.GET,
+                                        SmartPlugCommHelper.Registers.DEVICE_ID
+                                )));
+                    }
+                    else if (frame.getRegister() == SmartPlugCommHelper.Registers.TOTAL_ENERGY) {
+                        /**
+                         * Si se recibió una respuesta a el comando RESET(TOTAL_ENERGY)
+                         * se pone en 0 este valor en la tabla InstantaneousMeasurements
+                         */
+                        InstantaneousInfoEntry entry = SmartPlugProvider.getInstance(getApplicationContext())
+                                .getInstantaneousInfoEntry(ev.getId());
+
+                        entry.setTotalEnergy(0.0f);
+                        SmartPlugProvider.getInstance(getApplicationContext())
+                                .updateInstantaneousInfoEntry(entry);
+                    }
+                    else if (frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER) {
+                        /**
+                         * Si se recibió una respuesta a el comando RESET(PER_HOUR_ACTIVE_POWER)
+                         * se deben borrar todas las entradas para este tipo de medición y el ID
+                         * correspondiente.
+                         */
+                        SmartPlugProvider.getInstance(getApplicationContext()).removeMeasurementsEntries(
+                                ev.getId(), MeasurementsEntry.MeasurementType.ACTIVE_POWER);
+                    }
+                    else if (frame.getRegister() == SmartPlugCommHelper.Registers.PER_HOUR_ENERGY) {
+                        /**
+                         * Si se recibió una respuesta a el comando RESET(PER_HOUR_ENERGY)
+                         * se deben borrar todas las entradas para este tipo de medición y el ID
+                         * correspondiente.
+                         */
+                        SmartPlugProvider.getInstance(getApplicationContext()).removeMeasurementsEntries(
+                                ev.getId(), MeasurementsEntry.MeasurementType.ENERGY);
+                    }
+                    else if (frame.getRegister() == SmartPlugCommHelper.Registers.ALL_REGISTERS) {
+                        /**
+                         * Si se recibió una respuesta a el comando RESET (ALL_REGISTERS) se debe:
+                         *  - Pedir nombre del dispositivo.
+                         *  - Pedir estado de la carga.
+                         *  - Pedir horarios de encendido y apagado.
+                         *  - Eliminar las entradas de mediciones históricas para energía y para potencia activa.
+                         */
+
+                        queryInitialValues(ev.getId());
+                        queryWeekMeasurements(ev.getId());
+
+                        SmartPlugProvider.getInstance(getApplicationContext()).removeMeasurementsEntries(
+                                ev.getId(), MeasurementsEntry.MeasurementType.ACTIVE_POWER);
+
+                        SmartPlugProvider.getInstance(getApplicationContext()).removeMeasurementsEntries(
+                                ev.getId(), MeasurementsEntry.MeasurementType.ENERGY);
+                    }
                 }
             }
             else if (basicFrame.getFrameType() == BasicFrame.Types.FLOAT_ARRAY_PARAM) {

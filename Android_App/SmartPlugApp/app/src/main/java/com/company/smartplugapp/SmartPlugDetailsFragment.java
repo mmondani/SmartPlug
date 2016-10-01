@@ -200,7 +200,7 @@ public class SmartPlugDetailsFragment extends Fragment {
                         "Está seguro que desea reiniciar el registro de mediciones de energía y potencia " +
                                 "en el Smart Plug.");
 
-                ad.setTargetFragment(SmartPlugDetailsFragment.this, REQ_REFRESH);
+                ad.setTargetFragment(SmartPlugDetailsFragment.this, REQ_RESET_MEASUREMENTS);
                 ad.show(fm, "MeasurementResethDialog");
             }
         });
@@ -214,7 +214,7 @@ public class SmartPlugDetailsFragment extends Fragment {
                         "Está seguro que desea volver a los valores de fábrica. Perderá " +
                                 "toda la información histórica.");
 
-                ad.setTargetFragment(SmartPlugDetailsFragment.this, REQ_REFRESH);
+                ad.setTargetFragment(SmartPlugDetailsFragment.this, REQ_FACTORY_RESET);
                 ad.show(fm, "FactoryResetDialog");
             }
         });
@@ -248,7 +248,23 @@ public class SmartPlugDetailsFragment extends Fragment {
              * total acumulada, las mediciones históricas de potencia, las mediciones históricas
              * de energía.
              */
-            /** TODO envíar los comandos al Smart Plug */
+            EventBus.getDefault().post(new CommandEvent(mId,
+                    SmartPlugCommHelper.getInstance().getRawData(
+                            SmartPlugCommHelper.Commands.RESET,
+                            SmartPlugCommHelper.Registers.TOTAL_ENERGY
+                    )));
+
+            EventBus.getDefault().post(new CommandEvent(mId,
+                    SmartPlugCommHelper.getInstance().getRawData(
+                            SmartPlugCommHelper.Commands.RESET,
+                            SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER
+                    )));
+
+            EventBus.getDefault().post(new CommandEvent(mId,
+                    SmartPlugCommHelper.getInstance().getRawData(
+                            SmartPlugCommHelper.Commands.RESET,
+                            SmartPlugCommHelper.Registers.PER_HOUR_ENERGY
+                    )));
         }
         else if (requestCode == REQ_FACTORY_RESET) {
             /**
@@ -256,7 +272,11 @@ public class SmartPlugDetailsFragment extends Fragment {
              * RESET (ALL_REGISTERS) y se van a volver a pedir: nombre del dispositivo, estado de la carga,
              * mediciones instantaneas, horarios de encendido y apagado
              */
-            /** TODO envíar los comandos al Smart Plug */
+            EventBus.getDefault().post(new CommandEvent(mId,
+                    SmartPlugCommHelper.getInstance().getRawData(
+                            SmartPlugCommHelper.Commands.RESET,
+                            SmartPlugCommHelper.Registers.ALL_REGISTERS
+                    )));
         }
     }
 
