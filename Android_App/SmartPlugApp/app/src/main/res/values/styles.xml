@@ -26,14 +26,14 @@
     </style>
 
     <style name="GaugeValueText">
-        <item name="android:textColor">#028be7</item>
+        <item name="android:textColor">#18a7ca</item>
         <item name="android:textSize">35dp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:fontFamily">sans-serif-black</item>
     </style>
 
     <style name="GaugeNameText">
-        <item name="android:textColor">#dadada</item>
+        <item name="android:textColor">#cccccc</item>
         <item name="android:textSize">15dp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
@@ -55,7 +55,7 @@
     </style>
 
     <style name="ConfigurationScheduleTimeBox">
-        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:background">#1a7ea5</item>
     </style>
 
     <style name="HistorySubSectionName">
