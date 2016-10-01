@@ -2,8 +2,10 @@ package com.company.smartplugapp;
 
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -51,6 +53,10 @@ public class SmartPlugDetailsFragment extends Fragment {
 
 
     private static final String ARG_ID = "id";
+    private static final int REQ_REFRESH = 1;
+    private static final int REQ_RESET_MEASUREMENTS = 2;
+    private static final int REQ_FACTORY_RESET = 3;
+
 
 
     public static SmartPlugDetailsFragment getInstance (String id) {
@@ -172,24 +178,41 @@ public class SmartPlugDetailsFragment extends Fragment {
         mFloatingItemRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mClickListener != null)
-                    mClickListener.onFloatingMenuRefreshClicked(mId);
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+
+                AskingDialog ad = AskingDialog.getInstance("Actualizar parámetros",
+                        "Está seguro que desea actualizar la información del Smart Plug en la aplicación.");
+
+                ad.setTargetFragment(SmartPlugDetailsFragment.this, REQ_REFRESH);
+                ad.show(fm, "RefreshDialog");
             }
         });
 
         mFloatingItemMeasurementsReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mClickListener != null)
-                    mClickListener.onFloatingMenuMeasurementsResetClicked(mId);
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+
+                AskingDialog ad = AskingDialog.getInstance("Reiniciar mediciones",
+                        "Está seguro que desea reiniciar el registro de mediciones de energía y potencia " +
+                                "en el Smart Plug.");
+
+                ad.setTargetFragment(SmartPlugDetailsFragment.this, REQ_REFRESH);
+                ad.show(fm, "MeasurementResethDialog");
             }
         });
 
         mFloatingItemFactoryReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mClickListener != null)
-                    mClickListener.onFloatingMenuFactoryResetClicked(mId);
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+
+                AskingDialog ad = AskingDialog.getInstance("Volver a valores de fábrica",
+                        "Está seguro que desea volver a los valores de fábrica. Perderá " +
+                                "toda la información histórica.");
+
+                ad.setTargetFragment(SmartPlugDetailsFragment.this, REQ_REFRESH);
+                ad.show(fm, "FactoryResetDialog");
             }
         });
 
@@ -197,6 +220,40 @@ public class SmartPlugDetailsFragment extends Fragment {
         return v;
     }
 
+
+    /**
+     * Va a ser llamada cuando los AskingDialogs retornen si se presionó SI o NO.
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode != Activity.RESULT_OK)
+            return;
+
+        if (requestCode == REQ_REFRESH) {
+            /**
+             * Se presionó que SI se quiere hacer un refresh de las mediciones del Smart Plug.
+             * Se va a solicitar: nombre del dispositivo, estado de la carga, mediciones instantaneas,
+             * horarios de encendido y apagado, mediciones de los últimos 7 días.
+             */
+            /** TODO envíar los comandos al Smart Plug */
+        }
+        else if (requestCode == REQ_RESET_MEASUREMENTS) {
+            /**
+             * Se presionó que SI se quieren reiniciar las mediciones. Se van a reiniciar: la energía
+             * total acumulada, las mediciones históricas de potencia, las mediciones históricas
+             * de energía.
+             */
+            /** TODO envíar los comandos al Smart Plug */
+        }
+        else if (requestCode == REQ_FACTORY_RESET) {
+            /**
+             * Se presionó que SI se quiere volver a valores de fábrica. Se va a mandar un comando
+             * RESET (ALL_REGISTERS) y se van a volver a pedir: nombre del dispositivo, estado de la carga,
+             * mediciones instantaneas, horarios de encendido y apagado
+             */
+            /** TODO envíar los comandos al Smart Plug */
+        }
+    }
 
     /**
      * Se suscribe al evento UpdateSmartPlugEvent. Si el ID del Smart Plug que se actualizó
@@ -214,9 +271,6 @@ public class SmartPlugDetailsFragment extends Fragment {
     public interface OnFloatingMenuItemClicked {
         void onFloatingMenuConfigClicked (String id);
         void onFloatingMenuHistoryClicked (String id);
-        void onFloatingMenuRefreshClicked (String id);
-        void onFloatingMenuMeasurementsResetClicked (String id);
-        void onFloatingMenuFactoryResetClicked (String id);
     }
 
     private void updateUI () {

@@ -99,19 +99,4 @@ public class MainActivity extends AppCompatActivity implements SmartPlugListFrag
 
         startActivity(i);
     }
-
-    @Override
-    public void onFloatingMenuRefreshClicked(String id) {
-        /** TODO Realizar un refrsh de todos los valores del Smart Plug */
-    }
-
-    @Override
-    public void onFloatingMenuMeasurementsResetClicked (String id) {
-        /** TODO Llamar al DialogFragment para resetear la energía. */
-    }
-
-    @Override
-    public void onFloatingMenuFactoryResetClicked(String id) {
-        /** TODO Llamar al DialogFragment para resetear a valores de fábrica el Smart Plug. */
-    }
 }
