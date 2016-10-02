@@ -946,7 +946,8 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 		if (regEE == REG_TOTAL_ENERGY)
 		{
 			ioEE25LCxxx_busyPolling(ee);
-			ioEE25LCxxx_readData(ee, EE_ACUM_ENERGY, buff, 4);
+			ioEE25LCxxx_readData(ee, EE_ACUM_ENERGY, &floatValue, 4);
+			float2Bytes(buff, floatValue);
 			bytesRead = 4;
 		}
 		else if (regEE == REG_CURRENT_MEASUREMENTS)
@@ -959,7 +960,9 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 			float2Bytes(buff+8, floatValue);
 
 			ioEE25LCxxx_busyPolling(ee);
-			ioEE25LCxxx_readData(ee, EE_ACUM_ENERGY, buff+12, 4);
+			ioEE25LCxxx_readData(ee, EE_ACUM_ENERGY, &floatValue, 4);
+			float2Bytes(buff+12, floatValue);
+
 			bytesRead = 16;
 		}
 		else if (regEE == REG_DEVICE_ID)

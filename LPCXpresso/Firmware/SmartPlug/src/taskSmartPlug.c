@@ -236,7 +236,7 @@ TASK(taskSmartPlug)
 						}
 						else
 						{
-
+							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
 							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_12 + (fullTime.hour-12) * 4, &hourEnergy, 4);
 						}
