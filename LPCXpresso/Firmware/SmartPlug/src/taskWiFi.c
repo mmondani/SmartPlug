@@ -1085,7 +1085,7 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 					ioEE25LCxxx_busyPolling(ee);
 					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_00, &buff[3], 48);			// Primeras 12 horas del día
 					ioEE25LCxxx_busyPolling(ee);
-					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);			// Últimas 12 horas del día
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[51], 48);			// Últimas 12 horas del día
 					bytesRead = 99;
 				}
 				else if (regEE == REG_PER_HOUR_ENERGY)
@@ -1093,7 +1093,7 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 					ioEE25LCxxx_busyPolling(ee);
 					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_00, &buff[3], 48);			// Primeras 12 horas del día
 					ioEE25LCxxx_busyPolling(ee);
-					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);			// Últimas 12 horas del día
+					ioEE25LCxxx_readData(ee, blockPointer * 128 + EE_ENERGY_HOUR_12, &buff[51], 48);			// Últimas 12 horas del día
 					bytesRead = 99;
 				}
 			}
@@ -1594,24 +1594,36 @@ void eraseEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t* buff)
 		{
 			for (i = 0; i < 7; i ++)
 			{
+				// Se borra la fecha de cada bloque
+				ioEE25LCxxx_busyPolling(ee);
+				ioEE25LCxxx_setWriteEnable(ee);
+				ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_DATE, buff, 3);
+
+				// Se borran las mediciones
 				ioEE25LCxxx_busyPolling(ee);
 				ioEE25LCxxx_setWriteEnable(ee);
 				ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_00, buff, 48);			// Primeras 12 horas del día
 				ioEE25LCxxx_busyPolling(ee);
 				ioEE25LCxxx_setWriteEnable(ee);
-				ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_12, &buff[48], 48);	// Últimas 12 horas del día
+				ioEE25LCxxx_writeData(ee, i * 128 + EE_ENERGY_HOUR_12, buff, 48);			// Últimas 12 horas del día
 			}
 		}
 		else if(regEE == REG_PER_HOUR_ACTIVE_POWER)
 		{
 			for (i = 0; i < 7; i ++)
 			{
+				// Se borra la fecha de cada bloque
+				ioEE25LCxxx_busyPolling(ee);
+				ioEE25LCxxx_setWriteEnable(ee);
+				ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_DATE, buff, 3);
+
+				// Se borran las mediciones
 				ioEE25LCxxx_busyPolling(ee);
 				ioEE25LCxxx_setWriteEnable(ee);
 				ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_00, buff, 48);			// Primeras 12 horas del día
 				ioEE25LCxxx_busyPolling(ee);
 				ioEE25LCxxx_setWriteEnable(ee);
-				ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_12, &buff[48], 48);		// Últimas 12 horas del día
+				ioEE25LCxxx_writeData(ee, i * 128 + EE_ACTIVE_POWER_HOUR_12, buff, 48);			// Últimas 12 horas del día
 			}
 		}
 

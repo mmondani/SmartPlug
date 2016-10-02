@@ -97,6 +97,9 @@ TASK(taskSmartPlug)
 			pinRelay = cObject_new(ioDigital, LPC_GPIO, IOGPIO_OUTPUT, 2, 7);
 			ioObject_init(pinRelay);
 
+			// Arranca apagada la carga
+			ioObject_write(pinRelay, 1);
+
 			state = State_Running;
 
 			ChainTask(taskSmartPlug);
@@ -278,17 +281,34 @@ TASK(taskSmartPlug)
 
 						GetResource(resEEPROM);
 
+						// Se guarda el block_ptr actual
 						ioEE25LCxxx_busyPolling(eeprom);
 						ioEE25LCxxx_setWriteEnable(eeprom);
 						ioEE25LCxxx_writeData(eeprom, EE_BLOCK_PTR, &block_ptr, 1);
 
-
+						// Se guarda la fecha al inicio del nuevo bloque
 						ioEE25LCxxx_busyPolling(eeprom);
 						ioEE25LCxxx_setWriteEnable(eeprom);
 						ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_DATE, buffDate, 3);
 						ioEE25LCxxx_busyPolling(eeprom);
 						ioEE25LCxxx_setWriteEnable(eeprom);
 						ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_DATE, buffDate, 3);
+
+
+						// Se borran las mediciones del nuevo bloque
+						ioEE25LCxxx_busyPolling(eeprom);
+						ioEE25LCxxx_setWriteEnable(eeprom);
+						ioEE25LCxxx_erase(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_00, 48);			// Primeras 12 horas del día
+						ioEE25LCxxx_busyPolling(eeprom);
+						ioEE25LCxxx_setWriteEnable(eeprom);
+						ioEE25LCxxx_erase(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_12, 48);			// Últimas 12 horas del día
+
+						ioEE25LCxxx_busyPolling(eeprom);
+						ioEE25LCxxx_setWriteEnable(eeprom);
+						ioEE25LCxxx_erase(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_00, 48);			// Primeras 12 horas del día
+						ioEE25LCxxx_busyPolling(eeprom);
+						ioEE25LCxxx_setWriteEnable(eeprom);
+						ioEE25LCxxx_erase(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_12, 48);			// Últimas 12 horas del día
 
 						ReleaseResource(resEEPROM);
 					}
