@@ -19,6 +19,7 @@ import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.AxisValueFormatter;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import database.MeasurementsEntry;
@@ -121,12 +122,27 @@ public class HistoryPlotFragment extends Fragment {
 
         /**
          * En la columna MEASUREMENTS de entry hay una lista concatenada por ";" de las mediciones
+         * Si la fecha que se está mostrando coincide con el día actual, solamente se van a mostrar
+         * las mediciones hasta la hora anterior a la actual.
          */
+        Calendar currentDate = Calendar.getInstance();
+        byte currentDay = (byte) currentDate.get(Calendar.DAY_OF_MONTH);
+        byte currentMonth = (byte) (currentDate.get(Calendar.MONTH) + 1);
+        byte currentYear = (byte) (currentDate.get(Calendar.YEAR) - 2000);
+        String stringCurrentDate = currentDay + "/" + currentMonth + "/" + currentYear;
+
         String[] measurementsStrings = entry.getMeasurements().split(";");
 
+        int maxEntries;
+        if (mDate.compareTo(stringCurrentDate) == 0)
+            maxEntries = currentDate.get(Calendar.HOUR_OF_DAY);
+        else
+            maxEntries = measurementsStrings.length;
+
+
         List<Entry> plotEntries = new ArrayList<>();
-        for (int i = 0; i < measurementsStrings.length; i++) {
-            float measurement = Float.parseFloat(measurementsStrings[0]);
+        for (int i = 0; i < maxEntries; i++) {
+            float measurement = Float.parseFloat(measurementsStrings[i]);
 
             if (measurement < 0.0f)
                 plotEntries.add(new Entry((float)i, 0.0f));

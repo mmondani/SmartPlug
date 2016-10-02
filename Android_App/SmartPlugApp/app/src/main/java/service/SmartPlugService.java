@@ -458,7 +458,7 @@ public class SmartPlugService extends Service {
 
                 /**
                  * Los comandos que pueden devolver este tipo de trama son los GET de los registros:
-                 * CURRENT_MEASUREMENTS, PER_HOUR_ACTIVE_POWER y PER_HOUR_ENERGY
+                 * CURRENT_MEASUREMENTS
                  */
                 if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET &&
                         frame.getRegister() == SmartPlugCommHelper.Registers.CURRENT_MEASUREMENTS) {
@@ -540,6 +540,21 @@ public class SmartPlugService extends Service {
                                 smartPlugProvider.updateMeasurementsEntry(entry);
                             }
                             else {
+                                /**
+                                 * Si hay que crearla, se debe chequear que no haya más de 20 entradas.
+                                 * Si hay más se borra la más vieja.
+                                 */
+                                List<MeasurementsEntry> currentEntries = smartPlugProvider.getMeasurementsEntries(ev.getId(), MeasurementsEntry.MeasurementType.ACTIVE_POWER);
+
+                                if (currentEntries != null && currentEntries.size() >= 20) {
+                                    /**
+                                     * Se borra la primera de la lista de entradas, ya que es la más antigua.
+                                     */
+                                    smartPlugProvider.removeMeasurementsEntry(ev.getId(),
+                                            currentEntries.get(0).getDate(),
+                                            MeasurementsEntry.MeasurementType.ACTIVE_POWER);
+                                }
+
                                 MeasurementsEntry entry = new MeasurementsEntry();
                                 entry.setId(ev.getId());
                                 entry.setDate(date);
@@ -558,6 +573,21 @@ public class SmartPlugService extends Service {
                                 smartPlugProvider.updateMeasurementsEntry(entry);
                             }
                             else {
+                                /**
+                                 * Si hay que crearla, se debe chequear que no haya más de 20 entradas.
+                                 * Si hay más se borra la más vieja.
+                                 */
+                                List<MeasurementsEntry> currentEntries = smartPlugProvider.getMeasurementsEntries(ev.getId(), MeasurementsEntry.MeasurementType.ENERGY);
+
+                                if (currentEntries != null && currentEntries.size() >= 20) {
+                                    /**
+                                     * Se borra la primera de la lista de entradas, ya que es la más antigua.
+                                     */
+                                    smartPlugProvider.removeMeasurementsEntry(ev.getId(),
+                                            currentEntries.get(0).getDate(),
+                                            MeasurementsEntry.MeasurementType.ENERGY);
+                                }
+
                                 MeasurementsEntry entry = new MeasurementsEntry();
                                 entry.setId(ev.getId());
                                 entry.setDate(date);

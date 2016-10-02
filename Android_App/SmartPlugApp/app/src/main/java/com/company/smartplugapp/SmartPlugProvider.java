@@ -435,6 +435,23 @@ public class SmartPlugProvider {
 
 
     /**
+     * Elimina la entradas de la tabla Measurements que tenga ID = id, DATE = date y  MEASUREMENT_TYPE = measurementType
+     * @param id ID del Smart Plug del cual se quieren eliminar mediciones históricas.
+     * @param measurementType Tipo de medición que se quiere eliminar: MeasurementsEntry.MeasurementType.ACTIVE_POWER
+     *                        o MeasurementsEntry.MeasurementType.ENERGY.
+     */
+    public void removeMeasurementsEntry (String id, String date, int measurementType) {
+        /**
+         * Se castea la columna MEASUREMENT_TYPE a TEXT para poder compararla con un string.
+         */
+        mDatabase.delete(MeasurementsTable.NAME,
+                MeasurementsTable.Cols.ID + " = ? AND " + MeasurementsTable.Cols.DATE + " = ? AND " +
+                        "CAST(" + MeasurementsTable.Cols.MEASUREMENT_TYPE + " as TEXT) = ?",
+                new String[]{id, date, Integer.toString(measurementType)});
+    }
+
+
+    /**
      * Actualiza la entrada correspondiente en la tabla MeasurementsTable.
      * @param entry Entrada que se quiere actualizar.
      */
