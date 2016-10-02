@@ -54,15 +54,13 @@ public class MainActivity extends AppCompatActivity implements SmartPlugListFrag
                     ft.commit();
                 }
             }, 2000);
+
+            /**
+             * Se inicia el servicio que se encargará de comunicarse con los Smart Plug.
+             */
+            if (!SmartPlugService.isRunning())
+                startService(new Intent(this, SmartPlugService.class));
         }
-
-
-
-
-        /**
-         * Se inicia el servicio que se encargará de comunicarse con los Smart Plug.
-         */
-        startService(new Intent(this, SmartPlugService.class));
     }
 
     /** TODO chequear si está conectado a WiFi o no*/

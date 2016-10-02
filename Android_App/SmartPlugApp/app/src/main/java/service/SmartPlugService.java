@@ -1,14 +1,16 @@
 package service;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.net.wifi.WifiManager;
-import android.os.Handler;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import database.MeasurementsEntry;
+import events.AllMessagesSentEvent;
 import smartPlugComm.BasicFrame;
 import smartPlugComm.ByteArrayFrame;
 import smartPlugComm.ByteFloatArrayFrame;
@@ -25,7 +27,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import database.InstantaneousInfoEntry;
@@ -40,11 +41,13 @@ import events.UpdateSmartPlugEvent;
 public class SmartPlugService extends Service {
 
     private static boolean sRunning = false;
+    private static int sNumberOfRuns = 0;
     private Runnable mRunnableBasicInfo = null;
     private Runnable mRunnableMeasurements = null;
     private WifiManager.MulticastLock mMulticastLock;
     private UdpWatcher mUdpWatcher;
     private TcpWatcher mTcpWatcher;
+    private PowerManager.WakeLock mWakeLock;
 
 
     public SmartPlugService (){
@@ -60,120 +63,73 @@ public class SmartPlugService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        final Handler mHandler = new Handler();
+
+        List<SmartPlugListItem> smartPlugList;
 
         /**
          * Solo puede estar corriendo un servicio.
          */
-        if (sRunning == false) {
-            sRunning = true;
+        sRunning = true;
 
-            /**
-             * Se registra el servicio en el EventBus para empezar a recibir los eventos a los
-             * que está suscrito.
-             */
-            EventBus.getDefault().register(this);
+        mWakeLock.acquire();
 
-            /**
-             * Se crea una instancia de UdpWatcher, el cual va a recibir los heartbeat UDP desde
-             * los Smart Plugs.
-             */
-            mUdpWatcher = new UdpWatcher();
+        /**
+         * Cada 10 minutos, la aplicación consulta a todos los Smart Plugs que tiene conectados para
+         * conocer sus nuevos valores y determinar si otra aplicación cambió alguna de sus configuraciones.
+         */
+        sNumberOfRuns ++;
+        /**
+         * Se determianan todos los Smart Plugs dados de alta en la base de datos.
+         */
+        smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
 
-
-            /**
-             * Se crea una instancia de TcpWatcher, el cual se va a encargar de enviar y recibir los
-             * mensajes TCP con los SmartPlugs.
-             */
-            mTcpWatcher = new TcpWatcher(getApplicationContext());
-
-
-            /** Se debe crear un MulticastLock para que la aplicación pueda recibir mensajes UDP en la dirección
-             * de broadcast.
-             * En el Manifest se debe agregar el permiso: android.permission.CHANGE_WIFI_MULTICAST_STATE
-             */
-            WifiManager wm = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
-            mMulticastLock = wm.createMulticastLock("lock");
-
-            mMulticastLock.acquire();
-
-
-            /**
-             * Cada 10 minutos, la aplicación consulta a todos los Smart Plugs que tiene conectados para
-             * conocer sus nuevos valores y determinar si otra aplicación cambió alguna de sus configuraciones.
-             */
-            mRunnableBasicInfo = new Runnable() {
-                @Override
-                public void run() {
-                    /**
-                     * Se determianan todos los Smart Plugs dados de alta en la base de datos.
-                     */
-                    List<SmartPlugListItem> smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
-
-                    for (SmartPlugListItem smartPlug : smartPlugList) {
-                        queryInitialValues (smartPlug.getId());
-                    }
-
-
-                    mHandler.postDelayed(mRunnableBasicInfo, 10 * 60 * 1000);
-                }
-            };
-
-            /**
-             * La primera vez se ejecuta a los 2 segundos de iniciado el servicio.
-             * TODO Cambiarlo a 6 segundos para permitir que haya recibido los heartbeats la primera vez que se instala la aplicación.
-             */
-            mHandler.postDelayed(mRunnableBasicInfo, 2 * 1000);
-
-
-            /**
-             * Cada 1 hora, se le solicita a todos los Smart Plugs las mediciones de energía y potencia
-             * por hora.
-             */
-            mRunnableMeasurements = new Runnable() {
-                @Override
-                public void run() {
-                    /**
-                     * Se determianan todos los Smart Plugs dados de alta en la base de datos.
-                     */
-                    List<SmartPlugListItem> smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
-
-                    for (SmartPlugListItem smartPlug : smartPlugList) {
-                        byte[] data;
-                        Calendar calendar = Calendar.getInstance();
-
-                        /**
-                         * Se piden las mediciones del día de la fecha
-                         */
-                        byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
-                        byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
-                        byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
-
-
-                        EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
-                                getRawData(SmartPlugCommHelper.Commands.GET,
-                                        SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
-                                        new byte[]{day, month, year}
-                                )
-                        ));
-
-                        EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
-                                getRawData(SmartPlugCommHelper.Commands.GET,
-                                        SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
-                                        new byte[]{day, month, year}
-                                )
-                        ));
-                    }
-
-                    mHandler.postDelayed(mRunnableMeasurements, 10 * 60 * 1000);
-                }
-            };
-
-            /**
-             * La primera vez se ejecuta a los 10 segundos de iniciado el servicio.
-             */
-            mHandler.postDelayed(mRunnableMeasurements, 10 * 1000);
+        for (SmartPlugListItem smartPlug : smartPlugList) {
+            queryInitialValues (smartPlug.getId());
         }
+
+
+
+        /**
+         * Cada aproximadamente 1 hora, se le solicita a todos los Smart Plugs las mediciones de energía y potencia
+         * por hora.
+         */
+        /**
+         * Se determianan todos los Smart Plugs dados de alta en la base de datos.
+         */
+        if (sNumberOfRuns >= 8) {
+            sNumberOfRuns = 0;
+
+            smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
+
+            for (SmartPlugListItem smartPlug : smartPlugList) {
+                byte[] data;
+                Calendar calendar = Calendar.getInstance();
+
+                /**
+                 * Se piden las mediciones del día de la fecha
+                 */
+                byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+                byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
+                byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+                EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
+                        getRawData(SmartPlugCommHelper.Commands.GET,
+                                SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                                new byte[]{day, month, year}
+                        )
+                ));
+
+                EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
+                        getRawData(SmartPlugCommHelper.Commands.GET,
+                                SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                                new byte[]{day, month, year}
+                        )
+                ));
+            }
+        }
+
+
         return Service.START_STICKY;
 
     }
@@ -181,20 +137,96 @@ public class SmartPlugService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        sNumberOfRuns = 0;
+        sRunning = false;
+
+        /**
+         * Se registra el servicio en el EventBus para empezar a recibir los eventos a los
+         * que está suscrito.
+         */
+        EventBus.getDefault().register(this);
+
+        /**
+         * Se crea una instancia de UdpWatcher, el cual va a recibir los heartbeat UDP desde
+         * los Smart Plugs.
+         */
+        mUdpWatcher = new UdpWatcher();
+
+
+        /**
+         * Se crea una instancia de TcpWatcher, el cual se va a encargar de enviar y recibir los
+         * mensajes TCP con los SmartPlugs.
+         */
+        mTcpWatcher = new TcpWatcher(getApplicationContext());
+
+
+        /** Se debe crear un MulticastLock para que la aplicación pueda recibir mensajes UDP en la dirección
+         * de broadcast.
+         * En el Manifest se debe agregar el permiso: android.permission.CHANGE_WIFI_MULTICAST_STATE
+         */
+        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
+        mMulticastLock = wm.createMulticastLock("lock");
+
+        mMulticastLock.acquire();
+
+
+        PowerManager pm = (PowerManager)getSystemService(POWER_SERVICE);
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakeLock");
+
+
+        /**
+         * Se configuran las alarmas para disparar el servicio, cada 10 minutos.
+         */
+        Calendar calendar = Calendar.getInstance();
+        AlarmManager am = (AlarmManager)getSystemService(ALARM_SERVICE);
+        Intent serviceIntent = new Intent(getApplicationContext(), SmartPlugService.class);
+
+        PendingIntent servicePendingIntent = PendingIntent.getService(
+                getApplicationContext(),
+                1,
+                serviceIntent,
+                PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        am.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                calendar.getTimeInMillis(),
+                10 * 60 * 1000,
+                servicePendingIntent
+        );
     }
 
 
+    public static boolean isRunning () {
+        return sRunning;
+    }
 
     @Override
     public void onDestroy() {
         if (mMulticastLock.isHeld())
             mMulticastLock.release();
 
+        if (mWakeLock.isHeld())
+            mWakeLock.release();
+
         EventBus.getDefault().unregister(this);
+
+        sRunning = false;
 
         super.onDestroy();
     }
 
+
+    /**
+     * Cuando se terminan de mandar todos los mensajes, si estaba retenido el wake-lock se lo libera.
+     * @param ev Instancia de AllMessagesSentEvent.
+     */
+    @Subscribe (threadMode = ThreadMode.POSTING)
+    public void onAllMeassagesSent (AllMessagesSentEvent ev) {
+        if (mWakeLock.isHeld())
+            mWakeLock.release();
+    }
 
     /**
      * Se suscribe al evento HeartbeatEvent. Cada vez que reciba un evento, va a actualizar la base

@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import database.InstantaneousInfoEntry;
+import events.AllMessagesSentEvent;
 import events.CommandEvent;
 import events.ResponseEvent;
 
@@ -83,6 +84,25 @@ public class TcpWatcher {
                 case TcpClient.Messages.TIMEOUT:
                     /** TODO Generar un evento que indique el timeout y el ID del Smart Plug que lo produjo*/
 
+                    /**
+                     * Si todavía hay comandos para enviar se los envía.
+                     */
+                    if (mCommandQueue.size() > 0){
+                        CommandEvent ev = mCommandQueue.remove(0);
+
+                        InstantaneousInfoEntry entry = SmartPlugProvider.getInstance(mContext).getInstantaneousInfoEntry(ev.getId());
+
+                        if (entry != null) {
+                            mCurrentId = entry.getId();
+
+                            mTcpClient = new TcpClient(new TcpHandler(), entry.getIp(), 2000, ev.getData(), 4000);
+                            mTcpClient.start();
+                        }
+                    }
+                    else {
+                        EventBus.getDefault().post(new AllMessagesSentEvent());
+                    }
+
                     break;
 
                 case TcpClient.Messages.RECEIVED:
@@ -112,6 +132,9 @@ public class TcpWatcher {
                             mTcpClient = new TcpClient(new TcpHandler(), entry.getIp(), 2000, ev.getData(), 4000);
                             mTcpClient.start();
                         }
+                    }
+                    else {
+                        EventBus.getDefault().post(new AllMessagesSentEvent());
                     }
 
                     break;
