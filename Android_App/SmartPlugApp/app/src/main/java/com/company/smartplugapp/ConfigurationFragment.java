@@ -28,8 +28,6 @@ import events.UpdateSmartPlugEvent;
 import smartPlugComm.SmartPlugCommHelper;
 
 
-/** TODO Cuando se modifica el nombre del Smart Plug indicarle al usuario que la operación fue exitosa */
-
 public class ConfigurationFragment extends Fragment {
 
     private EditText mNameEdit;

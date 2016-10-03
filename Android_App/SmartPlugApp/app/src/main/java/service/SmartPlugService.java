@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 
 import database.MeasurementsEntry;
 import events.AllMessagesSentEvent;
+import events.WiFiStateEvent;
 import smartPlugComm.BasicFrame;
 import smartPlugComm.ByteArrayFrame;
 import smartPlugComm.ByteFloatArrayFrame;
@@ -48,6 +49,7 @@ public class SmartPlugService extends Service {
     private UdpWatcher mUdpWatcher;
     private TcpWatcher mTcpWatcher;
     private PowerManager.WakeLock mWakeLock;
+    private boolean mWifiIsOn = false;
 
 
     public SmartPlugService (){
@@ -72,79 +74,83 @@ public class SmartPlugService extends Service {
          */
         sRunning = true;
 
-        mWakeLock.acquire();
-        mMulticastLock.acquire();
-
         /**
-         * Cada 10 minutos, la aplicación consulta a todos los Smart Plugs que tiene conectados para
-         * conocer sus nuevos valores y determinar si otra aplicación cambió alguna de sus configuraciones.
+         * El servicio ejecuta su lógica solamente si está conectado a WiFi.
          */
-        sNumberOfRuns ++;
-        /**
-         * Se determianan todos los Smart Plugs dados de alta en la base de datos.
-         */
-        smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
+        if (mWifiIsOn) {
+            mWakeLock.acquire();
+            mMulticastLock.acquire();
 
-        for (SmartPlugListItem smartPlug : smartPlugList) {
-            queryInitialValues (smartPlug.getId());
-
-            messagesToSend = true;
-        }
-
-
-
-        /**
-         * Cada aproximadamente 1 hora, se le solicita a todos los Smart Plugs las mediciones de energía y potencia
-         * por hora.
-         */
-        /**
-         * Se determianan todos los Smart Plugs dados de alta en la base de datos.
-         */
-        if (sNumberOfRuns >= 8) {
-            sNumberOfRuns = 0;
-
+            /**
+             * Cada 10 minutos, la aplicación consulta a todos los Smart Plugs que tiene conectados para
+             * conocer sus nuevos valores y determinar si otra aplicación cambió alguna de sus configuraciones.
+             */
+            sNumberOfRuns++;
+            /**
+             * Se determianan todos los Smart Plugs dados de alta en la base de datos.
+             */
             smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
 
             for (SmartPlugListItem smartPlug : smartPlugList) {
-                byte[] data;
-                Calendar calendar = Calendar.getInstance();
-
-                /**
-                 * Se piden las mediciones del día de la fecha
-                 */
-                byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
-                byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
-                byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
-
-
-                EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
-                        getRawData(SmartPlugCommHelper.Commands.GET,
-                                SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
-                                new byte[]{day, month, year}
-                        )
-                ));
-
-                EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
-                        getRawData(SmartPlugCommHelper.Commands.GET,
-                                SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
-                                new byte[]{day, month, year}
-                        )
-                ));
+                queryInitialValues(smartPlug.getId());
 
                 messagesToSend = true;
             }
-        }
 
 
-        /**
-         * Si no se cargó ningún comando para enviar, se liberan los locks, si estaban retenidos.
-         */
-        if (!messagesToSend) {
-            if (mWakeLock.isHeld())
-                mWakeLock.release();
+            /**
+             * Cada aproximadamente 1 hora, se le solicita a todos los Smart Plugs las mediciones de energía y potencia
+             * por hora.
+             */
+            /**
+             * Se determianan todos los Smart Plugs dados de alta en la base de datos.
+             */
+            if (sNumberOfRuns >= 8) {
+                sNumberOfRuns = 0;
 
-            if (mMulticastLock.isHeld())
-                mMulticastLock.release();
+                smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
+
+                for (SmartPlugListItem smartPlug : smartPlugList) {
+                    byte[] data;
+                    Calendar calendar = Calendar.getInstance();
+
+                    /**
+                     * Se piden las mediciones del día de la fecha
+                     */
+                    byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+                    byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
+                    byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+
+
+                    EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
+                            getRawData(SmartPlugCommHelper.Commands.GET,
+                                    SmartPlugCommHelper.Registers.PER_HOUR_ACTIVE_POWER,
+                                    new byte[]{day, month, year}
+                            )
+                    ));
+
+                    EventBus.getDefault().post(new CommandEvent(smartPlug.getId(), SmartPlugCommHelper.getInstance().
+                            getRawData(SmartPlugCommHelper.Commands.GET,
+                                    SmartPlugCommHelper.Registers.PER_HOUR_ENERGY,
+                                    new byte[]{day, month, year}
+                            )
+                    ));
+
+                    messagesToSend = true;
+                }
+            }
+
+
+            /**
+             * Si no se cargó ningún comando para enviar, se liberan los locks, si estaban retenidos.
+             */
+            if (!messagesToSend) {
+                if (mWakeLock.isHeld())
+                    mWakeLock.release();
+
+                if (mMulticastLock.isHeld())
+                    mMulticastLock.release();
+            }
         }
 
         return Service.START_STICKY;
@@ -251,6 +257,19 @@ public class SmartPlugService extends Service {
 
         if (mMulticastLock.isHeld())
             mMulticastLock.release();
+    }
+
+
+    /**
+     * Se suscribe al evento que informa el estado de la conexión a WiFi.
+     * @param ev Instancia del evento WiFiStateEvent.
+     */
+    @Subscribe (threadMode = ThreadMode.POSTING)
+    public void onWiFiStateEvent (WiFiStateEvent ev) {
+        if (ev.isWiFiState())
+            mWifiIsOn = true;
+        else
+            mWifiIsOn = false;
     }
 
     /**
@@ -1046,8 +1065,6 @@ public class SmartPlugService extends Service {
                         new byte[]{day, month, year}
                 )
         ));
-
-        /** TODO Preguntar por lo otros 5 días. */
     }
 
     public static void queryInitialValues (String id) {

@@ -17,6 +17,7 @@ import database.InstantaneousInfoEntry;
 import events.AllMessagesSentEvent;
 import events.CommandEvent;
 import events.ResponseEvent;
+import events.WiFiStateEvent;
 
 /**
  * Created by mariano on 27/09/16.
@@ -27,6 +28,7 @@ public class TcpWatcher {
     private TcpClient mTcpClient;
     List<CommandEvent> mCommandQueue;
     private String mCurrentId;
+    private boolean mWifiIsOn;
 
 
     public TcpWatcher (Context context) {
@@ -45,25 +47,45 @@ public class TcpWatcher {
             EventBus.getDefault().unregister(this);
     }
 
+
+    /**
+     * Se suscribe al evento que informa el estado de la conexión a WiFi.
+     * @param ev Instancia del evento WiFiStateEvent.
+     */
+    @Subscribe (threadMode = ThreadMode.POSTING)
+    public void onWiFiStateEvent (WiFiStateEvent ev) {
+        if (ev.isWiFiState())
+            mWifiIsOn = true;
+        else
+            mWifiIsOn = false;
+    }
+
+
     @Subscribe (threadMode = ThreadMode.POSTING)
     public void onCommandEvent (CommandEvent ev) {
-        /**
-         * Se agrega el comando a la queue.
-         */
-        mCommandQueue.add(ev);
 
         /**
-         * Si no se está ejecutando otro comando, se indica que se puede ejecutar.
+         * Solo se va a procesar el comando si está conectado a WiFi.
          */
-        if (mTcpClient == null || !mTcpClient.isAlive()) {
-            InstantaneousInfoEntry entry = SmartPlugProvider.getInstance(mContext).getInstantaneousInfoEntry(ev.getId());
+        if (mWifiIsOn) {
+            /**
+             * Se agrega el comando a la queue.
+             */
+            mCommandQueue.add(ev);
 
-            if (entry != null) {
-                mCommandQueue.remove(0);
-                mCurrentId = entry.getId();
+            /**
+             * Si no se está ejecutando otro comando, se indica que se puede ejecutar.
+             */
+            if (mTcpClient == null || !mTcpClient.isAlive()) {
+                InstantaneousInfoEntry entry = SmartPlugProvider.getInstance(mContext).getInstantaneousInfoEntry(ev.getId());
 
-                mTcpClient = new TcpClient(new TcpHandler(), entry.getIp(), 2000, ev.getData(), 2500);
-                mTcpClient.start();
+                if (entry != null) {
+                    mCommandQueue.remove(0);
+                    mCurrentId = entry.getId();
+
+                    mTcpClient = new TcpClient(new TcpHandler(), entry.getIp(), 2000, ev.getData(), 2500);
+                    mTcpClient.start();
+                }
             }
         }
     }
