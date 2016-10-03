@@ -62,7 +62,7 @@ public class TcpWatcher {
                 mCommandQueue.remove(0);
                 mCurrentId = entry.getId();
 
-                mTcpClient = new TcpClient(new TcpHandler(), entry.getIp(), 2000, ev.getData(), 4000);
+                mTcpClient = new TcpClient(new TcpHandler(), entry.getIp(), 2000, ev.getData(), 2500);
                 mTcpClient.start();
             }
         }
