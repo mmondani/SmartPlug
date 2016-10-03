@@ -65,6 +65,7 @@ public class SmartPlugService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         List<SmartPlugListItem> smartPlugList;
+        boolean messagesToSend = false;
 
         /**
          * Solo puede estar corriendo un servicio.
@@ -72,6 +73,7 @@ public class SmartPlugService extends Service {
         sRunning = true;
 
         mWakeLock.acquire();
+        mMulticastLock.acquire();
 
         /**
          * Cada 10 minutos, la aplicación consulta a todos los Smart Plugs que tiene conectados para
@@ -85,6 +87,8 @@ public class SmartPlugService extends Service {
 
         for (SmartPlugListItem smartPlug : smartPlugList) {
             queryInitialValues (smartPlug.getId());
+
+            messagesToSend = true;
         }
 
 
@@ -126,9 +130,22 @@ public class SmartPlugService extends Service {
                                 new byte[]{day, month, year}
                         )
                 ));
+
+                messagesToSend = true;
             }
         }
 
+
+        /**
+         * Si no se cargó ningún comando para enviar, se liberan los locks, si estaban retenidos.
+         */
+        if (!messagesToSend) {
+            if (mWakeLock.isHeld())
+                mWakeLock.release();
+
+            if (mMulticastLock.isHeld())
+                mMulticastLock.release();
+        }
 
         return Service.START_STICKY;
 
@@ -161,16 +178,20 @@ public class SmartPlugService extends Service {
         mTcpWatcher = new TcpWatcher(getApplicationContext());
 
 
-        /** Se debe crear un MulticastLock para que la aplicación pueda recibir mensajes UDP en la dirección
+        /**
+         * Se debe crear un MulticastLock para que la aplicación pueda recibir mensajes UDP en la dirección
          * de broadcast.
          * En el Manifest se debe agregar el permiso: android.permission.CHANGE_WIFI_MULTICAST_STATE
          */
         WifiManager wm = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
         mMulticastLock = wm.createMulticastLock("lock");
 
-        mMulticastLock.acquire();
 
-
+        /**
+         * Se crea un WakeLock para mantener despierta a la CPU cada vez que se inicia el servicio
+         * para que pueda enviar todos los mensajes que tenga que mandar.
+         * Cuando termina de mandar todos los mensajes, se libera el lock.
+         */
         PowerManager pm = (PowerManager)getSystemService(POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakeLock");
 
@@ -219,13 +240,17 @@ public class SmartPlugService extends Service {
 
 
     /**
-     * Cuando se terminan de mandar todos los mensajes, si estaba retenido el wake-lock se lo libera.
+     * Cuando se terminan de mandar todos los mensajes, si estaba retenido el wake-lock y/o
+     * el multicast-lock, se los libera.
      * @param ev Instancia de AllMessagesSentEvent.
      */
     @Subscribe (threadMode = ThreadMode.POSTING)
     public void onAllMeassagesSent (AllMessagesSentEvent ev) {
         if (mWakeLock.isHeld())
             mWakeLock.release();
+
+        if (mMulticastLock.isHeld())
+            mMulticastLock.release();
     }
 
     /**
