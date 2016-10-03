@@ -22,9 +22,10 @@ public class InstantaneousInfoCursoWrapper extends CursorWrapper{
         float current = getFloat(getColumnIndex(SmartPlugDb.InstantaneousInfoTable.Cols.CURRENT));
         float power = getFloat(getColumnIndex(SmartPlugDb.InstantaneousInfoTable.Cols.POWER));
         float totalEnergy = getFloat(getColumnIndex(SmartPlugDb.InstantaneousInfoTable.Cols.TOTAL_ENERGY));
+        int timeouts = getInt(getColumnIndex(SmartPlugDb.InstantaneousInfoTable.Cols.TIMEOUTS));
 
         InstantaneousInfoEntry entry = new InstantaneousInfoEntry(id, ip, lastUpdate, connectionState, loadState,
-                voltage, current, power, totalEnergy);
+                voltage, current, power, totalEnergy, timeouts);
 
         return entry;
     }

@@ -14,9 +14,10 @@ public class InstantaneousInfoEntry {
     private float mCurrent;
     private float mPower;
     private float mTotalEnergy;
+    private int mTimeouts;
 
     public InstantaneousInfoEntry (String id, String ip, long lastUpdate, int connectionState, int loadState,
-                                   float voltage, float current, float power, float totalEnergy) {
+                                   float voltage, float current, float power, float totalEnergy, int timeouts) {
         mId = id;
         mIp = ip;
         mLastUpdate = new Date(lastUpdate);
@@ -26,6 +27,7 @@ public class InstantaneousInfoEntry {
         mCurrent = current;
         mPower = power;
         mTotalEnergy = totalEnergy;
+        mTimeouts = timeouts;
     }
 
     public InstantaneousInfoEntry () {
@@ -38,6 +40,7 @@ public class InstantaneousInfoEntry {
         mCurrent = 0.0f;
         mPower = 0.0f;
         mTotalEnergy = 0.0f;
+        mTimeouts = 0;
     }
 
     public String getId() {
@@ -110,5 +113,13 @@ public class InstantaneousInfoEntry {
 
     public void setTotalEnergy(float totalEnergy) {
         mTotalEnergy = totalEnergy;
+    }
+
+    public int getTimeouts() {
+        return mTimeouts;
+    }
+
+    public void setTimeouts(int timeouts) {
+        mTimeouts = timeouts;
     }
 }

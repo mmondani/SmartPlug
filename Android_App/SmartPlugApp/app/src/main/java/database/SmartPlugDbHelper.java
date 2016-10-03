@@ -30,7 +30,8 @@ public class SmartPlugDbHelper extends SQLiteOpenHelper {
                 InstantaneousInfoTable.Cols.VOLTAGE + ", " +
                 InstantaneousInfoTable.Cols.CURRENT + ", " +
                 InstantaneousInfoTable.Cols.POWER + ", " +
-                InstantaneousInfoTable.Cols.TOTAL_ENERGY + ")");
+                InstantaneousInfoTable.Cols.TOTAL_ENERGY + ", " +
+                InstantaneousInfoTable.Cols.TIMEOUTS + ")");
 
         db.execSQL("create table " + StaticInfoTable.NAME + " (" +
                 "_id integer primary key autoincrement, " +

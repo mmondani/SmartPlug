@@ -129,7 +129,12 @@ public class TcpClient extends Thread {
                  * mensaje al handler indicando que se produjo un timeout.
                  */
                 mRunning = false;
-                mHandler.sendEmptyMessage(Messages.TIMEOUT);
+                Message msg = new Message();
+                msg.what = Messages.TIMEOUT;
+                Bundle data = new Bundle();
+                data.putString(PARAM_IP, mDestIp);
+                msg.setData(data);
+                mHandler.sendMessage(msg);
             }
         };
     }
@@ -262,6 +267,15 @@ public class TcpClient extends Thread {
         return bundle.getString(PARAM_IP);
     }
 
+
+    /**
+     * Extrae la dirección IP que produjo en timeout.
+     * @param bundle Instancia de {@link Bundle} recibida con el mensaje Messages.TIMEOUT en el Handler.
+     * @return dirección IP que produjo el timeout.
+     */
+    public static String getTimeoutIp (Bundle bundle) {
+        return bundle.getString(PARAM_IP);
+    }
 
     /**
      * EXtrae el puerto TCP desde el que se recibió la respuesta.

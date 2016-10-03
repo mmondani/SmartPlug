@@ -11,6 +11,7 @@ import android.support.annotation.Nullable;
 
 import database.MeasurementsEntry;
 import events.AllMessagesSentEvent;
+import events.TcpTimeoutEvent;
 import events.WiFiStateEvent;
 import smartPlugComm.BasicFrame;
 import smartPlugComm.ByteArrayFrame;
@@ -78,8 +79,10 @@ public class SmartPlugService extends Service {
          * El servicio ejecuta su lógica solamente si está conectado a WiFi.
          */
         if (mWifiIsOn) {
-            mWakeLock.acquire();
-            mMulticastLock.acquire();
+            if (!mWakeLock.isHeld())
+                mWakeLock.acquire();
+            if (!mMulticastLock.isHeld())
+                mMulticastLock.acquire();
 
             /**
              * Cada 10 minutos, la aplicación consulta a todos los Smart Plugs que tiene conectados para
@@ -105,7 +108,7 @@ public class SmartPlugService extends Service {
             /**
              * Se determianan todos los Smart Plugs dados de alta en la base de datos.
              */
-            if (sNumberOfRuns >= 8) {
+            if (sNumberOfRuns >= 6) {
                 sNumberOfRuns = 0;
 
                 smartPlugList = SmartPlugProvider.getInstance(getApplicationContext()).getSmartPlugs();
@@ -192,6 +195,7 @@ public class SmartPlugService extends Service {
         WifiManager wm = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
         mMulticastLock = wm.createMulticastLock("lock");
 
+        mMulticastLock.acquire();
 
         /**
          * Se crea un WakeLock para mantener despierta a la CPU cada vez que se inicia el servicio
@@ -272,6 +276,26 @@ public class SmartPlugService extends Service {
             mWifiIsOn = false;
     }
 
+
+    /**
+     * Se suscribe al evento que informa el timeout en un mensaje TCP hacia un Smart Plug.
+     * Este timeout se va a sumar en la columna correspondiente de InstantaneousInfo.
+     * Si hay más de 5 timeouts en el ID correspondiente, se pone en 1 el ConnectionState
+     * para indicar error.
+     * @param ev Instancia del evento TcpTimeoutEvent.
+     */
+    @Subscribe (threadMode = ThreadMode.POSTING)
+    public void onTcpTimeoutEvent (TcpTimeoutEvent ev) {
+        InstantaneousInfoEntry entry = SmartPlugProvider.getInstance(getApplicationContext()).getInstantaneousInfoEntry(ev.getId());
+
+        if (entry != null) {
+            entry.setTimeouts(entry.getTimeouts() + 1);
+
+            if (entry.getTimeouts() > 5)
+                entry.setConnectionState(1);
+        }
+    }
+
     /**
      * Se suscribe al evento HeartbeatEvent. Cada vez que reciba un evento, va a actualizar la base
      * de datos con la IP desde donde recibió el mensaje y la fecha en la que lo recibió.
@@ -326,6 +350,8 @@ public class SmartPlugService extends Service {
                     InstantaneousInfoEntry entry = smartPlugProvider.getInstantaneousInfoEntry(ev.getId());
                     entry.setLoadState(1);
                     entry.setLastUpdate(Calendar.getInstance().getTime());
+                    entry.setTimeouts(0);
+                    entry.setConnectionState(0);
                     smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
                     /**
@@ -337,6 +363,8 @@ public class SmartPlugService extends Service {
                     InstantaneousInfoEntry entry = smartPlugProvider.getInstantaneousInfoEntry(ev.getId());
                     entry.setLoadState(0);
                     entry.setLastUpdate(Calendar.getInstance().getTime());
+                    entry.setTimeouts(0);
+                    entry.setConnectionState(0);
                     smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
                     /**
@@ -456,6 +484,9 @@ public class SmartPlugService extends Service {
                                 .getInstantaneousInfoEntry(ev.getId());
 
                         entry.setTotalEnergy(0.0f);
+                        entry.setLastUpdate(Calendar.getInstance().getTime());
+                        entry.setTimeouts(0);
+                        entry.setConnectionState(0);
                         SmartPlugProvider.getInstance(getApplicationContext())
                                 .updateInstantaneousInfoEntry(entry);
                     }
@@ -538,6 +569,8 @@ public class SmartPlugService extends Service {
                             entry.setTotalEnergy(frame.getData()[3]);
 
                         entry.setLastUpdate(Calendar.getInstance().getTime());
+                        entry.setTimeouts(0);
+                        entry.setConnectionState(0);
                         smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
                         /**
@@ -685,6 +718,8 @@ public class SmartPlugService extends Service {
                         entry.setLoadState(1);
 
                     entry.setLastUpdate(Calendar.getInstance().getTime());
+                    entry.setTimeouts(0);
+                    entry.setConnectionState(0);
                     smartPlugProvider.updateInstantaneousInfoEntry(entry);
 
                     /**

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,6 +153,23 @@ public class SmartPlugProvider {
         InstantaneousInfoCursoWrapper cursor = queryInstantaneousInfo(
                 InstantaneousInfoTable.Cols.ID + " = ?",
                 new String[]{id}
+        );
+
+        try {
+            if (cursor.getCount() == 0)
+                return null;
+
+            cursor.moveToFirst();
+            return cursor.getInstantaneousInfoEntry();
+        }finally {
+            cursor.close();
+        }
+    }
+
+    public InstantaneousInfoEntry getInstantaneousInfoEntry (InetAddress ip) {
+        InstantaneousInfoCursoWrapper cursor = queryInstantaneousInfo(
+                InstantaneousInfoTable.Cols.IP + " = ?",
+                new String[]{ip.getHostAddress()}
         );
 
         try {

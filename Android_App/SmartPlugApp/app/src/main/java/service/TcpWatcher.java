@@ -10,6 +10,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import database.InstantaneousInfoEntry;
 import events.AllMessagesSentEvent;
 import events.CommandEvent;
 import events.ResponseEvent;
+import events.TcpTimeoutEvent;
 import events.WiFiStateEvent;
 
 /**
@@ -104,7 +107,23 @@ public class TcpWatcher {
                     break;
 
                 case TcpClient.Messages.TIMEOUT:
-                    /** TODO Generar un evento que indique el timeout y el ID del Smart Plug que lo produjo*/
+                    /**
+                     * Se busca la IP que produjo el timeout.
+                     */
+                    try {
+                        InetAddress timeoutIp = InetAddress.getByName(TcpClient.getTimeoutIp(msg.getData()));
+
+                        /**
+                         * A partir de la IP se obtiene el ID del Smart Plug.
+                         */
+                        InstantaneousInfoEntry timeoutEntry = SmartPlugProvider.getInstance(mContext).getInstantaneousInfoEntry(timeoutIp);
+
+                        if (timeoutEntry != null) {
+                            EventBus.getDefault().post(new TcpTimeoutEvent(timeoutEntry.getId()));
+                        }
+                    } catch (UnknownHostException uhe) {
+                        uhe.printStackTrace();
+                    }
 
                     /**
                      * Si todavía hay comandos para enviar se los envía.

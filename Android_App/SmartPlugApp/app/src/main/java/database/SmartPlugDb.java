@@ -15,6 +15,7 @@ public class SmartPlugDb {
             public static final String CURRENT = "current";
             public static final String POWER = "power";
             public static final String TOTAL_ENERGY = "total_energy";
+            public static final String TIMEOUTS = "timeouts";
         }
     }
 
