@@ -162,7 +162,7 @@ TASK(taskWiFi)
             outBuffer = cObject_new(cQueue, 160, sizeof(uint8_t));
 
 
-            rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer, IORN1723_INTERVAL_1_EVERY_4_SEC);
+            rn1723 = cObject_new(ioRN1723, uartRN1723, gpioResetRN1723, inBuffer, outBuffer, IORN1723_INTERVAL_1_EVERY_2_SEC);
 
             timerSynchronizeTime = cObject_new(cTimer);
             timerTimeout = cObject_new(cTimer);
