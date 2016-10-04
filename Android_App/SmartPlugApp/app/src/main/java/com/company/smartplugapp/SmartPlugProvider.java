@@ -220,6 +220,7 @@ public class SmartPlugProvider {
         values.put(InstantaneousInfoTable.Cols.CURRENT, entry.getCurrent());
         values.put(InstantaneousInfoTable.Cols.POWER, entry.getPower());
         values.put(InstantaneousInfoTable.Cols.TOTAL_ENERGY, entry.getTotalEnergy());
+        values.put(InstantaneousInfoTable.Cols.TIMEOUTS, entry.getTimeouts());
 
         return values;
     }

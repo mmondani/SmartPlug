@@ -99,6 +99,42 @@ public class TcpWatcher {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case TcpClient.Messages.ERROR:
+                    /**
+                     * Se busca la IP que produjo el error. Se lo va a registrar como un timeout.
+                     */
+                    try {
+                        InetAddress errorIp = InetAddress.getByName(TcpClient.getTimeoutIp(msg.getData()));
+
+                        /**
+                         * A partir de la IP se obtiene el ID del Smart Plug.
+                         */
+                        InstantaneousInfoEntry errorEntry = SmartPlugProvider.getInstance(mContext).getInstantaneousInfoEntry(errorIp);
+
+                        if (errorEntry != null) {
+                            EventBus.getDefault().post(new TcpTimeoutEvent(errorEntry.getId()));
+                        }
+                    } catch (UnknownHostException uhe) {
+                        uhe.printStackTrace();
+                    }
+
+                    /**
+                     * Si todavía hay comandos para enviar se los envía.
+                     */
+                    if (mCommandQueue.size() > 0){
+                        CommandEvent ev = mCommandQueue.remove(0);
+
+                        InstantaneousInfoEntry entry = SmartPlugProvider.getInstance(mContext).getInstantaneousInfoEntry(ev.getId());
+
+                        if (entry != null) {
+                            mCurrentId = entry.getId();
+
+                            mTcpClient = new TcpClient(new TcpHandler(), entry.getIp(), 2000, ev.getData(), 4000);
+                            mTcpClient.start();
+                        }
+                    }
+                    else {
+                        EventBus.getDefault().post(new AllMessagesSentEvent());
+                    }
 
                     break;
 

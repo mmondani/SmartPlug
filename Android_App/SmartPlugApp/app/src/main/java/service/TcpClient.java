@@ -225,7 +225,12 @@ public class TcpClient extends Thread {
                 mHandler.sendEmptyMessage(Messages.KILLED);
 
             }catch (Exception e) {
-                mHandler.sendEmptyMessage(Messages.ERROR);
+                Message msg = new Message();
+                msg.what = Messages.ERROR;
+                Bundle data = new Bundle();
+                data.putString(PARAM_IP, mDestIp);
+                msg.setData(data);
+                mHandler.sendMessage(msg);
 
             } finally {
                 mOutStream.flush();
@@ -235,7 +240,12 @@ public class TcpClient extends Thread {
             }
 
         }catch (Exception e) {
-            mHandler.sendEmptyMessage(Messages.ERROR);
+            Message msg = new Message();
+            msg.what = Messages.ERROR;
+            Bundle data = new Bundle();
+            data.putString(PARAM_IP, mDestIp);
+            msg.setData(data);
+            mHandler.sendMessage(msg);
         }
 
     }

@@ -144,18 +144,17 @@ public class SmartPlugService extends Service {
                     messagesToSend = true;
                 }
             }
+        }
 
+        /**
+         * Si no se cargó ningún comando para enviar, se liberan los locks, si estaban retenidos.
+         */
+        if (!messagesToSend) {
+            if (mWakeLock.isHeld())
+                mWakeLock.release();
 
-            /**
-             * Si no se cargó ningún comando para enviar, se liberan los locks, si estaban retenidos.
-             */
-            if (!messagesToSend) {
-                if (mWakeLock.isHeld())
-                    mWakeLock.release();
-
-                if (mMulticastLock.isHeld())
-                    mMulticastLock.release();
-            }
+            if (mMulticastLock.isHeld())
+                mMulticastLock.release();
         }
 
         return Service.START_STICKY;
@@ -307,8 +306,16 @@ public class SmartPlugService extends Service {
         if (entry != null) {
             entry.setTimeouts(entry.getTimeouts() + 1);
 
-            if (entry.getTimeouts() > 5)
+            if (entry.getTimeouts() > 5) {
                 entry.setConnectionState(1);
+
+                /**
+                 * Se postea una instancia del evento UpdateSmartPlugEvent indicando que se modificó una entrada.
+                 */
+                EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
+            }
+
+            SmartPlugProvider.getInstance(getApplicationContext()).updateInstantaneousInfoEntry(entry);
         }
     }
 
