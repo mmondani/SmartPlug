@@ -33,7 +33,11 @@ public class IconItem {
             new IconItem(R.drawable.device_tv),
             new IconItem(R.drawable.device_bulb),
             new IconItem(R.drawable.device_computer),
-            new IconItem(R.drawable.device_router)
+            new IconItem(R.drawable.device_router),
+            new IconItem(R.drawable.device_coffee_maker),
+            new IconItem(R.drawable.device_fan),
+            new IconItem(R.drawable.device_heater),
+            new IconItem(R.drawable.device_air_conditioning)
     };
 
     public static IconItem getItem (int id) {

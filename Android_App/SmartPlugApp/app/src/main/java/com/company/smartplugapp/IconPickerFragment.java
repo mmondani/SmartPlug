@@ -36,7 +36,7 @@ public class IconPickerFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_icon_picker, container, false);
 
-        mIconGrid = (GridView) v.findViewById(R.id.frag_icon_picker_grid_wiev);
+        mIconGrid = (GridView) v.findViewById(R.id.frag_icon_picker_grid_view);
         mIconGrid.setAdapter(new GridIconAdapter(getActivity()));
         mIconGrid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
