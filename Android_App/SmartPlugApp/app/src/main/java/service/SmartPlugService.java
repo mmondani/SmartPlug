@@ -255,7 +255,7 @@ public class SmartPlugService extends Service {
         cleanup ();
         super.onDestroy();
     }
-    
+
 
     /**
      * Cuando se terminan de mandar todos los mensajes, si estaba retenido el wake-lock y/o

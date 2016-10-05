@@ -38,6 +38,12 @@
             android:stopWithTask="false" >
         </service>
 
+        <receiver android:name=".WifiChangeReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
