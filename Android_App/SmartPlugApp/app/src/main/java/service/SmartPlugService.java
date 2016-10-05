@@ -4,6 +4,7 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -196,7 +197,8 @@ public class SmartPlugService extends Service {
         WifiManager wm = (WifiManager) getApplicationContext().getSystemService(getApplicationContext().WIFI_SERVICE);
         mMulticastLock = wm.createMulticastLock("lock");
 
-        mMulticastLock.acquire();
+        if (!mMulticastLock.isHeld())
+            mMulticastLock.acquire();
 
         /**
          * Se crea un WakeLock para mantener despierta a la CPU cada vez que se inicia el servicio
@@ -250,19 +252,10 @@ public class SmartPlugService extends Service {
 
     @Override
     public void onDestroy() {
-        if (mMulticastLock.isHeld())
-            mMulticastLock.release();
-
-        if (mWakeLock.isHeld())
-            mWakeLock.release();
-
-        EventBus.getDefault().unregister(this);
-
-        sRunning = false;
-
+        cleanup ();
         super.onDestroy();
     }
-
+    
 
     /**
      * Cuando se terminan de mandar todos los mensajes, si estaba retenido el wake-lock y/o
@@ -290,6 +283,7 @@ public class SmartPlugService extends Service {
         else
             mWifiIsOn = false;
     }
+
 
 
     /**
@@ -338,7 +332,7 @@ public class SmartPlugService extends Service {
              * Se le van a pedir las mediciones históricas de los últimos 7 días tanto de potencia
              * como de enegía.
              */
-            queryWeekMeasurements (ev.getId());
+            queryWeekMeasurements(ev.getId());
         }
 
         /**
@@ -1158,5 +1152,18 @@ public class SmartPlugService extends Service {
         data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
                 SmartPlugCommHelper.Registers.LOAD_STATE);
         EventBus.getDefault().post(new CommandEvent(id, data));
+    }
+
+
+    private void cleanup () {
+        if (mMulticastLock.isHeld())
+            mMulticastLock.release();
+
+        if (mWakeLock.isHeld())
+            mWakeLock.release();
+
+        EventBus.getDefault().unregister(this);
+
+        sRunning = false;
     }
 }

@@ -91,6 +91,8 @@ public class TcpWatcher {
                 }
             }
         }
+        else
+            EventBus.getDefault().post(new AllMessagesSentEvent());
     }
 
 
