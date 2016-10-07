@@ -23,6 +23,7 @@
 
 void initEEPROM (void* ee);
 void loadEEPROM (void* ee);
+void updateLeds (uint8_t status);
 
 
 static void* eeprom;
@@ -44,6 +45,13 @@ static float hourEnergy;
 
 static uint8_t block_ptr;
 
+// La variable smartPlug_status contiene una serie de bits indicando el estado actual
+// del Smart Plug. Se la usa para generar las señalizaciones con los dos leds.
+static uint8_t smartPlug_status;
+#define SMART_PLUG_STATUS_WPS			0x01
+#define SMART_PLUG_STATUS_SOFT_AP		0x02
+#define SMART_PLUG_STATUS_RTC_SYNCH		0x04
+#define SMART_PLUG_STATUS_AUTH			0x08
 
 
 
@@ -102,6 +110,8 @@ TASK(taskSmartPlug)
 
 			state = State_Running;
 
+			smartPlug_status = 0;
+
 			ChainTask(taskSmartPlug);
 
 			break;
@@ -111,28 +121,66 @@ TASK(taskSmartPlug)
 			while(1)
 			{
 				WaitEvent(evSwitch | evSwitch_5sec | evRelayOn | evRelayOff | evRTC_1min | evRTC_1hour | evAuthenticated |
-							evAuthenticated | evResetEnergy | evChangeOnOffTime | evFactoryReset);
+							evAuthenticated | evResetEnergy | evChangeOnOffTime | evFactoryReset | evRTCNoSynch | evRTCSynch);
 				GetEvent(taskSmartPlug, &events);
 				ClearEvent(events);
 
+				if (events & evAuthenticated)
+				{
+					smartPlug_status |= SMART_PLUG_STATUS_AUTH;
+					smartPlug_status &= (~SMART_PLUG_STATUS_WPS);
+					smartPlug_status &= (~SMART_PLUG_STATUS_SOFT_AP);
+
+					updateLeds (smartPlug_status);
+				}
+
+				if (events & evDeAuthenticated)
+				{
+					smartPlug_status &= (~SMART_PLUG_STATUS_AUTH);
+					smartPlug_status &= (~SMART_PLUG_STATUS_WPS);
+					smartPlug_status &= (~SMART_PLUG_STATUS_SOFT_AP);
+
+					updateLeds (smartPlug_status);
+				}
+
+				if (events & evRTCNoSynch)
+				{
+					moduleLog_log("RTC No sincronizado");
+
+					smartPlug_status &= (~SMART_PLUG_STATUS_RTC_SYNCH);
+
+					updateLeds (smartPlug_status);
+				}
+
+				if (events & evRTCSynch)
+				{
+					moduleLog_log("RTC sincronizado");
+
+					smartPlug_status |= SMART_PLUG_STATUS_RTC_SYNCH;
+
+					updateLeds (smartPlug_status);
+				}
+
 				if (events & evSwitch)
 				{
-					taskLeds_blinkLed(LED_ID_GREEN, 500, 500);
-					taskLeds_blinkLed(LED_ID_RED, 0, 1);
-
 					taskWiFi_initWPS();
 
 					moduleLog_log("Inicio WPS");
+
+					smartPlug_status |= SMART_PLUG_STATUS_WPS;
+
+					updateLeds (smartPlug_status);
 				}
 
 				if (events & evSwitch_5sec)
 				{
-					taskLeds_blinkLed(LED_ID_GREEN, 250, 250);
-					taskLeds_blinkLed(LED_ID_RED, 0, 1);
-
-					taskWiFi_initWPS();
+					taskWiFi_initWebServer();
 
 					moduleLog_log("Inicio Soft-AP");
+
+					smartPlug_status |= SMART_PLUG_STATUS_SOFT_AP;
+
+					updateLeds (smartPlug_status);
 				}
 
 				if (events & evRelayOn)
@@ -312,18 +360,6 @@ TASK(taskSmartPlug)
 
 						ReleaseResource(resEEPROM);
 					}
-				}
-
-				if (events & evAuthenticated)
-				{
-					taskLeds_blinkLed(LED_ID_GREEN, 1, 0);
-					taskLeds_blinkLed(LED_ID_RED, 0, 1);
-				}
-
-				if (events & evDeAuthenticated)
-				{
-					taskLeds_blinkLed(LED_ID_GREEN, 0, 1);
-					taskLeds_blinkLed(LED_ID_RED, 500, 500);
 				}
 
 				if (events & evResetEnergy)
@@ -546,4 +582,47 @@ void loadEEPROM (void* ee)
 
 
 	ReleaseResource(resEEPROM);
+}
+
+
+/*
+ * Las señalizaciones siguen la siguiente tabla:
+ *
+ * Senalización					Soft-AP			WPS			Autenticado			RTC Synch
+ * Verde = 2Hz						1			X				X					X
+ * Verde = 1Hz						0			1				X					X
+ * Rojo = 1Hz						0			0				0					X
+ * Verde y rojo destellan			0			0				1					0
+ * Verde encendido					0			0				1					1
+ */
+void updateLeds (uint8_t status)
+{
+	if (status & SMART_PLUG_STATUS_SOFT_AP)
+	{
+		taskLeds_blinkLed(LED_ID_GREEN, 250, 250);
+		taskLeds_blinkLed(LED_ID_RED, 0, 1);
+	}
+	else if (status & SMART_PLUG_STATUS_WPS)
+	{
+		taskLeds_blinkLed(LED_ID_GREEN, 500, 500);
+		taskLeds_blinkLed(LED_ID_RED, 0, 1);
+	}
+	else if ( (status & SMART_PLUG_STATUS_AUTH) == 0 )
+	{
+		taskLeds_blinkLed(LED_ID_GREEN, 0, 1);
+		taskLeds_blinkLed(LED_ID_RED, 500, 500);
+	}
+	else
+	{
+		if (status & SMART_PLUG_STATUS_RTC_SYNCH)
+		{
+			taskLeds_blinkLed(LED_ID_GREEN, 1, 0);
+			taskLeds_blinkLed(LED_ID_RED, 0, 1);
+		}
+		else
+		{
+			taskLeds_blinkLed(LED_ID_GREEN, 500, 250);
+			taskLeds_blinkLed(LED_ID_RED, 250, 500);
+		}
+	}
 }

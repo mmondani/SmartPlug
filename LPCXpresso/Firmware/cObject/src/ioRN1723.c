@@ -857,7 +857,7 @@ void ioRN1723_handler (void* _this)
 			switch (this->fsm_sub_state)
 			{
 				case SYNC_TIME_CMD:
-					sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 2000);
+					sendCmd(this, CMD_TIME, "", RESP_FILTER_OK | RESP_FILTER_ERROR, 3000);
 					this->fsm_sub_state = SYNC_TIME_SAVE;
 					break;
 

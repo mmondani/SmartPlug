@@ -318,18 +318,22 @@ TASK(taskWiFi)
                 stateOut = 0;
                 stateIn = 1;
 
-                // Si no se pudo sincronizar a los 30 segundos va a volver a intentar
+                // Si no se pudo sincronizar a los 20 segundos va a volver a intentar
                 if (ioRN1723_isTimeValid(rn1723) == 0)
+                {
                 	cTimer_start(timerSynchronizeTime, 20000);
+                	SetEvent (taskSmartPlug, evRTCNoSynch);
+                }
                 else
                 {
                 	ioRN1723_getTime(rn1723, &fullTime);
                 	taskRTC_setTime(&fullTime);
 
-                	moduleLog_log("RTC sincronizado");
 
                 	//TODO: agregar que se sincronize, por ejemplo cada día, para corregir el error del RTC del micro.
                 	cTimer_stop(timerSynchronizeTime);
+
+                	SetEvent (taskSmartPlug, evRTCSynch);
                 }
             }
 			break;
