@@ -317,7 +317,7 @@ public class SmartPlugDetailsFragment extends Fragment {
         mVoltageText.setText(String.format("%.1f", instantaneousInfoEntry.getVoltage()) + " V");
         mCurrentText.setText(String.format("%.1f", instantaneousInfoEntry.getCurrent()) + " A");
         mPowerText.setText(String.format("%.1f", instantaneousInfoEntry.getPower()) + " W");
-        mTotalEnergyText.setText(String.format("%.1f", instantaneousInfoEntry.getTotalEnergy()) + " KWh");
+        mTotalEnergyText.setText(String.format("%.1f", instantaneousInfoEntry.getTotalEnergy()) + " kWh");
 
         if (instantaneousInfoEntry.getConnectionState() == 0) {
             mCommStateIconView.setImageResource(R.drawable.ok);

@@ -91,9 +91,9 @@ public class HistoryPlotFragment extends Fragment {
         mPlotNameText = (TextView)v.findViewById(R.id.frag_history_plot_name);
 
         if (mMeasurementType == MeasurementsEntry.MeasurementType.ACTIVE_POWER)
-            mPlotNameText.setText("Potencia - " + mDate);
+            mPlotNameText.setText("Potencia (W) vs hora del día - " + mDate);
         else if (mMeasurementType == MeasurementsEntry.MeasurementType.ENERGY)
-            mPlotNameText.setText("Energía - " + mDate);
+            mPlotNameText.setText("Energía (kWh) vs hora del día - " + mDate);
 
 
         /**
