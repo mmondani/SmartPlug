@@ -764,36 +764,31 @@ public class SmartPlugService extends Service {
                         OnOffTimesEntry entry = smartPlugProvider.getOnOffTimesEntry(ev.getId());
                         entry.getMondayLoadOnTime().setHours(frame.getData()[0]);
                         entry.getMondayLoadOnTime().setMinutes(frame.getData()[1]);
-                        entry.getMondayLoadOffTime().setHours(frame.getData()[2]);
-                        entry.getMondayLoadOffTime().setMinutes(frame.getData()[3]);
+                        entry.getTuesdayLoadOnTime().setHours(frame.getData()[2]);
+                        entry.getTuesdayLoadOnTime().setMinutes(frame.getData()[3]);
+                        entry.getWednesdayLoadOnTime().setHours(frame.getData()[4]);
+                        entry.getWednesdayLoadOnTime().setMinutes(frame.getData()[5]);
+                        entry.getThursdayLoadOnTime().setHours(frame.getData()[6]);
+                        entry.getThursdayLoadOnTime().setMinutes(frame.getData()[7]);
+                        entry.getFridayLoadOnTime().setHours(frame.getData()[8]);
+                        entry.getFridayLoadOnTime().setMinutes(frame.getData()[9]);
+                        entry.getSaturdayLoadOnTime().setHours(frame.getData()[10]);
+                        entry.getSaturdayLoadOnTime().setMinutes(frame.getData()[11]);
+                        entry.getSundayLoadOnTime().setHours(frame.getData()[12]);
+                        entry.getSundayLoadOnTime().setMinutes(frame.getData()[13]);
 
-                        entry.getTuesdayLoadOnTime().setHours(frame.getData()[4]);
-                        entry.getTuesdayLoadOnTime().setMinutes(frame.getData()[5]);
-                        entry.getTuesdayLoadOffTime().setHours(frame.getData()[6]);
-                        entry.getTuesdayLoadOffTime().setMinutes(frame.getData()[7]);
-
-                        entry.getWednesdayLoadOnTime().setHours(frame.getData()[8]);
-                        entry.getWednesdayLoadOnTime().setMinutes(frame.getData()[9]);
-                        entry.getWednesdayLoadOffTime().setHours(frame.getData()[10]);
-                        entry.getWednesdayLoadOffTime().setMinutes(frame.getData()[11]);
-
-                        entry.getThursdayLoadOnTime().setHours(frame.getData()[12]);
-                        entry.getThursdayLoadOnTime().setMinutes(frame.getData()[13]);
-                        entry.getThursdayLoadOffTime().setHours(frame.getData()[14]);
-                        entry.getThursdayLoadOffTime().setMinutes(frame.getData()[15]);
-
-                        entry.getFridayLoadOnTime().setHours(frame.getData()[16]);
-                        entry.getFridayLoadOnTime().setMinutes(frame.getData()[17]);
-                        entry.getFridayLoadOffTime().setHours(frame.getData()[18]);
-                        entry.getFridayLoadOffTime().setMinutes(frame.getData()[19]);
-
-                        entry.getSaturdayLoadOnTime().setHours(frame.getData()[20]);
-                        entry.getSaturdayLoadOnTime().setMinutes(frame.getData()[21]);
-                        entry.getSaturdayLoadOffTime().setHours(frame.getData()[22]);
-                        entry.getSaturdayLoadOffTime().setMinutes(frame.getData()[23]);
-
-                        entry.getSundayLoadOnTime().setHours(frame.getData()[24]);
-                        entry.getSundayLoadOnTime().setMinutes(frame.getData()[25]);
+                        entry.getMondayLoadOffTime().setHours(frame.getData()[14]);
+                        entry.getMondayLoadOffTime().setMinutes(frame.getData()[15]);
+                        entry.getTuesdayLoadOffTime().setHours(frame.getData()[16]);
+                        entry.getTuesdayLoadOffTime().setMinutes(frame.getData()[17]);
+                        entry.getWednesdayLoadOffTime().setHours(frame.getData()[18]);
+                        entry.getWednesdayLoadOffTime().setMinutes(frame.getData()[19]);
+                        entry.getThursdayLoadOffTime().setHours(frame.getData()[20]);
+                        entry.getThursdayLoadOffTime().setMinutes(frame.getData()[21]);
+                        entry.getFridayLoadOffTime().setHours(frame.getData()[22]);
+                        entry.getFridayLoadOffTime().setMinutes(frame.getData()[23]);
+                        entry.getSaturdayLoadOffTime().setHours(frame.getData()[24]);
+                        entry.getSaturdayLoadOffTime().setMinutes(frame.getData()[25]);
                         entry.getSundayLoadOffTime().setHours(frame.getData()[26]);
                         entry.getSundayLoadOffTime().setMinutes(frame.getData()[27]);
 
