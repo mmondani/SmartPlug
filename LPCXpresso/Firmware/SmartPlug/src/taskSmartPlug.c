@@ -78,6 +78,7 @@ TASK(taskSmartPlug)
 	uint8_t i;
 	uint32_t dayOfWeek;
 	uint8_t buffDate[3];
+	uint8_t hour;
 
 
 
@@ -252,44 +253,58 @@ TASK(taskSmartPlug)
 						// Cada vez que se carga las mediciones de una hora, se carga la fecha de la medición al inicio del bloque.
 						// Esto permite que se inicie el proceso de medición en cualquier hora del día y el bloque siempre tenga
 						// la fecha del día.
-						buffDate[0] = fullTime.dayOfMonth;
-						buffDate[1] = fullTime.month;
-						buffDate[2] = fullTime.year - 2000;
+						if (fullTime.hour > 0)
+						{
+							hour = fullTime.hour - 1;
 
-						ioEE25LCxxx_busyPolling(eeprom);
-						ioEE25LCxxx_setWriteEnable(eeprom);
-						ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_DATE, buffDate, 3);
-						ioEE25LCxxx_busyPolling(eeprom);
-						ioEE25LCxxx_setWriteEnable(eeprom);
-						ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_DATE, buffDate, 3);
+							buffDate[0] = fullTime.dayOfMonth;
+							buffDate[1] = fullTime.month;
+							buffDate[2] = fullTime.year - 2000;
+
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_DATE, buffDate, 3);
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_DATE, buffDate, 3);
+						}
+						else if (fullTime.hour == 0)
+						{
+							// Si la hora actual es la 0, los valore que se deben guardar corresponden
+							// a lo acumulado durante la hora 23 del día anterior. Por lo tanto no se carga
+							// fecha en el bloque actual ya que todavía no se actualiza block_ptr y se está
+							// apuntando todavía al bloque del día anterior.
+							hour = 23;
+						}
+
 
 
 						// Se guarda la potencia activa promediada de la hora actual
-						if (fullTime.hour <= 11)
+						if (hour <= 11)
 						{
 							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_00 + fullTime.hour * 4, &avgActivePower, 4);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_00 + hour * 4, &avgActivePower, 4);
 						}
 						else
 						{
 							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_12 + (fullTime.hour-12) * 4, &avgActivePower, 4);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_12 + (hour - 12) * 4, &avgActivePower, 4);
 						}
 
 						// Se guarda la energía acumulada en la hora actual
-						if (fullTime.hour <= 11)
+						if (hour <= 11)
 						{
 							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_00 + fullTime.hour * 4, &hourEnergy, 4);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_00 + hour * 4, &hourEnergy, 4);
 						}
 						else
 						{
 							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_12 + (fullTime.hour-12) * 4, &hourEnergy, 4);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_12 + (hour - 12) * 4, &hourEnergy, 4);
 						}
 					}
 
