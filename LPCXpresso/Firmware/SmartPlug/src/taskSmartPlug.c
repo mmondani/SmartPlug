@@ -43,6 +43,7 @@ static uint32_t loadState = 0;
 static float avgActivePower = 0.0;
 static float hourEnergy;
 
+
 static uint8_t block_ptr;
 
 // La variable smartPlug_status contiene una serie de bits indicando el estado actual
@@ -71,15 +72,16 @@ uint32_t taskSmartPlug_getLoadState (void)
 
 TASK(taskSmartPlug)
 {
-	rtc_time_t fullTime;
 	EventMaskType events;
 	float valueFloat;
 	uint8_t valueChar;
 	uint8_t i;
+
+	rtc_time_t fullTime;
 	uint32_t dayOfWeek;
 	uint8_t buffDate[3];
 	uint32_t hour;
-
+	uint32_t offset;
 
 
 
@@ -242,21 +244,68 @@ TASK(taskSmartPlug)
 				{
 					taskRTC_getTime(&fullTime);
 
-
 					avgActivePower = avgActivePower / 60.0;
-					hourEnergy = taskMeter_getMeterValue(ID_ENERGY);
+
 
 					GetResource(resEEPROM);
 
 					if (taskRTC_isTimeSynchronized())
 					{
+						if (fullTime.hour > 0)
+							hour = fullTime.hour - 1;
+						else
+							hour = 23;
+
+
+
+						// Se guarda la potencia activa promediada de la hora anterior
+						if (hour <= 11)
+						{
+							offset = EE_ACTIVE_POWER_HOUR_00 + (hour * 4);
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + offset, &avgActivePower, 4);
+							ioEE25LCxxx_busyPolling(eeprom);
+						}
+						else
+						{
+							offset = EE_ACTIVE_POWER_HOUR_12 + ((hour - 12) * 4);
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + offset, &avgActivePower, 4);
+							ioEE25LCxxx_busyPolling(eeprom);
+						}
+
+						// Se guarda la energía acumulada en la hora anterior
+						if (hour <= 11)
+						{
+							offset = EE_ENERGY_HOUR_00 + (hour * 4);
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + offset, &hourEnergy, 4);
+							ioEE25LCxxx_busyPolling(eeprom);
+						}
+						else
+						{
+							offset = EE_ENERGY_HOUR_12 + ((hour - 12) * 4);
+							ioEE25LCxxx_busyPolling(eeprom);
+							ioEE25LCxxx_setWriteEnable(eeprom);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + offset, &hourEnergy, 4);
+							ioEE25LCxxx_busyPolling(eeprom);
+						}
+
+
 						// Cada vez que se carga las mediciones de una hora, se carga la fecha de la medición al inicio del bloque.
 						// Esto permite que se inicie el proceso de medición en cualquier hora del día y el bloque siempre tenga
 						// la fecha del día.
+						// Si la hora actual es la 0, los valores que se deben guardar corresponden
+						// a lo acumulado durante la hora 23 del día anterior. Por lo tanto no se carga
+						// fecha en el bloque actual ya que todavía no se actualiza block_ptr y se está
+						// apuntando todavía al bloque del día anterior.
+						taskRTC_getTime(&fullTime);
+
 						if (fullTime.hour > 0)
 						{
-							hour = fullTime.hour - 1;
-
 							buffDate[0] = fullTime.dayOfMonth;
 							buffDate[1] = fullTime.month;
 							buffDate[2] = fullTime.year - 2000;
@@ -268,47 +317,11 @@ TASK(taskSmartPlug)
 							ioEE25LCxxx_setWriteEnable(eeprom);
 							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_DATE, buffDate, 3);
 						}
-						else
-						{
-							// Si la hora actual es la 0, los valores que se deben guardar corresponden
-							// a lo acumulado durante la hora 23 del día anterior. Por lo tanto no se carga
-							// fecha en el bloque actual ya que todavía no se actualiza block_ptr y se está
-							// apuntando todavía al bloque del día anterior.
-							hour = 23;
-						}
-
-
-
-						// Se guarda la potencia activa promediada de la hora actual
-						if (hour <= 11)
-						{
-							ioEE25LCxxx_busyPolling(eeprom);
-							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_00 + (hour * 4), &avgActivePower, 4);
-						}
-						else
-						{
-							ioEE25LCxxx_busyPolling(eeprom);
-							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_12 + ((hour - 12) * 4), &avgActivePower, 4);
-						}
-
-						// Se guarda la energía acumulada en la hora actual
-						if (hour <= 11)
-						{
-							ioEE25LCxxx_busyPolling(eeprom);
-							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_00 + (hour * 4), &hourEnergy, 4);
-						}
-						else
-						{
-							ioEE25LCxxx_busyPolling(eeprom);
-							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_12 + ((hour - 12) * 4), &hourEnergy, 4);
-						}
 					}
 
 					// Se acumula la energía de la hora a la energía total
+					hourEnergy = taskMeter_getMeterValue(ID_ENERGY);
+
 					ioEE25LCxxx_busyPolling(eeprom);
 					ioEE25LCxxx_readData(eeprom, EE_ACUM_ENERGY, &valueFloat, 4);
 
