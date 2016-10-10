@@ -78,7 +78,7 @@ TASK(taskSmartPlug)
 	uint8_t i;
 	uint32_t dayOfWeek;
 	uint8_t buffDate[3];
-	uint8_t hour;
+	uint32_t hour;
 
 
 
@@ -268,9 +268,9 @@ TASK(taskSmartPlug)
 							ioEE25LCxxx_setWriteEnable(eeprom);
 							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_DATE, buffDate, 3);
 						}
-						else if (fullTime.hour == 0)
+						else
 						{
-							// Si la hora actual es la 0, los valore que se deben guardar corresponden
+							// Si la hora actual es la 0, los valores que se deben guardar corresponden
 							// a lo acumulado durante la hora 23 del día anterior. Por lo tanto no se carga
 							// fecha en el bloque actual ya que todavía no se actualiza block_ptr y se está
 							// apuntando todavía al bloque del día anterior.
@@ -284,13 +284,13 @@ TASK(taskSmartPlug)
 						{
 							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_00 + hour * 4, &avgActivePower, 4);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_00 + (hour * 4), &avgActivePower, 4);
 						}
 						else
 						{
 							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_12 + (hour - 12) * 4, &avgActivePower, 4);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ACTIVE_POWER_HOUR_12 + ((hour - 12) * 4), &avgActivePower, 4);
 						}
 
 						// Se guarda la energía acumulada en la hora actual
@@ -298,13 +298,13 @@ TASK(taskSmartPlug)
 						{
 							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_00 + hour * 4, &hourEnergy, 4);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_00 + (hour * 4), &hourEnergy, 4);
 						}
 						else
 						{
 							ioEE25LCxxx_busyPolling(eeprom);
 							ioEE25LCxxx_setWriteEnable(eeprom);
-							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_12 + (hour - 12) * 4, &hourEnergy, 4);
+							ioEE25LCxxx_writeData(eeprom, block_ptr * 128 + EE_ENERGY_HOUR_12 + ((hour - 12) * 4), &hourEnergy, 4);
 						}
 					}
 
