@@ -179,7 +179,7 @@ public class HistorySelectionFragment extends Fragment {
                          */
                         mEnergyDateSpinner.setSelection(0);
 
-                        mSelectedListener.onDateSelected(mPowerSpinnerElements.get(position),
+                        mSelectedListener.onDateSelected(mEnergySpinnerElements.get(position),
                                 MeasurementsEntry.MeasurementType.ENERGY);
                     }
                 }
