@@ -85,16 +85,6 @@ public class HistoryPlotFragment extends Fragment {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
 
-        /**
-         * Se configura el nombre del gráfico con el tipo de medición y la fecha.
-         */
-        mPlotNameText = (TextView)v.findViewById(R.id.frag_history_plot_name);
-
-        if (mMeasurementType == MeasurementsEntry.MeasurementType.ACTIVE_POWER)
-            mPlotNameText.setText("Potencia (W) vs hora del día - " + mDate);
-        else if (mMeasurementType == MeasurementsEntry.MeasurementType.ENERGY)
-            mPlotNameText.setText("Energía (kWh) vs hora del día - " + mDate);
-
 
         /**
          * Se configura el plot
@@ -140,16 +130,24 @@ public class HistoryPlotFragment extends Fragment {
             maxEntries = measurementsStrings.length;
 
 
+        /**
+         * De la lista de mediciones se obtiene la suma total (que se va a mostrar en el título si
+         * el gráfico es de energía por hora) y el promedio (que se va a mostrar en el título si
+         * el gráfico es de potencia activa por hora).
+         */
+        float sum = 0.0f;
+
         List<Entry> plotEntries = new ArrayList<>();
         for (int i = 0; i < maxEntries; i++) {
             float measurement = Float.parseFloat(measurementsStrings[i]);
 
             if (measurement < 0.0f)
-                plotEntries.add(new Entry((float)i, 0.0f));
-            else
-                plotEntries.add(new Entry((float)i, measurement));
-        }
+                measurement = 0.0f;
 
+            sum += measurement;
+
+            plotEntries.add(new Entry((float)i, measurement));
+        }
 
 
         LineDataSet dataSet = new LineDataSet(plotEntries, "Mediciones");;
@@ -194,7 +192,7 @@ public class HistoryPlotFragment extends Fragment {
 
 
         /**
-         * COnfiguración del eje Y.
+         * Configuración del eje Y.
          */
         //mPlot.getAxisLeft().setDrawGridLines(false);
         mPlot.getXAxis().enableGridDashedLine(3.0f, 1.0f, 0.0f);
@@ -221,6 +219,28 @@ public class HistoryPlotFragment extends Fragment {
          * Se hace un refresh del gráfico.
          */
         mPlot.invalidate();
+
+
+
+        /**
+         * Se configura el nombre del gráfico con el tipo de medición y la fecha.
+         */
+        mPlotNameText = (TextView)v.findViewById(R.id.frag_history_plot_name);
+
+        String title = "";
+        if (mMeasurementType == MeasurementsEntry.MeasurementType.ACTIVE_POWER) {
+            title = "Potencia (W) vs hora del día - " + mDate + ". Promedio: ";
+            if (maxEntries > 0)
+                title += String.format("%.1f W", sum/maxEntries);
+            else
+                title += String.format("%.1f W", 0.0f);
+        }
+        else if (mMeasurementType == MeasurementsEntry.MeasurementType.ENERGY) {
+            title = "Energía (kWh) vs hora del día - " + mDate + ". Total: ";
+            title += String.format("%.1f kWh", sum);
+        }
+
+        mPlotNameText.setText(title);
 
 
         return v;
