@@ -121,8 +121,12 @@ public class SmartPlugService extends Service {
                     Calendar calendar = Calendar.getInstance();
 
                     /**
-                     * Se piden las mediciones del día de la fecha
+                     * Se piden las mediciones del día de la fecha. Si la hora actual es la 00, se pregunta por el
+                     * día anterior.
                      */
+                    if (calendar.get(Calendar.HOUR) == 0) 
+                        calendar.add(Calendar.DAY_OF_YEAR, -1);
+
                     byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
                     byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
                     byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
