@@ -472,6 +472,10 @@ La tarea taskWiFi al recibir estos comandos genera un evento y la tarea taskSmar
 
 \subsection{Maqueta de la aplicación}
 
+Antes de comenzar con el diseño de la lógica de la aplicación, fue necesario determinar la forma en la que se iban a presentar los datos al usuario. Para esto se recurrió al uso de una maqueta, en la cual se muestran las pantallas de las que estará compuesta la aplicación y la interacción que hay entre ellas. Cada una de las pantallas presenta el aspecto que realmente debe tener en la aplicación pero no describe la forma en que se debe implementar la lógica de la aplicación.
+
+En la Figura \ref{fig:app_wireframe} puede verse la maqueta completa de la aplicación. La líneas rojas muestran la interacción entre las pantallas y las violetas son comentarios que clarifican el funcionamiento de la pantalla.
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=18cm, angle=90]{./Figures/3_3_1_app_wireframe.png}
@@ -479,8 +483,61 @@ La tarea taskWiFi al recibir estos comandos genera un evento y la tarea taskSmar
 	\label{fig:app_wireframe}
 \end{figure}
 
+A continuación se describe brevemente el funcionamiento de la aplicación desde el punto de vista del usuario:
+
+\begin{itemize}
+\item  Pantalla 1: la aplicación comienza con un \textit{splash screen}, es decir, una pantalla que muestra el logo y el nombre de la aplicación durante unos segundos y luego da paso a la siguiente pantalla.
+
+\item Pantalla 2: luego del \textit{splash screen} se muestra una lista con todos los Smart Plugs que se encontraron en la red WiFi. Como se explicará en la Subsección \ref{subsec:arquitectura_app}, cada Smart Plug se identifica periódicamente dentro de la red WiFi. Estos mensajes periódicos son capturados por la aplicación y en el caso de detectar un Smart Plug que no conocía, lo agregará en la lista. 
+
+Cada uno de los elementos de la lista representa a un Smart Plug. Se va a mostrar el nombre del dispositivo, el estado de la comunicación mediante un tilde verde o una cruz roja y la fecha y hora de la última comunicación exitosa que hubo con ese Smart Plug. Además se muestra un ícono que permite identificar de forma sencilla el dispositivo que realmente está controlando el Smart Plug. 
+
+Pero en la lista, el ícono no cumple únicamente una función pictórica, si se lo presiona se puede conmutar el estado de la carga. Más aún, la opacidad del ícono indica el estado actual de la carga: cuando se lo muestra semi-transparente la carga está apagada y cuando se lo muestra sin transparencia, está encendida.
+
+\item Pantalla 3: cuando en la pantalla 2 se presiona alguno de los Smart Plugs de la lista, la aplicación muestra una vista de detalle del mismo. En esta se volverá a mostrar el ícono asociado al Smart Plug, su nombre, el estado de la comunicación y la fecha y hora de la última comunicación exitosa. Pero además de estos datos se mostrarán las últimas mediciones recibidas desde el equipo. Estas mediciones incluyen: tensión eficaz, corriente eficaz, potencia activa y energía total consumida. Estos datos son actualizados periódicamente, aún cuando la aplicación se encuentra cerrada.
+
+Por otro lado, en esta vista de detalle se encuentra presente, en la esquina inferior derecha de la pantalla, un botón de acción flotante (floating action button) el cual permite acceder a más opciones para gestionar el Smart Plug seleccionado.
+
+\item Pantalla 4: cuando se presiona el botón de acción flotante se despliega un menú el cual incluye la siguiente opciones: Configuración, Historial, Actualizar, Reiniciar mediciones y Volver a valores de fábrica.
+
+\item Pantalla 5: si se presiona la opción de Volver a valores de fábrica, se le preguntará al usuario si confirma que quiere realizar esta acción. En caso afirmativo se le enviará al Smart Plug el comando correspondiente y el cual volverá a sus valores de fábrica, los cuales consisten en:
+
+\begin{itemize}
+\item Nombre del dispositivo: Smart Plug.
+\item Programación horaria de encendido/apagado deshabilitada.
+\item Se reinicia el registro la energía consumida.
+\item Se eliminan las mediciones históricas de potencia activa y enrgía consumida por hora, tanto en el Smart Plug como en la aplicación.
+\end{itemize}
+
+\item Pantalla 6: si se presiona la opción Reiniciar mediciones, se le preguntará al usuario si confirma que quiere realizar la acción. En caso afirmativo, se enviarán los comandos correspondientes al Smart Plug. Cuando se realiza esta acción se reiniciará el registro de la energía consumida y se eliminarán las mediciones históricas de potencia activa y energía consumida por hora. 
+
+Se decidió incorporar esta opción para ayudar en los casos en los que, por ejemplo, se cambia la carga que está controlando el Smart Plug, por lo que se desea eliminar los registros de la anterior carga ya que podrían llevar a confusiones en la interpretación de los datos.
+
+\item Pantalla 7: cuando se presiona la opción Actualizar, una caja de diálogo le preguntará al usuario si confirma la acción. En caso afirmativo, se forzará el proceso de actualización de los datos del Smart Plug, es decir, se le pedirán las últimas mediciones, sus parámetros de configuración y sus mediciones históricas para actualizar la información en la aplicación. Este comando es útil cuando se necesita conocer la información actual por ejemplo, de una medición y no se puede esperar hasta la próxima consulta periódica que realiza la aplicación.
+
+\item Pantalla 8: al presionar la opción Historial se accede a todas las mediciones históricas que se recibieron desde el Smart Plug. Estas mediciones históricas consisten en las mediciones que realizó en cada hora del día, tanto de la potencia activa promedio como de la energía consumida. En esta pantalla se podrá elegir el día que se quiere ver y el parámetro que se desea consultar mediante dos listas de fechas. Se debe aclarar que aunque el Smart Plug retenga las mediciones de los últimos 7 días, la aplicación puede retener hasta 20 días.
+
+\item Pantalla 9: cuando se elije una fecha la pantalla gira para mejorar la visualización de los datos en forma de gŕafico. En este gráfico se va a representar la potencia activa por hora (en Watt) vs la hora del día o la energía consumida por hora (en kWh) vs la hora del día. Se puede realizar zoom y desplazarse por el gráfico arrastrando el dedo.
+
+Estos gráficos representan una de las características distintivas de este producto, ya que permite visualizar de forma sencilla mediciones que pueden ser aprovechadas para conocer el consumo de un determinado aparato eléctrico.
+
+\item Pantalla 10: contiene los parámetros configurables del Smart Plug seleccionado. Se accede a esta pantalla presionando la opción Configuración en el menú del botón de acción flotante. Los parámetros que se pueden configurar son básicamente tres: el nombre del dispositivo, el ícono del Smart Plug y la programación horaria para cada día de la semana.
+
+En cuanto al nombre del dispositivo, se puede configurar un nombre de hasta 32 caracteres. Una vez ingresado se debe presionar la flecha que se encuentra a la derecha del control para ingresar el texto. Este nombre quedará configurado en el Smart Plug, por lo que todas las aplicaciones que tengan registrado a este Plug, verán el nuevo nombre.
+
+Al presionar el ícono del Smart Plug se mostrará la pantalla 11, permitiendo elegir de una lista de íconos. Una vez que se selecciona uno de estos se vuelve a la pantalla 10. El ícono es una información propia de la aplicación móvil y no queda guardado en el Smart Plug. por lo tanto distintas aplicaciones móviles pueden asignar íconos diferentes a un mismo Plug.
+
+Finalmente, la programación horaria puede ser habilitada y deshabilitada para cada día de la semana individualmente. La transparencia del recuadro que contiene la información de cada día indica si la programación horaria está habilitada: si el recuadro es semi-transparente, está deshabilitada, pero si no es transparente, está habilitada. 
+
+Si se presiona cualquiera de los días se mostrará la pantalla 12 invitando a ingresar la hora de encendido de la carga. Se puede elegir cambiar esta hora o dejar la que estaba ya configurada. Una vez configurada la hora de encendido se volverá a mostrar la pantalla 12 para ingresar la hora de apagado; se procede de igual forma que antes. Cuando se ingresan ambas horas se configura el Smart Plug con estos nuevos valores.
+
+Si en cambio de desea deshabilitar esta opción para un día de la semana, se debe mantener presionado el recuadro del día elegido. Cuando se deshabilite la opción, el recuadro se mostrará semi-transparente.
+
+\end{itemize}
+
 
 \subsection{Arquitectura de la aplicación}
+\label{subsec:arquitectura_app}
 
 \begin{figure}[h]
 	\centering
