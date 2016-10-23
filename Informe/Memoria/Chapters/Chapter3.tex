@@ -349,46 +349,122 @@ El código fuente de todas las interfaces y clases puede encontrarse en la carpe
 \subsection{Protocolo de comunicación}
 \label{subsection:protocolo}
 
+Para poder intercambiar comandos y respuestas entre la aplicación móvil y los Smart Plugs fue necesario implementar un protocolo de comunicación. Este protocolo está por encima de TCP, el cual se usa para establecer la conexión y proveerla de retransmisiones y corrección de errores. La trama del protocolo desarrollado puede verse en la Figura \ref{fig:formato_trama}. 
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=13cm]{./Figures/3_2_4_formato_trama.png}
-	\caption{Formato de la trama.}
+	\caption{Formato de la trama del protocolo desarrollado para comunicar la aplicación móvil con los Smart Plugs.}
 	\label{fig:formato_trama}
 \end{figure}
+
+Cada trama va a comenzar y a terminar con los caracteres \textit{\#!}, lo cual facilita la recepción. Además están los siguientes campos:
+
+\begin{itemize}
+\item LEN: indica la cantidad de bytes de la trama desde el campo COMANDO hasta los caracteres \textit{\#!} finales.
+\item COMANDO: es un byte que indica el código del comando que se está enviando. En la Tabla \ref{tab:comandos_trama} pueden verse todos los posibles comandos.
+\item REGISTRO: indica el registro que se quiere leer, escribir o reiniciar. Es un campo opcional, de acuerdo al comando. En la Tabla \ref{tab:registros_trama} puede verse un resumen de los registros disponibles.
+\item VALOR: indica el valor que se leyó o se quiere escribir en un registro. Este campo valor va a variar de acuerdo al registro manipulado. En algunos registros, el campo valor son los 4 bytes de un float, en otros registros son los bytes de una cadena de caracteres, etc. Es responsabilidad del receptor interpretar los bytes de este campo de acuerdo al registro.
+\end{itemize}
+
+
+
+\begin{table}[h]
+	\centering
+	\caption[Comandos]{Comandos disponibles en el protocolo.}
+	\begin{tabular}{c c p{6cm}}    
+		\toprule
+		\textbf{Comando} 	 & \textbf{Descipción}  & \textbf{Notas} \\
+		\midrule
+		0x01  & GET(registro)  				& Pide el valor de un registro \\		
+		0x02  & SET(registro, valor)  		& Escribe el valor de un registro \\
+		0x10  & NODE\_ON()  					& Enciende la carga manejada por el Smart Plug \\
+		0x11  & NODE\_OFF()  				& Apaga la carga manejada por el Smart Plug \\
+		0x20  & RESET(registro)  			& Reinicia el valor del registro \\
+		0x30  & RESP\_GET(registro, valor)  	& Informa el valor del registro pedido \\
+		0x31  & RESP\_SET(registro, valor)  	& Confirma el valor escrito en el registro \\
+		0x32  & RESP\_RESET(registro)  		& Confirma que el valor del registro fue reiniciado \\
+		0x33  & RESP\_NODE\_ON()  			& Confirma que la carga fue encendida \\
+		0x34  & RESP\_NODE\_OFF()  			& Confirma que la carga fue apagada \\
+		\bottomrule
+		\hline
+	\end{tabular}
+	\label{tab:comandos_trama}
+\end{table}
+
+\begin{table}[h]
+	\centering
+	\caption[Registros]{Resumen de los registros disponibles en el protocolo.}
+	\begin{tabular}{c p{5cm} p{6cm}}    
+		\toprule
+		\textbf{Comando} 	 & \textbf{Descripción}  & \textbf{Notas} \\
+		\midrule
+		0x01 a 0x08  	& Registros de mediciones eléctricas  	& Incluye: tensión eficaz, corriente eficaz, factor de potencia, frecuencia, potencia activa, energía total consumida, etc. \\		
+		0x10  			& DEVICE\_ID  							& Nombre del dispositivo. Es el nombre que identifica al Smart Plug en la aplicación móvil. \\
+		0x15  			& LOAD\_STATE  							& Indica si la carga está encendida o apagada. \\
+		0x20 a 022F  	& Registros de programación horaria  	& Es un conjunto de registros que contiene la hora de encendido y la de apagado de la carga para cada día de la semana. \\
+		0x30  			& PER\_HOUR\_ENERGY  						& Contiene las 24 mediciones de energía consumida por hora de una determinada fecha. \\
+		0x31  			& PER\_HOUR\_ACTIVE\_POWER  				& Contiene las 24 mediciones de potencia activa promedio por hora de una determinada fecha. \\
+		\bottomrule
+		\hline
+	\end{tabular}
+	\label{tab:registros_trama}
+\end{table}
+
+Una característica a destacar es que este protocolo es de lazo cerrado. Para cualquier comando hay una respuesta que indica que ese comando fue recibido por el Smart Plug. Esta característica es usada por la aplicación móvil, en la cual cuando el usuario cambia un valor de configuración el cambio no se muestra en la pantalla de la aplicación hasta haber recibido la respuesta del comando enviado. De esta forma se asegura que el comando se haya recibido.
+
+La forma en que se implementó el protocolo permite en un futuro agregar nuevos comandos y registros. Solamente será necesario agregar estos nuevos campos en el firmware del Smart Plug y en la aplicación móvil.
 
 
 \subsection{Uso de los comandos}
 
+A continuación se muestran los distintos escenarios que se pueden dar utilizando el protocolo desarrollado.
+
+En el caso de leer un registro se tiene la secuencia mostrada en la Figura \ref{fig:comunicacion_get}. En este ejemplo, se quiere obtener el valor (campo COMANDO = 0x01 - GET) del registro de la potencia activa (campo REGISTRO = 0x05). Cuando la tareaa taskWiFi en el Smart Plug recibe esta petición le pide el valor actual de la potencia activa a la tarea taskMeter y devuelve el valor con el comando 0x30 (RESP\_GET).
+
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=12cm]{./Figures/3_2_5_comunicacion_GET.pdf}
+	\includegraphics[width=14cm]{./Figures/3_2_5_comunicacion_GET.pdf}
 	\caption{Diagrama de comunicación del comando \textit{GET}.}
 	\label{fig:comunicacion_get}
 \end{figure}
 
+Como se mencionó anteriormente, el campo valor se debe interpretar de distinta forma de acuerdo al registro que se quiera leer. En el caso del registro ACTIVE\_POWER (0x05) el campo valor va a contener los 4 bytes del float de la potencia activa ordenados en formato \textit{Big Endian}.
+
+Cuando se quiere escribir un registro en el Smart Plug, se debe enviar un comando SET y el nuevo valor del registro. En la Figura \ref{fig:comunicacion_set} puede verse la secuencia. En este ejemplo, la aplicación móvil quiere cambiar el registro de la hora de encendido de la carga para los días lunes (REGISTRO = 0x20), con la hora 12:10. 
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=12cm]{./Figures/3_2_5_comunicacion_SET.pdf}
+	\includegraphics[width=14cm]{./Figures/3_2_5_comunicacion_SET.pdf}
 	\caption{Diagrama de comunicación del comando \textit{SET}.}
 	\label{fig:comunicacion_set}
 \end{figure}
 
+Cuando taskWiFi recibe este comando, escribe el nuevo valor para el registro en la EEPROM, y genera la trama de respuesta con el comando RESP\_SET (0x31) y devuelve el valor que fue cargado en el registro. El hecho de devolver el mismo valor que recibió ayuda a la aplicación móvil a actualizar los datos en sus registros internos.
+
+En este caso se puede ver que el campo valor se debe interpretar como dos bytes, en el cual el primero indica la hora y el segundo los minutos del encendido de la carga.
+
+Además de escribir un valor determinado en un registro, el protocolo permite indicar que se debe reiniciar el valor de un registro. Para lograr esto se debe utilizar el comando RESET (0x20) y el registro que se quiere reiniciar. En el ejemplo de la Figura \ref{fig:comunicacion_reset} se puede ver como se quiere reiniciar el nombre del dispositivo (campo REGISTRO = 0x10).
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=12cm]{./Figures/3_2_5_comunicacion_RESET.pdf}
+	\includegraphics[width=14cm]{./Figures/3_2_5_comunicacion_RESET.pdf}
 	\caption{Diagrama de comunicación del comando \textit{RESET}.}
 	\label{fig:comunicacion_reset}
 \end{figure}
 
+Cuando la tarea taskWiFi recibe este comando va a escribir el valor de fábrica asociado al registro en la EEPROM. Por ejemplo, para el caso del nombre de dispositivo, el valor de fábrica es \textit{Smart Plug}. Sin embargo cada registro tiene un valor de fábrica distinto. Una vez reiniciado el registro, el Smart Plug va a generar una trama de respuesta con el comando RESP\_RESET (0x32) acompañado del registro modificado.
+
+Finalmente existen dos comandos dedicados al control de la carga conectada al Smart Plug. Estos son NODE\_ON (0x10) y NODE\_OFF (0x11). Mediante estos comandos, se le indica al Smart Pug que encienda o apague la carga. En la Figura \ref{fig:comunicacion_node} puede verse la secuencia cuando se envían estos comandos.
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=12cm]{./Figures/3_2_5_comunicacion_NODE.pdf}
+	\includegraphics[width=14cm]{./Figures/3_2_5_comunicacion_NODE.pdf}
 	\caption{Diagrama de comunicación de los comandos \textit{NODE ON} y \textit{NODE OFF}.}
 	\label{fig:comunicacion_node}
 \end{figure}
+
+La tarea taskWiFi al recibir estos comandos genera un evento y la tarea taskSmartPlug enciende o apaga la carga a partir del evento recibido. Hecho esto, se devuelve una trama con el comando RESP\_NODE\_ON (0x33) o RESP\_NODE\_OFF (0x34) para que la aplicación móvil tenga la confirmación de que la carga fue conmutada.
 
 
 \section{Aplicación Android}
@@ -400,7 +476,7 @@ El código fuente de todas las interfaces y clases puede encontrarse en la carpe
 	\centering
 	\includegraphics[width=18cm, angle=90]{./Figures/3_3_1_app_wireframe.png}
 	\caption{Maqueta de la aplicación móvil.}
-	\label{fig:comunicacion_app_wireframe}
+	\label{fig:app_wireframe}
 \end{figure}
 
 
