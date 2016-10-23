@@ -12,7 +12,7 @@
 *.cb2
 
 # PDF output - usually a bad idea to keep this in Git
-*.pdf
+memoria.pdf
 
 # Latexmk
 *.fdb_latexmk

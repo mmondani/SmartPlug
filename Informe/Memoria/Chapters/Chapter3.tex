@@ -159,6 +159,18 @@ Al momento de comenzar con el proyecto y elegir los componentes, este módulo re
 
 \subsection{Arquitectura del firmware}
 
+El firmware embebido en el Smart Plug se escribió utilizando FreeOSEK como sistema operativo de tiempo real. De esta forma, en la Figura \ref{fig:firmware_esquema_tareas} pueden verse las tareas que se crearon y la interacción que entre estas.
+
+Básicamente, las características del firmware surgen de los requerimientos enumerados en la Sección \ref{sec:requerimientos} y son:
+
+\begin{itemize}
+\item Iniciar el proceso de WPS o configurarse en modo punto de acceso (AP) cuando se presiona el pulsador presente en la placa.
+\item Mostrar el estado del dispositivo a través del led bicolor.
+\item Escuchar las conexiones TCP que provengan de las aplicaciones móviles y generar las respuestas adecuadas.
+\item Guardar de forma no volátil (en la memoria EEPROM) la potencia activa promedio y energía consumida de cada hora del día. En la EEPROM se guarda la información de los últimos 7 días.
+\item  Sincronizar la hora del Smart Plug con un servidor NTP y gestionar el encendido y apagado de la carga de acuerdo a la programación horaria configurada.
+\end{itemize}
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=16cm]{./Figures/3_2_1_firmware_esquema_tareas.pdf}
@@ -166,8 +178,82 @@ Al momento de comenzar con el proyecto y elegir los componentes, este módulo re
 	\label{fig:firmware_esquema_tareas}
 \end{figure}
 
+A continuación se describe cada una de las tareas:
+
+\begin{itemize}
+\item taskSmartPlug. Es la tarea principal del Smart Plug. Se encarga de implementar la lógica del dispositivo. Se encarga de recibir los eventos generados por el resto de las tareas y realizar acciones en base a los mismos. Se va a bloquear esperando que ocurra alguno de los eventos. 
+
+De taskWiFi obtiene los eventos relacionados con la conexión a la red WiFi y las conexiones TCP. Además le indica cuando tiene que iniciar un proceso de WPS o configurarse como punto de acceso.
+
+A taskLeds le indica la señalización que debe realizar de acuerdo al evento recibido. En la Tabla \ref{tab:senializacion_leds} puede verse un resumen de todas las posibles señalizaciones.
+
+
+De taskMeter obtiene las últimas mediciones para guardarlas de forma no volátil en la memoria EEPROM e ir generando un registro de potencia activa y energía consumida por hora de los últimos 7 días.
+
+Además se encarga de manejar el relay que conmuta la carga eléctrica. El encendido o apagado de la misma se va a determinar a partir de la programación horaria (si está configurada) y de los comandos de encendido y apagado que envíe la aplicación móvil.
+
+\item taskSwitch. Gestiona el pulsador de tipo tact switch que se encuentra en el PCB. Realiza el anti-rebote y genera los eventos cuando es presionado. Va a generar un evento cuando se suelte el pulsador (lo cual inicia el proceso de WPS en el módulo WiFi) y otro cuando se mantenga presionado por más de 5 segundos (lo cual configura al módulo WiFi como un punto de acceso). 
+
+Es una tarea que se ejecuta cada 20ms mediante una alarma de FreeOSEK.
+
+
+\item taskLeds. Se encarga de realizar las señalizaciones indicadas por otras tareas. Las señalizaciones se forman a partir de un led bicolor (rojo y verde), tanto encendiéndolos, apagándolos o haciéndolos destellar a distintas frecuencias.
+Es una tarea periódica que se ejecuta cada 10ms, mediante una alarma de FreeOSEK, para actualizar los leds.
+
+
+\item taskRTC. Se encarga de configurar y acceder al RTC interno del microcontrolador. Es la tarea que genera los eventos para indicar el paso de un minuto, una hora o un día, los cuales son utilizados por taskSmartPlug para registrar las mediciones de potencia activa y energía consumida por hora.
+
+\item taskWiFi. Se encarga de recibir las conexiones desde la aplicación móvil. Interacciona con taskMeter para requerir las últimas mediciones de acuerdo a lo solicitado por la aplicación móvil.
+
+También consulta la memoria EEPROM para leer o modificar los parámetros de configuración del Smart Plug y para enviarle a la aplicación móvil las mediciones históricas de potencia activa y energía consumida.
+
+Cuando se inicia la tarea se conecta con un servidor NTP para obtener la fecha y hora. Estos parámetros son enviados a la tarea taskRTC para que configure el RTC interno del microcontrolador.
+
+La comunicación con el módulo es a través de una UART y tanto la recepción como la transmisión se realizan a través de la interrupción de este periférico. La tarea es periódica, cada 10ms para controlar los mensajes que llegan desde el módulo RN1723  de forma asincrónica.
+
+\item taskMeter. Se encarga de obtener periódicamente las mediciones del front-end analógico CS5490. Además acumula los pulsos generados por el mismo integrado para llevar un registro de la energía consumida por la carga.
+
+Al iniciar la tarea, se encarga de configurar el CS5490 para que funcione de acuerdo a lo especificado. Este proceso incluye:
+
+\begin{itemize}
+\item Configurar la constante del meidor. Es la cantidad de pulsos a los que va a equivaler un kilowatt-hora. Para este proyecto se eligió una constante de 5000 pulsos/kWh. Esta constante no es configurada directamente en el CS5490, sino que se deben escribir algunos registros del integrado para lograr que genere 5000 pulsos por kWh. El proceso para lograr esto está explica en la Sección 5.5 de \citep{datasheet_CS5490}.
+\item Configurar la tensión y corriente máxima de operación, ya que las mediciones van a ser calculadas a partir de estos parámetros.
+\item Cargar los valores de calibración. Para lograr los valores de error relativo en el canal de tensión y de corriente que informa la hoja de datos es necesario realizar un proceso de calibración del equipo. Básicamente este proceso consta de dos etapas: calibración de \textit{offset} de continua y calibración de ganancia. Para el primero se deben cortocircuitar las entradas diferenciales del canal de tensión y de corriente y comenzar el proceso. Para la calibración de ganancia, en el caso de la tensión, se debe generar la tensión máxima que puede medir el Smart Plug y comenzar el proceso de calibración. Para el caso de la corriente, se puede usar una corriente menor a la máxima del Smar Plug que debe ser indicada al CS5490 antes de comenzar con la calibración.
+Este proceso se encuentra detalladamente explicado en la Sección 7.1 de \citep{datasheet_CS5490}.
+
+En el contexto del presente trabajo el proceso de calibración no se incluyó. Los valores de calibración se calcularon y luego se ajustaron manualmente. En la Sección \ref{sec:trabajo_futuro} se propondrá una posible forma de implementar la etapa de calibración en el proceso de fabricación del producto final.
+\end{itemize}
+
+La comunicación con el CS5490 se realiza a través de una UART y tanto la recepción como la transmisión se realizan a través de la interrupción de este periférico. Además se utiliza otra interrupción, encargada de detectar los pulsos generados por el CS5490 apra indicar la energía consumida.
+Es una tarea periódica.
+
+\item moduleLog. Es la tarea encargada de enviar información de la actividad de la aplicación a través de mensajes por una UART. Otras tareas le envían mensajes que debe sacar por la UART, incluyendo la fecha y la hora en la que se produjo el mensaje. Esto tuvo una especial importancia al momento de desarrollar el firmware para conocer los eventos que se estaban produciendo. Los mensajes son enviados a una velocidad de 115200 baudios y se debe conectar un adaptador TTL-USB en la tira de pines destina a la UART en el PCB (llamada DEBUG en el esquemático).
+
+\end{itemize}
+
+
+\begin{table}[h]
+	\centering
+	\caption[Señalizaciones]{Señalizaciones del Smart Plug a través del led bicolor.}
+	\begin{tabular}{c c c c c}    
+		\toprule
+		\textbf{Señalización} 	 & \textbf{Modo AP}  & \textbf{Modo WPS}  & \textbf{Autenticado}  & \textbf{RTC Sincronizado} \\
+		\midrule
+		Verde destella a 2Hz	 	& 1  & X  & X  & X \\		
+		Verde destella a 1Hz	 	& 0  & 1  & X  & X \\
+		Rojo destella a 1Hz	 		& 0  & 0  & 0  & X \\
+		Verde y rojo destellan	 	& 0  & 0  & 1  & 0 \\
+		Verde encendido	 			& 0  & 0  & 1  & 1 \\
+		\bottomrule
+		\hline
+	\end{tabular}
+	\label{tab:senializacion_leds}
+\end{table}
+
 
 \subsection{Capas de abstracción}
+
+Para lograr una mayor abstracción del hardware, se decidió implementar el firmware dividiéndolo en capas como se muestra en la Figura \ref{fig:firmware_diagrama_capas}.
 
 \begin{figure}[h]
 	\centering
@@ -176,8 +262,26 @@ Al momento de comenzar con el proyecto y elegir los componentes, este módulo re
 	\label{fig:firmware_diagrama_capas}
 \end{figure}
 
+A continuación se realiza una breve descripción de cada una de las capas:
+
+\begin{itemize}
+\item Aplicación. Consiste en el firmware propio del equipo, que utiliza al sistema operativo para implementar la lógica del Smart Plug..
+\item Sistema operativo. Consiste en las librerías de FreeOSEK. Como se utilizó un microcontrolador LPC1763 se utilizó la implementación de FreeOSEK para el LPC1769 realizada por Pablo Ridolfi en \citep{repo_ridolfi_freeosek}.
+\item Drivers. Dentro de los drivers se encuentras las bibliotecas particulares para controlar tanto los periféricos internos del microcontrolador como los dispositivos externos. La capa de abstracción de hardware, también conocida como HAL (por sus siglas en inglés, Hardware Abstraction Layer), busca generar un nivel más de abstracción entre los drivers de alto nivel y las bibliotecas del fabricante del microcontrolador, lo cual permite, que ante un cambio en el microcontrolador, solamente se deba cambiar la capa HAL.
+
+Para implementar los controladores se utilizó un enfoque orientado a objetos para ordenar las distintas "clases".  Una explicación detallada de este proceso se encuentra en la Subsección \ref{subsec:orientado_a_objetos}.
+\item Bibliotecas del fabricante. Son las bibliotecas provistas por NXP para acceder a los periféricos internos del microcontrolador.
+\item Hardware. Componentes del Smart Plug.
+\end{itemize}
 
 \subsection{Metodología orientada a objetos}
+\label{subsec:orientado_a_objetos}
+
+Para implementar los drivers, tanto de los periféricos internos del microcontrolador como de los módulos externos, se decidió implementar una metodología orientada a objetos, a pesar de estar programando en C. La forma de estructurar el código y cada una de las clases surgió a partir de lo explicado por Alex Schreiner en su libro \textit{Object-Oriented Programming With ANSI-C } \citep{schreiner1993}.
+
+Mediante esta forma de programar los drivers se lograron implementar los conceptos de encapsulamiento, polimorfismo y herencia propios de un lenguaje orientado a objetos.
+
+Las clases que se implementaron para este proyecto se pueden ver en el diagrama de clases de la Figura \ref{fig:firmware_diagrama_clases}.
 
 \begin{figure}[h]
 	\centering
@@ -186,13 +290,14 @@ Al momento de comenzar con el proyecto y elegir los componentes, este módulo re
 	\label{fig:firmware_diagrama_clases}
 \end{figure}
 
+La idea general detrás de esta forma para programar módulos de firmware se puede ver en la Figura .
 
 \subsection{Protocolo de comunicación}
 \label{subsection:protocolo}
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=12cm]{./Figures/3_2_4_formato_trama.png}
+	\includegraphics[width=13cm]{./Figures/3_2_4_formato_trama.png}
 	\caption{Formato de la trama.}
 	\label{fig:formato_trama}
 \end{figure}
