@@ -227,7 +227,7 @@ Es una tarea periódica.
 
 \begin{table}[h]
 	\centering
-	\caption[Señalizaciones]{Señalizaciones del Smart Plug a través del led bicolor.}
+	\caption[Señalizaciones del Smart Plug]{Señalizaciones del Smart Plug a través del led bicolor.}
 	\begin{tabular}{c c c c c}    
 		\toprule
 		\textbf{Señalización} 	 & \textbf{Modo AP}  & \textbf{Modo WPS}  & \textbf{Autenticado}  & \textbf{RTC Sincronizado} \\
@@ -371,7 +371,7 @@ Cada trama va a comenzar y a terminar con los caracteres \textit{\#!}, lo cual f
 
 \begin{table}[h]
 	\centering
-	\caption[Comandos]{Comandos disponibles en el protocolo.}
+	\caption[Comandos disponibles en el protocolo]{Comandos disponibles en el protocolo.}
 	\begin{tabular}{c c p{6cm}}    
 		\toprule
 		\textbf{Comando} 	 & \textbf{Descipción}  & \textbf{Notas} \\
@@ -394,7 +394,7 @@ Cada trama va a comenzar y a terminar con los caracteres \textit{\#!}, lo cual f
 
 \begin{table}[h]
 	\centering
-	\caption[Registros]{Resumen de los registros disponibles en el protocolo.}
+	\caption[Resumen de los registros disponibles en el protocolo]{Resumen de los registros disponibles en el protocolo.}
 	\begin{tabular}{c p{5cm} p{6cm}}    
 		\toprule
 		\textbf{Comando} 	 & \textbf{Descripción}  & \textbf{Notas} \\
@@ -471,12 +471,13 @@ La tarea taskWiFi al recibir estos comandos genera un evento y la tarea taskSmar
 \label{section:app}
 
 \subsection{Maqueta de la aplicación}
+\label{subsec:app_wireframe}
 
 Antes de comenzar con el diseño de la lógica de la aplicación, fue necesario determinar la forma en la que se iban a presentar los datos al usuario. Para esto se recurrió al uso de una maqueta, en la cual se muestran las pantallas de las que estará compuesta la aplicación y la interacción que hay entre ellas. Cada una de las pantallas presenta el aspecto que realmente debe tener en la aplicación pero no describe la forma en que se debe implementar la lógica de la aplicación.
 
 En la Figura \ref{fig:app_wireframe} puede verse la maqueta completa de la aplicación. La líneas rojas muestran la interacción entre las pantallas y las violetas son comentarios que clarifican el funcionamiento de la pantalla.
 
-\begin{figure}[h]
+\begin{figure}[!h]
 	\centering
 	\includegraphics[width=18cm, angle=90]{./Figures/3_3_1_app_wireframe.png}
 	\caption{Maqueta de la aplicación móvil.}
@@ -539,12 +540,93 @@ Si en cambio de desea deshabilitar esta opción para un día de la semana, se de
 \subsection{Arquitectura de la aplicación}
 \label{subsec:arquitectura_app}
 
+La estructura general de la aplicación móvil puede verse en la Figura \ref{fig:app_arquitectura}. A continuación se describirán los elementos principales que la componen y la interacción entre ellos.
+
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=14cm]{./Figures/3_3_2_app-arquitectura.pdf}
+	\includegraphics[width=15cm]{./Figures/3_3_2_app-arquitectura.pdf}
 	\caption{Relación entre las clases desarrolladas para la aplicación móvil.}
 	\label{fig:app_arquitectura}
 \end{figure}
 
+\begin{itemize}
+\item EventBus. La forma que se eligió para comunicar todos los elementos de la aplicación es un bus de eventos. Para esto se utilizó unalibrería llamada EventBus, desarrollada por la empresa Green Robot \citep{eventbus_web}. Esta librería consiste en un esquema de suscripción a un bus en el que cualquier clase puede publicar un evento, el cual va a ser recibido por todas las clases que se hayan suscrito al mismo. Además esta librería se encarga de la comunicación entre clases que se encuentran en distintos threads.
 
+Los eventos no son más que objetos de java que contienen información de interés para la clase que los recibe. En el caso concreto de la aplicación, se crearon varios eventos, los cuales pueden verse en la Figura \ref{fig:app_arquitectura} representados mediante un número al lado de las flechas que unen las clases al bus de eventos común. Estos eventos son:
+
+
+\begin{enumerate}
+\item HeartbeatEven: este evento se genera cada vez que el servidor UDP recibe un mensaje periódico de uno de los Smart Plugs. Con este mensaje se logra mantener actualizada la información del Smart Plug, especialmente la IP que le fue asignada por el DHCP dentro de la red WiFi.
+\item ResponseEvent: contiene la respuesta recibida por el cliente TCP de la aplicación a un comando enviado a un Smart Plug.
+\item CommandEvent: contiene los elementos de una trama que se tiene que enviar a un determinado Smart Plug. Cualquier componente de la aplicación que quiera enviar un mensaje a un Smart Plug debe enviar una instancia de este evento al EventBus.
+\item UpdateSmartPlugEvent: este evento se genera cada vez que se recibe nueva información de un Smart Plug. De esta forma, los fragmentos que están suscritos a este evento actualizan la información mostrada si el Smart Plug que se actualizó coincide con el que se está mostrando. 
+
+Por ejemplo cuando se enciende la carga de un Smart Plug desde la lista de Plugs, este evento permite que la transparencia del ícono del Plug cambie al recibir la confirmación de que la carga fue encendida. Si no estuviera este evento el ícono se actualizaría cuando se regenerara la vista del fragmento.
+\item AllmessagesSent: se genera cuando el cliente TCP de la aplicación no tiene más mensajes que enviar en la lista de mensajes pendientes. Se utiliza para que la aplicación libere ciertos recursos que retiene mientras se están enviando los mensajes.
+\item TcpTimeout: se genera cuando se produce un timeout esperando la respuesta a un comando, o cuando se produce otro error en la comunicación. Cada uno de estos errores y timeouts se van sumando en un contador asociado a cada Smart Plug y cuando se superan los 5 eventos, se indica que existe un problema en la comunicación con el Plug.
+\item WiFiStateEvent: se genera cada vez que cambia el estado de la conexión del teléfono a la red WiFi. Esto le sirve a la aplicación para conocer si está conectado a la red WiFi o no. En caso de no estarlo, no se intentan enviar mensajes a los Plugs ya que no se los va a poder alcanzar.
+\end{enumerate}
+
+\item Servicio. Cuando se inicia la aplicación por primera vez inicia una instancia de la clase SmartPlugService que hereda a la clase Service de Android. Un servicio permite implementar una parte de la lógica que se debe ejecutar por un tiempo prolongado de tiempo en un thread distinto del thread principal de la aplicación. Además, como fue configurado en el caso de esta aplicación, este servicio se mantiene ejecutándose aún cuando la aplicación se encuentra cerrada.
+
+Dentro del servicio se implementa la lógica para la consulta periódica de los Smart Plugs que identificó la aplicación. Cada 10 minutos, el servicio se ejecutará y realizará una serie de consultas a todos los Smart Plugs que conozca, preguntando el últimos valor de las mediciones, algunos parámetros de configuración para ver si fueron cambiados por otra aplicción y el estado de la carga, para ver si fue conmutada por otra aplicación.
+
+Además, cada 1 hora aproximadamente, el servicio le pedirá a todos los Smart Plugs las mediciones históricas del día para conocer los valores de potencia activa y energía consumida por hora de la última hora.
+
+Toda la información que es recibida desde los Smart Plugs es volcada a una base de datos propia de la aplicación (smartPlug.db) la cual va a ser consultada por todos los otros elementos de la aplicación cuando necesiten conocer la última información de un Smart Plug. El acceso a la base de datos se realiza a través de la clase llama SmartPlugProvider.
+
+La ejecución periódica de este servicio se logra configurando una alarma mediante el AlarmManager de Android que se ejecute cada 10 minutos. A las 6 veces que se ejecute esta alarma se considerará que pasó una hora y se harán las consultas correspondientes a los Plugs.
+
+
+\item TcpWatcher y TcpClient. Estas clases se ocupan de establecer la comunicación TCP con los distintos Smart Plugs. La clase TcpWatcher se suscribe a los eventos de tipo CommandEvent y cada vez que recibe uno lo coloca dentro de una lista, la cual va leyendo para determinar las tramas que debe enviar. La comunicación propiamente dicha está implementada en la clase TcpClient, la cual gestiona la conexión y los posibles errores que se pueden producir. 
+
+Para armar las tramas de acuerdo a lo establecido por el protocolo desarrollado en este trabajo, la clase TcpWatcher utiliza los métodos de la clase SmartPlugCommHelper que se encarga de encapsular los formatos de las tramas de acuerdo al comando y registro que se está manipulando.
+
+Si se recibe una respuesta del Smart Plug, la clase TcpWatcher generará un evento del tipo ResponseEvent. En caso de que se produzca un error, generará un evento del tipo TcpTimeout. Cuando termine de enviar todos los mensajes que tenía pendiente generará el mensaje AllmessagesSent.
+
+\item UdpWatcher y UdpServer. Este par de clases se ocupa de escuchar los mensajes periódicos que son enviados a la dirección de broadcast de la red por parte de los Smart Plugs. Los mensajes periódicos son enviados al puerto UDP 55555. Cada vez que UdpServer (que es la clase que implementa concretamente el servidor UDP) recibe un nuevo datagrama UDP, se lo comunica a la clase UdpWatcher.
+
+La clase UdpWatcher parsea el datagrama con la ayuda de la clase SmartPlugCommHelper y determina de qué Smart Plug provino. Con esta información genera un evento del tipo HeartbeatEvent. Dentro del datagrama UDP se encuentra el ID único que identifica a cada Smart Plug, el cual se va a tulizar dentro de la aplicación para identificar unívocamente a un Plug.
+
+\item SmartPlugProvider. Es la clase encargada de acceder a la base de datos de la aplicación (smartPlug.db) en donde está contenida la información de los Smart Plugs encontrados. Esta base de datos está compuesta por 4 tablas, las cuales pueden verse en la Figura \ref{fig:app_sqlite}. A continuación se da una breve descripción de cada tabla:
+
+\begin{itemize}
+\item StaticInfo. Continene la información básica del Smart Plug, como es su nombre y el ícono que tiene asociado. Todas las entradas de las tablas van a estar asociadas al número de ID único del Smart Plug el cual es recibido en cada mensaje UDP que envía el Plug.
+\item OnOffTimes. Contiene los horarios de encendido y apagado para cada día de la semana así como también una variable que indica qué días están habilitados.
+\item Measurements. Contiene las mediciones históricas recibidas desde cada Smart Plug. En cada entrada de la tabla se guarda la fecha a la que corresponden las mediciones y las 24 mediciones de ese día, al igual que el tipo de medición (potencia activa o energía consumida).
+\item InstantaneousInfo. Contiene información variable de cada Smart Plug. Es información incluye: la última IP en la que se encontró al Smart Plug, la última fecha y hora de comunicación, el estado de la carga, las últimas mediciones instantáneas, la cantidad de timeouts que se produjeron en la comunicación y el estado de la comunicación.
+\end{itemize}
+
+Toda clase que desee acceder a la base de datos, debe hacerlo a través de la clase SmartPlugProvider ya que implementa toda la lógica relacionada con la manipulación de la base de datos.
+
+\item WiFiStateChangeReceiver. Es una clase que extiende a BroadcastReceiver y se encarga de recibir los intents de Android relacionados con los cambios en la conectividad. De esta forma determina si el teléfono se encuentra conectado a la red WiFi o no. En caso de no estar conectado los mensajes a los Smart Plugs no se envían.
+
+\end{itemize}
+
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=13cm]{./Figures/3_3_2_tablas_sqlite.png}
+	\caption{Tablas que componen la base de datos de la aplicación.}
+	\label{fig:app_sqlite}
+\end{figure}
+
+La lógica asociada a cada una de las pantallas mostradas en la maqueta en la Subsección \ref{subsec:app_wireframe} se implementaron mediante fragments, para flexibilizar el diseño de la interfaz gráfica. La relación entre las pantallas de la Figura \ref{fig:app_wireframe} y los nombres de los fragmentos es la siguiente:
+
+\begin{enumerate}
+\item Pantalla 1: SplashScreenFragment.
+\item Pantalla 2: SmartPlugListFragment.
+\item Pantalla 3: SmartPlugDetailsFragment.
+\item Pantalla 4: SmartPlugDetailsFragment.
+\item Pantalla 5: AskingDialog.
+\item Pantalla 6: AskingDialog.
+\item Pantalla 7: AskingDialog.
+\item Pantalla 8: HistorySelectionFragment.
+\item Pantalla 9: HistoryPlotFragment.
+\item Pantalla 10: ConfigurationFragment.
+\item Pantalla 11: IconPickerFragment.
+\item Pantalla 12: TimePickerDialog.
+\end{enumerate}
+
+La lógica de alto nivel que implementa cada fragment fue explicada en la Subsección \ref{subsec:app_wireframe}. El código fuente de la aplicación puede encontrarse en \citep{repo_app}.
 
