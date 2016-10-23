@@ -142,14 +142,7 @@ Para funcionar, la bobina del relay requiere de una tensión de 5V y los contact
 
 \subsubsection{Módulo WiFi}
 
-En la Figura \ref{fig:pcb_wifi} se muestra el esquemático asociado al módulo WiFi. El módulo elegido es el RN1723, el cual prácticamente no requiere de componentes adicionales y se comunica con el microcontrolador mediante una UART.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=12cm]{./Figures/3_1_2_pcb_wifi.png}
-	\caption{Esquemático del módulo WiFi.}
-	\label{fig:pcb_wifi}
-\end{figure}
+El módulo elegido es el RN1723, el cual prácticamente no requiere de componentes adicionales y se comunica con el microcontrolador mediante una UART.
 
 Para la antena del módulo se eligió una antena impresa en el PCB de acuerdo a las especificaciones de la hoja de datos del módulo.
 
@@ -290,7 +283,68 @@ Las clases que se implementaron para este proyecto se pueden ver en el diagrama 
 	\label{fig:firmware_diagrama_clases}
 \end{figure}
 
-La idea general detrás de esta forma para programar módulos de firmware se puede ver en la Figura .
+La idea general detrás de esta forma para programar módulos de firmware se puede ver en la Figura \ref{fig:firmware_diagrama_interfaces}. Todas las clases implementadas en este trabajo parten de la interfaz \textit{cObject}. Se la llama interfaz y no clase, ya que su comportamiento es similar a las interfaces de Java: \textit{cObject} no implementa la lógica de sus métodos, sino que simplemente declara los prototipos de las funciones (esto se implementa mediante punteros a funciones). Las clases que implementen la interfaz cObject deberán implementar la algoritmia para cada uno de los métodos contenidos en la interfaz \textit{cObject}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=9cm]{./Figures/3_2_3_c_orientado_objetos.png}
+	\caption{Creación de interfaces y objetos en C.}
+	\label{fig:firmware_diagrama_interfaces}
+\end{figure}
+
+Este comportamiento puede verse en la parte superior de la Figura \ref{fig:firmware_diagrama_interfaces}: \textit{objeto1} es una clase que implementa la  interfaz \textit{cObject}. Esta interfaz contiene los métodos básicos necesarios para cualquier otra clase: un constructor, un destructor, una función para crear una copia de un objeto, una función para determinar si dos objetos son iguales y una para mostrar el contenido del objeto de forma comprensible para un humano. Además contiene un campo \textit{size} el cual indica la cantidad de bytes que ocupa una instancia de la clase en memoria RAM.
+
+Por lo tanto \textit{objeto1} debe implementar la lógica de todos los métodos incluidos en \textit{cObject}. Además de implementar la algoritmia, \textit{objeto1} puede contener variables que van a ser propias de cada instancia. En la figura estas serían var1, var2 y var3. Por otro lado, \textit{objeto1} puede declarar funciones que solamente puedan ser utilizadas sobre instancias de la clase \textit{objeto1}.
+
+Finalmente \textit{ptr1} es un puntero a la instancia de \textit{objeto1}. El tipo de variable de \textit{ptr1} es \textit{void*}, es decir que la implementación de la clase queda totalmente encapsulada, ya que la aplicación instancie a \textit{objeto1} no conocerá su estructura interna.
+
+Con esta metodología también es posible implementar la herencia tanto de interfaces como de clases. En la parte inferior de la Figura \ref{fig:firmware_diagrama_interfaces} puede verse un ejemplo de herencia de interfaces. En este caso, la \textit{interfazB} hereda a la interfaz \textit{cObject}, agregando 3 métodos a los ya definidos por \textit{cObject}. Por lo tanto, la clase que implementa la \textit{interfazB} debe implementar todos los métodos, tanto los definidos por \textit{cObject} como los de \textit{interfazB}. En el ejemplo esta clase es \textit{objeto2}, la cual además define 3 variables. Nuevamente \textit{ptr2} es un puntero a \textit{void} el cual apunta al área de memoria donde fue creada la instancia de \textit{objeto2}.
+
+Como puede suponerse esta forma de trabajo requiere además implementar alguna forma de asignación dinámica de memoria. Para este trabajo se decidió implementar un pool de memoria implementado mediante un arreglo de bytes, el cual contiene una sencilla lógica que permite asignar, liberar y unir segmentos continuos (para reducir la fragmentación) del pool de memoria. 
+
+Esta librería es una modificación de la descripta en \citep{an_microchip_malloc}, en la que delante de cada segmento asignado de memoria se coloca un encabezado de dos bytes que indica si está asignado el bloque de memoria o no y la longitud del bloque. El código fuente puede encontrarse dentro de la carpeta \textit{memAlloc} en \citep{repo_firmware}.
+
+Se debe aclarar que esta forma de trabajo no contradice la naturaleza estática del RTOS FreeOSEK. Como condición en la implementación del firmware se estableció que la creación y destrucción de los objetos únicamente se pudiera hacer en el comienzo de la aplicación. De esta forma, cuando el RTOS se encuentra funcionando no se producen más asignaciones dinámicas de memoria y el sistema se comporta como si fuera estático.
+
+En cuanto a las clases desarrolladas se puede mencionar lo siguiente:
+
+\begin{itemize}
+\item \textit{ioObject} es una interfaz que hereda a \textit{cObject} y agrega los métodos básicos necesarios para cualquier periférico de entrada/salida: inicialización, habilitación/deshabilitación y escritura/lectura.
+
+\item \textit{ioGPIO} es una clase que implementa a la interfaz \textit{ioObject} y que sirve como base para las clases que describen tipos más específicos de GPIOs, como por ejemplo pines digitales a través de la clase \textit{ioDigital}.
+
+\item \textit{ioDigital} es una clase que herada a \textit{ioGPIO} e implementa la lógica para manejar los GPIO del microcontrolador LPC176x como pines digitales, tanto entradas como salidas.
+
+\item \textit{ioRTC} es una interfaz que hereda a \textit{ioObject} y los métodos básicos necesarios para manejar relojes de tiempo real, tanto internos al microcontrolador, como externos: reset del reloj, lectura y escritura de la hora y fecha.
+
+\item \textit{ioInternalRTC} es una clase que implementa la interfaz \textit{ioRTC} y permite configurar y consultar el RTC interno del microcontrolador LPC176x.
+
+\item \textit{ioComm} es una interfaz que hereda a \textit{ioObject} y agrega los métodos básicos para las clases que modelen periféricos de comunicación: lectura y escritura de cadenas de bytes, determinación de espacio disponible en buffers, habilitación/deshabilitación/consulta de interrupciones.
+
+\item \textit{ioUART} es una clase que implementa la interfaz \textit{ioComm} y que permite manejar las UARTs del microcontrolador LPC176x y las interrupciones relacionadas con estos periféricos. Además agrega el manejo de buffers de recepción y transmisión. La comunicación se puede implementar tanto de forma bloqueante como mediante interrupciones.
+
+\item \textit{ioSPI} es una clase que implementa la interfaz \textit{ioComm} y que permite manejar los SPI del microcontrolador LPC176x. La comunicación es siempre bloqueante.
+
+\item \textit{ioRN1723} es una clase que implementa la interfaz \textit{ioComm} y que permite manejar un módulo WiFi RN1723. Implementa la lógica para poder configurar el módulo, iniciar el modo WPS y AP y manejo de conexiones TCP. Esta clase requiere de otras clases para poder funcionar: \textit{ioUART} para implementar la comunicación con el módulo, \textit{ioDigital} para manejar los pines de reset y algunos GPIO del módulo, \textit{cQueue} para implementar los buffers de recepción y transmisión, \textit{cTimer} para determinar eventos de timeout con el módulo y con las conexiones TCP.
+
+\item \textit{cBuffer} es una interfaz que herada a \textit{cObject} y agrega los métodos necesarios para las clases que modelen contenedores de datos: agregado y borrado de elementos, consulta de elementos, consulta de espacio libre, limpieza del contenedor, etc.
+
+\item \textit{cStaticBuffer} es una clase que implementa la interfaz \textit{cBuffer} y que sirve como base para todas las clases que implementen contenedores de tamaño fijo.
+
+\item \textit{cQueue} es una clase que herera a \textit{cStaticBuffer} e implementa la lógica de una cola, es decir un contenedor de tipo FIFO (First In First Out, primero entra primero sale). Puede contener objetos de cualquier cantidad de bytes pero deben ser todos del mismo tipo.
+
+\item \textit{ioCS5490} es una clase que implementa la interfaz \textit{cObject} que permite manejar el front-end analógico CS5490. Implementa la lógica para poder leer/escribir registros y contiene las variables necesarias para obtener las mediciones eléctricas. Esta clase depende de otras para poder funcionar: \textit{ioUART} para implementar la comunicación con el módulo y \textit{ioDigital} para los pines de reset y de pulsos de energía consumida.
+
+\item \textit{io25LCxxx} es una clase que implementa la interfaz \textit{cObject} que permite manejar memorias EEPROM de la línea 25LC fabricadas por Microchip. Una instancia de esta clase puede ser configurada para escribir/leer/borrar datos de memorias de distintas capacidades, desde 32kbit  hasta 1Mbit. Esta clase depende de \textit{ioSPI} para implementar la comunicación con la memoria externa.
+
+\item \textit{ioDebounce} es una clase que implementa la interfaz \textit{cObject} y permite ejecutar la lógica de un anti-rebote sobre una instancia de la clase \textit{ioDigital}.
+
+\item \textit{ioTimer} es una clase que implementa la interfaz \textit{cObject} y permite implementar timers sencillos y detectar cuando vencen mediante polling. La base de tiempo debe ser establecida por el usuario de la clase \textit{ioTimer}.
+
+\end{itemize}
+
+El código fuente de todas las interfaces y clases puede encontrarse en la carpeta \textit{cObject} en \citep{repo_firmware}. Dentro de esta carpeta también puede encontrarse un diagrama de clases completo (\textit{class\_diag\_cObject.dia}) con los métodos y variables que define cada clase e interfaz.
+
 
 \subsection{Protocolo de comunicación}
 \label{subsection:protocolo}
