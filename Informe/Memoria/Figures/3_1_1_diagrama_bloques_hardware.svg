@@ -14,8 +14,8 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="diagrama_bloques_hardware.svg"
-   inkscape:export-filename="/home/ragnarok/Dropbox/Cursos LSE/TP Final/Memoria/Imagenes/Capitulo 3/3-1-1/diagrama_bloques_hardware.png"
+   sodipodi:docname="3_1_1_diagrama_bloques_hardware.svg"
+   inkscape:export-filename="/home/ragnarok/Documentos/repositories/SmartPlug/Informe/Memoria/Figures/3_1_1_diagrama_bloques_hardware.png"
    inkscape:export-xdpi="300"
    inkscape:export-ydpi="300">
   <defs
@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.98994949"
-     inkscape:cx="260.54306"
-     inkscape:cy="847.22303"
+     inkscape:zoom="1.4"
+     inkscape:cx="351.17504"
+     inkscape:cy="776.97742"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -57,13 +57,15 @@
      inkscape:groupmode="layer"
      id="layer1">
     <rect
-       style="fill:#ffffff;stroke:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       style="fill:#ffffff;stroke:none"
        id="rect4328"
-       width="526.28949"
+       width="559.8609"
        height="426.28436"
        x="10.101525"
        y="24.026892"
-       ry="3.6373866" />
+       ry="3.6373866"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
     <g
        id="g3767"
        transform="matrix(0.68574303,0,0,0.68574303,126.4538,72.237361)">
@@ -400,6 +402,66 @@
        style="fill:none;stroke:#ff0000;stroke-width:1.98746979;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none"
        d="m 284.87867,109.90549 78.25553,0 0,127.75302"
        id="path4326"
+       inkscape:connector-curvature="0" />
+    <g
+       id="g4246-2"
+       transform="matrix(0.63151706,0,0,0.63151706,313.33731,60.09591)">
+      <rect
+         ry="4.8667049"
+         y="242.21297"
+         x="271.15067"
+         height="72.447998"
+         width="117.84996"
+         id="rect2989-3-0-0"
+         style="fill:#ffaaaa;fill-opacity:1;stroke:#000000;stroke-width:0.7015627;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3759-83-0-5"
+         y="273.71295"
+         x="329.84143"
+         style="font-size:18.10063744px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         xml:space="preserve"><tspan
+           id="tspan4244-1"
+           y="273.71295"
+           x="329.84143"
+           sodipodi:role="line">LED</tspan><tspan
+           y="296.33875"
+           x="329.84143"
+           sodipodi:role="line"
+           id="tspan3081">BICOLOR</tspan></text>
+    </g>
+    <g
+       id="g4246-2-0"
+       transform="matrix(0.63151706,0,0,0.63151706,313.69446,134.16734)">
+      <rect
+         ry="3.1662629"
+         y="246.66727"
+         x="271.08298"
+         height="47.134438"
+         width="117.98531"
+         id="rect2989-3-0-0-7"
+         style="fill:#ffccaa;fill-opacity:1;stroke:#000000;stroke-width:0.5662024;stroke-opacity:1" />
+      <text
+         sodipodi:linespacing="125%"
+         id="text3759-83-0-5-0"
+         y="276.82336"
+         x="329.84143"
+         style="font-size:18.10063744px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         xml:space="preserve"><tspan
+           y="276.82336"
+           x="329.84143"
+           sodipodi:role="line"
+           id="tspan3081-0">PULSADOR</tspan></text>
+    </g>
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 435.71429,263.43361 21.07143,0 0,-27.14286 27.14285,0"
+       id="path3151"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 435.39756,278.17048 21.07143,0 0,27.14286 27.14285,0"
+       id="path3151-5"
        inkscape:connector-curvature="0" />
   </g>
 </svg>
