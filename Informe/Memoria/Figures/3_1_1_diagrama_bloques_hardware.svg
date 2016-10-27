@@ -16,8 +16,8 @@
    inkscape:version="0.48.4 r9939"
    sodipodi:docname="3_1_1_diagrama_bloques_hardware.svg"
    inkscape:export-filename="/home/ragnarok/Documentos/repositories/SmartPlug/Informe/Memoria/Figures/3_1_1_diagrama_bloques_hardware.png"
-   inkscape:export-xdpi="300"
-   inkscape:export-ydpi="300">
+   inkscape:export-xdpi="200"
+   inkscape:export-ydpi="200">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -28,7 +28,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="351.17504"
+     inkscape:cx="217.96075"
      inkscape:cy="776.97742"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -64,8 +64,8 @@
        x="10.101525"
        y="24.026892"
        ry="3.6373866"
-       inkscape:export-xdpi="300"
-       inkscape:export-ydpi="300" />
+       inkscape:export-xdpi="200"
+       inkscape:export-ydpi="200" />
     <g
        id="g3767"
        transform="matrix(0.68574303,0,0,0.68574303,126.4538,72.237361)">
@@ -80,22 +80,22 @@
       <text
          sodipodi:linespacing="125%"
          id="text3759"
-         y="275.0498"
-         x="280.56985"
-         style="font-size:13px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
+         y="281.9245"
+         x="276.40335"
+         style="font-size:17.49926567px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
          xml:space="preserve"><tspan
-           y="275.0498"
-           x="280.56985"
+           y="281.9245"
+           x="276.40335"
            id="tspan3761"
-           sodipodi:role="line">MICROCONTROLADOR</tspan></text>
+           sodipodi:role="line">Microcontrolador</tspan></text>
       <text
          sodipodi:linespacing="125%"
          id="text3763"
-         y="319.39148"
+         y="316.47495"
          x="307.75983"
          style="font-size:21.75014114px;font-style:normal;font-weight:bold;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
          xml:space="preserve"><tspan
-           y="319.39148"
+           y="316.47495"
            x="307.75983"
            id="tspan3765"
            sodipodi:role="line">LPC1763</tspan></text>
@@ -112,37 +112,46 @@
        inkscape:connector-curvature="0" />
     <g
        id="g3767-8"
-       transform="matrix(0.68574303,0,0,0.68574303,-98.281274,17.854547)">
+       transform="matrix(0.68574303,0,0,0.68574303,-98.281274,15.854547)">
       <g
-         id="g3849">
+         id="g3849"
+         transform="translate(-2.9165444,0)">
         <rect
-           style="fill:#ffeeaa;fill-opacity:1;stroke:#000000;stroke-width:0.94248306999999998;stroke-opacity:1"
+           style="fill:#ffeeaa;fill-opacity:1;stroke:#000000;stroke-width:0.94248307;stroke-opacity:1"
            id="rect2989-2"
            width="147.8161"
            height="104.24334"
-           x="278.11652"
-           y="241.56346"
+           x="279.56174"
+           y="245.26083"
            ry="7.0025611" />
         <text
            transform="scale(0.90315398,1.1072309)"
            xml:space="preserve"
            style="font-size:11.74100208px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
-           x="390.17664"
-           y="255.93265"
+           x="391.32996"
+           y="240.88072"
            id="text3759-8"
            sodipodi:linespacing="125%"><tspan
-             sodipodi:role="line"
-             id="tspan3761-8"
-             x="390.17664"
-             y="255.93265">ADAPTACIÓN SEÑALES</tspan><tspan
-             id="tspan3845"
-             sodipodi:role="line"
-             x="390.17664"
-             y="270.60892">CORRIENTE</tspan><tspan
              id="tspan3847"
              sodipodi:role="line"
-             x="390.17664"
-             y="285.28516">TENSIÓN</tspan></text>
+             x="391.32996"
+             y="240.88072"
+             style="font-size:17.49926567px">Adaptación</tspan><tspan
+             sodipodi:role="line"
+             x="391.32996"
+             y="262.75479"
+             style="font-size:17.49926567px"
+             id="tspan3841">señales de</tspan><tspan
+             sodipodi:role="line"
+             x="391.32996"
+             y="284.62888"
+             style="font-size:17.49926567px"
+             id="tspan3843">corriente</tspan><tspan
+             sodipodi:role="line"
+             x="391.32996"
+             y="306.50296"
+             style="font-size:17.49926567px"
+             id="tspan3845">y tensión</tspan></text>
       </g>
     </g>
     <path
@@ -205,17 +214,19 @@
            xml:space="preserve"
            style="font-size:18.10063744px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
            x="329.84143"
-           y="273.71295"
+           y="270.54596"
            id="text3759-83"
            sodipodi:linespacing="125%"><tspan
-             sodipodi:role="line"
-             id="tspan3761-3"
-             x="332.98782"
-             y="273.71295">CONTROL </tspan><tspan
              id="tspan4023"
              sodipodi:role="line"
              x="329.84143"
-             y="296.33875">CARGA</tspan></text>
+             y="270.54596"
+             style="font-size:22.1688385px">Control</tspan><tspan
+             sodipodi:role="line"
+             x="329.84143"
+             y="298.25702"
+             id="tspan3854"
+             style="font-size:22.1688385px">carga</tspan></text>
       </g>
     </g>
     <path
@@ -252,22 +263,20 @@
           <text
              sodipodi:linespacing="125%"
              id="text3759-83-7"
-             y="261.27127"
+             y="270.77225"
              x="331.53802"
              style="font-size:18.10063744px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
              xml:space="preserve"><tspan
-               y="261.27127"
-               x="331.53802"
-               id="tspan3761-3-7"
-               sodipodi:role="line">FUENTE</tspan><tspan
-               y="283.89706"
+               y="270.77225"
                x="331.53802"
                sodipodi:role="line"
-               id="tspan4023-7">DE</tspan><tspan
+               id="tspan4023-7"
+               style="font-size:20.58535057px">Fuente de</tspan><tspan
                id="tspan4118"
-               y="306.52286"
+               y="293.39804"
                x="331.53802"
-               sodipodi:role="line">ALIMENTACIÓN</tspan></text>
+               sodipodi:role="line"
+               style="font-size:20.58535057px">alimentación</tspan></text>
         </g>
       </g>
     </g>
@@ -296,26 +305,29 @@
              height="87.574326"
              width="117.78042"
              id="rect2989-3-9"
-             style="fill:#afe9af;fill-opacity:1;stroke:#000000;stroke-width:0.77110498999999999;stroke-opacity:1" />
+             style="fill:#afe9af;fill-opacity:1;stroke:#000000;stroke-width:0.77110499;stroke-opacity:1" />
           <text
              sodipodi:linespacing="125%"
              id="text3759-83-3"
-             y="273.71295"
+             y="267.37897"
              x="329.84143"
              style="font-size:18.10063744px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
              xml:space="preserve"><tspan
-               y="273.71295"
+               y="267.37897"
                x="329.84143"
                sodipodi:role="line"
-               id="tspan4023-3">MÓDULO</tspan><tspan
+               id="tspan4023-3"
+               style="font-size:22.1688385px">Módulo</tspan><tspan
                id="tspan4198"
-               y="296.33875"
+               y="295.09003"
                x="329.84143"
-               sodipodi:role="line">WIFI</tspan><tspan
+               sodipodi:role="line"
+               style="font-size:22.1688385px">WiFi</tspan><tspan
                id="tspan4200"
-               y="318.96454"
+               y="322.80106"
                x="329.84143"
-               sodipodi:role="line">RN1723</tspan></text>
+               sodipodi:role="line"
+               style="font-size:22.1688385px">RN1723</tspan></text>
         </g>
       </g>
     </g>
@@ -340,11 +352,13 @@
            y="273.71295"
            x="329.84143"
            sodipodi:role="line"
-           id="tspan4023-4">EEPROM</tspan><tspan
+           id="tspan4023-4"
+           style="font-size:22.16883895px">EEPROM</tspan><tspan
            id="tspan4244"
            y="296.33875"
            x="329.84143"
-           sodipodi:role="line">25LC256</tspan></text>
+           sodipodi:role="line"
+           style="font-size:22.16883895px">25LC256</tspan></text>
     </g>
     <g
        id="g4246-6"
@@ -370,7 +384,8 @@
              sodipodi:role="line"
              x="329.84143"
              y="264.51544"
-             id="tspan4244-2">CS5490</tspan></text>
+             id="tspan4244-2"
+             style="font-size:22.16883895px">CS5490</tspan></text>
       </g>
     </g>
     <path
@@ -421,14 +436,16 @@
          x="329.84143"
          style="font-size:18.10063744px;font-style:normal;font-weight:bold;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans;-inkscape-font-specification:Sans Bold"
          xml:space="preserve"><tspan
-           id="tspan4244-1"
            y="273.71295"
            x="329.84143"
-           sodipodi:role="line">LED</tspan><tspan
+           sodipodi:role="line"
+           id="tspan3081"
+           style="font-size:22.16883895px">Led</tspan><tspan
            y="296.33875"
            x="329.84143"
            sodipodi:role="line"
-           id="tspan3081">BICOLOR</tspan></text>
+           id="tspan3850"
+           style="font-size:22.16883895px">bicolor</tspan></text>
     </g>
     <g
        id="g4246-2-0"
@@ -451,7 +468,8 @@
            y="276.82336"
            x="329.84143"
            sodipodi:role="line"
-           id="tspan3081-0">PULSADOR</tspan></text>
+           id="tspan3081-0"
+           style="font-size:20.58535046px">Pulsador</tspan></text>
     </g>
     <path
        style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
