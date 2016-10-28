@@ -7,14 +7,14 @@
 
 %----------------------------------------------------------------------------------------
 
-La idea de este capítulo es explicar los criterios utilizados en el desarrollo del producto y justificar las decisiones de diseño; así como también describir la implementación de los distintos aspectos del equipo.
+En este capítulo se explican los criterios utilizados en el desarrollo del prototipo y se justifican las decisiones de diseño; así como también se describe la implementación.
 
 \section{Hardware}
 \label{section:hardware}
 
 En el contexto del presente trabajo, se desarrolló un prototipo funcional del producto final. Este prototipo presenta las mismas funciones que el equipo final pero no se ajusta a los lineamientos estéticos y mecánicos que si deberá cumplir en un futuro. Es por esto que el prototipo diseñado tiene dimensiones mucho más grandes que las que tendrá, lo cual facilitó las mediciones y pruebas que se debieron realizar para comprobar el correcto funcionamiento tanto del hardware como del firmware. 
 
-En la Figura \ref{fig:prototipo} puede verse una fotografía del prototipo. En la misma se puede apreciar el PCB diseñado y las dos conexiones principales: a la izquierda del gabinete la conexión a la línea eléctrica y a la derecha la conexión a la carga eléctrica. La placa fue colocada dentro de un gabinete que por supuesto no tiene relación alguna con el gabinete que finalmente se utilizará. Simplemente cumple la función de facilitar la manipulación del prototipo.
+En la Figura \ref{fig:prototipo} puede verse una fotografía del prototipo. En la misma se puede apreciar el PCB diseñado y las dos conexiones principales: a la izquierda del gabinete la conexión a la línea eléctrica y a la derecha la conexión a la carga eléctrica. La placa fue colocada dentro de un gabinete que no tiene relación alguna con el gabinete que finalmente se utilizará. Simplemente cumple la función de facilitar la manipulación del prototipo.
 
 \begin{figure}[h]
 	\centering
@@ -219,7 +219,7 @@ En el contexto del presente trabajo el proceso de calibración no se incluyó. L
 
 La comunicación con el CS5490 se realiza a través de una UART y tanto la recepción como la transmisión se realizan a través de la interrupción de este periférico. Además se utiliza otra interrupción, encargada de detectar los pulsos generados por el CS5490 para indicar la energía consumida.
 
-Es una tarea periódica que s ejecuta cada 1,5 segundos mediante una alarma de FreeOSEK.
+Es una tarea periódica que se ejecuta cada 1,5 segundos mediante una alarma de FreeOSEK.
 
 \item moduleLog. Es la tarea encargada de enviar información de la actividad de la aplicación a través de mensajes por una UART. Otras tareas le envían mensajes que debe sacar por la UART, incluyendo la fecha y la hora en la que se produjo el mensaje. Esto tuvo una especial importancia al momento de desarrollar el firmware para conocer los eventos que se estaban produciendo. Los mensajes son enviados a una velocidad de 115200 baudios y se debe conectar un adaptador TTL-USB en la tira de pines destina a la UART en el PCB (llamada DEBUG en el esquemático).
 
@@ -261,7 +261,7 @@ A continuación se realiza una breve descripción de cada una de las capas:
 \begin{itemize}
 \item Aplicación. Consiste en el firmware propio del equipo, que utiliza al sistema operativo para implementar la lógica del Smart Plug.
 \item Sistema operativo. Consiste en las librerías de FreeOSEK. Como se utilizó un microcontrolador LPC1763 se utilizó la implementación de FreeOSEK para el LPC1769 realizada por Pablo Ridolfi en \citep{repo_ridolfi_freeosek}.
-\item Drivers. Dentro de los drivers se encuentras las bibliotecas particulares para controlar tanto los periféricos internos del microcontrolador como los dispositivos externos. La capa de abstracción de hardware, también conocida como HAL (por sus siglas en inglés, Hardware Abstraction Layer), busca generar un nivel más de abstracción entre los drivers de alto nivel y las bibliotecas del fabricante del microcontrolador, lo cual permite, que ante un cambio en el microcontrolador, solamente se deba cambiar la capa HAL.
+\item Drivers. Dentro de los drivers se encuentran las bibliotecas particulares para controlar tanto los periféricos internos del microcontrolador como los dispositivos externos. La capa de abstracción de hardware, también conocida como HAL (por sus siglas en inglés, Hardware Abstraction Layer), busca generar un nivel más de abstracción entre los drivers de alto nivel y las bibliotecas del fabricante del microcontrolador, lo cual permite, que ante un cambio en el microcontrolador, solamente se deba cambiar la capa HAL.
 
 Para implementar los controladores se utilizó un enfoque orientado a objetos para ordenar las distintas "clases". Una explicación detallada de este proceso se encuentra en la Subsección \ref{subsec:orientado_a_objetos}.
 \item Bibliotecas del fabricante. Son las bibliotecas provistas por NXP para acceder a los periféricos internos del microcontrolador.
@@ -488,21 +488,30 @@ En la Figura \ref{fig:app_wireframe} puede verse la maqueta completa de la aplic
 A continuación se describe brevemente el funcionamiento de la aplicación desde el punto de vista del usuario:
 
 \begin{itemize}
-\item  Pantalla 1: la aplicación comienza con un \textit{splash screen}, es decir, una pantalla que muestra el logo y el nombre de la aplicación durante unos segundos y luego da paso a la siguiente pantalla.
+\item  Pantalla 1 (parte izquierda de la Figura \ref{fig:app_wireframe_1}): la aplicación comienza con un \textit{splash screen}, es decir, una pantalla que muestra el logo y el nombre de la aplicación durante unos segundos y luego da paso a la siguiente pantalla.
 
-\item Pantalla 2: luego del \textit{splash screen} se muestra una lista con todos los Smart Plugs que se encontraron en la red WiFi. Como se explicará en la Subsección \ref{subsec:arquitectura_app}, cada Smart Plug se identifica periódicamente dentro de la red WiFi. Estos mensajes periódicos son capturados por la aplicación y en el caso de detectar un Smart Plug que no conocía, lo agregará en la lista. La forma de identificar unívocamente a cada Smart Plug es mediante un número único que se graba en la EEPROM del equipo durante el proceso de fabricación. Este es un número de seis dígitos que es informado en los mensajes UDP periódicos.
+\item Pantalla 2 (parte central de la Figura \ref{fig:app_wireframe_1}): luego del \textit{splash screen} se muestra una lista con todos los Smart Plugs que se encontraron en la red WiFi. Como se explicará en la Subsección \ref{subsec:arquitectura_app}, cada Smart Plug se identifica periódicamente dentro de la red WiFi. Estos mensajes periódicos son capturados por la aplicación y en el caso de detectar un Smart Plug que no conocía, lo agregará en la lista. La forma de identificar unívocamente a cada Smart Plug es mediante un número único que se graba en la EEPROM del equipo durante el proceso de fabricación. Este es un número de seis dígitos que es informado en los mensajes UDP periódicos.
 
 Cada uno de los elementos de la lista representa a un Smart Plug. Se va a mostrar el nombre del dispositivo, el estado de la comunicación mediante un tilde verde o una cruz roja y la fecha y hora de la última comunicación exitosa que hubo con ese Smart Plug. Además se muestra un ícono que permite identificar de forma sencilla el dispositivo que realmente está controlando el Smart Plug. 
 
 Sin embargo, el ícono no cumple únicamente una función pictórica: si se lo presiona se puede conmutar el estado de la carga. Más aún, la opacidad del ícono indica el estado actual de la misma: cuando se lo muestra semi-transparente la carga está apagada y cuando se lo muestra sin transparencia, está encendida.
 
-\item Pantalla 3: cuando en la pantalla 2 se presiona alguno de los Smart Plugs de la lista, la aplicación muestra una vista de detalle del mismo. En esta se volverá a mostrar el ícono asociado al Smart Plug, su nombre, el estado de la comunicación y la fecha y hora de la última comunicación exitosa. Pero además de estos datos se indicarán las últimas mediciones recibidas desde el equipo. Estas mediciones incluyen: tensión eficaz, corriente eficaz, potencia activa y energía total consumida. Estos datos son actualizados periódicamente, aún cuando la aplicación se encuentre cerrada.
+\item Pantalla 3 (parte derecha de la Figura \ref{fig:app_wireframe_1}): cuando en la pantalla 2 se presiona alguno de los Smart Plugs de la lista, la aplicación muestra una vista de detalle del mismo. En esta se volverá a mostrar el ícono asociado al Smart Plug, su nombre, el estado de la comunicación y la fecha y hora de la última comunicación exitosa. Pero además de estos datos se indicarán las últimas mediciones recibidas desde el equipo. Estas mediciones incluyen: tensión eficaz, corriente eficaz, potencia activa y energía total consumida. Estos datos son actualizados periódicamente, aún cuando la aplicación se encuentre cerrada.
 
 Por otro lado, en esta vista de detalle se encuentra presente, en la esquina inferior derecha de la pantalla, un botón de acción flotante (floating action button) el cual permite acceder a más opciones para gestionar el Smart Plug seleccionado.
 
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=14cm]{./Figures/3_3_1_app_wireframe_1.png}
+	\caption{Detalle de la maqueta, pantallas 1, 2 y 3.}
+	\label{fig:app_wireframe_1}
+\end{figure}
+
+
 \item Pantalla 4: cuando se presiona el botón de acción flotante se despliega un menú el cual incluye la siguiente opciones: Configuración, Historial, Actualizar, Reiniciar mediciones y Volver a valores de fábrica.
 
-\item Pantalla 5: si se presiona la opción de Volver a valores de fábrica, se le preguntará al usuario si confirma que quiere realizar esta acción. En caso afirmativo se le enviará al Smart Plug el comando correspondiente el cual volverá a sus valores de fábrica, los cuales consisten en:
+\item Pantalla 5 (parte izquierda de la Figura \ref{fig:app_wireframe_2}): si se presiona la opción de Volver a valores de fábrica, se le preguntará al usuario si confirma que quiere realizar esta acción. En caso afirmativo se le enviará al Smart Plug el comando correspondiente el cual volverá a sus valores de fábrica, los cuales consisten en:
 
 \begin{itemize}
 \item Nombre del dispositivo: Smart Plug.
@@ -511,31 +520,59 @@ Por otro lado, en esta vista de detalle se encuentra presente, en la esquina inf
 \item Se eliminan las mediciones históricas de potencia activa y energía consumida por hora, tanto en el Smart Plug como en la aplicación.
 \end{itemize}
 
-\item Pantalla 6: si se presiona la opción Reiniciar mediciones, se le preguntará al usuario si confirma que quiere realizar la acción. En caso afirmativo, se enviarán los comandos correspondientes al Smart Plug. Cuando se realiza esta acción se reiniciará el registro de la energía consumida y se eliminarán las mediciones históricas de potencia activa y energía consumida por hora. 
+\item Pantalla 6 (parte central de la Figura \ref{fig:app_wireframe_2}): si se presiona la opción Reiniciar mediciones, se le preguntará al usuario si confirma que quiere realizar la acción. En caso afirmativo, se enviarán los comandos correspondientes al Smart Plug. Cuando se realiza esta acción se reiniciará el registro de la energía consumida y se eliminarán las mediciones históricas de potencia activa y energía consumida por hora. 
 
 Se decidió incorporar esta opción para ayudar en los casos en los que, por ejemplo, se cambia la carga que está controlando el Smart Plug, por lo que se desea eliminar los registros de la anterior carga ya que podrían llevar a confusiones en la interpretación de los datos.
 
-\item Pantalla 7: cuando se presiona la opción Actualizar, una caja de diálogo le preguntará al usuario si confirma la acción. En caso afirmativo, se forzará el proceso de actualización de los datos del Smart Plug, es decir, se le pedirán las últimas mediciones, sus parámetros de configuración y sus mediciones históricas para actualizar la información en la aplicación. Este comando es útil cuando se necesita conocer la información actual, por ejemplo, de una medición y no se puede esperar hasta la próxima consulta periódica que realiza la aplicación.
+\item Pantalla 7 (parte derecha de la Figura \ref{fig:app_wireframe_2}): cuando se presiona la opción Actualizar, una caja de diálogo le preguntará al usuario si confirma la acción. En caso afirmativo, se forzará el proceso de actualización de los datos del Smart Plug, es decir, se le pedirán las últimas mediciones, sus parámetros de configuración y sus mediciones históricas para actualizar la información en la aplicación. Este comando es útil cuando se necesita conocer la información actual, por ejemplo, de una medición y no se puede esperar hasta la próxima consulta periódica que realiza la aplicación.
 
-\item Pantalla 8: al presionar la opción Historial se accede a todas las mediciones históricas que se recibieron desde el Smart Plug. Este historial consiste en las mediciones que realizó en cada hora del día, tanto de la potencia activa promedio como de la energía consumida. En esta pantalla se podrá elegir el día que se quiere ver y el parámetro que se desea consultar mediante dos listas de fechas. Se debe aclarar que aunque el Smart Plug retenga las mediciones de los últimos 7 días, la aplicación puede retener hasta 20 días.
 
-\item Pantalla 9: cuando se elije una fecha, la pantalla gira para mejorar la visualización de los datos en forma de gráfico. En este gráfico se va a representar la potencia activa por hora (en Watt) vs la hora del día o la energía consumida por hora (en kWh) vs la hora del día. Se puede realizar zoom y desplazarse por el gráfico arrastrando el dedo.
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=14cm]{./Figures/3_3_1_app_wireframe_2.png}
+	\caption{Detalle de la maqueta, pantallas 5, 6 y 7.}
+	\label{fig:app_wireframe_2}
+\end{figure}
+
+
+\item Pantalla 8 (parte izquierda de la Figura \ref{fig:app_wireframe_3}): al presionar la opción Historial se accede a todas las mediciones históricas que se recibieron desde el Smart Plug. Este historial consiste en las mediciones que realizó en cada hora del día, tanto de la potencia activa promedio como de la energía consumida. En esta pantalla se podrá elegir el día que se quiere ver y el parámetro que se desea consultar mediante dos listas de fechas. Se debe aclarar que aunque el Smart Plug retenga las mediciones de los últimos 7 días, la aplicación puede retener hasta 20 días.
+
+\item Pantalla 9 (parte derecha de la Figura \ref{fig:app_wireframe_3}): cuando se elije una fecha, la pantalla gira para mejorar la visualización de los datos en forma de gráfico. En este gráfico se va a representar la potencia activa por hora (en Watt) vs la hora del día o la energía consumida por hora (en kWh) vs la hora del día. Se puede realizar zoom y desplazarse por el gráfico arrastrando el dedo.
 
 Estos gráficos representan una de las características distintivas de este producto, ya que permite visualizar de forma sencilla mediciones que pueden ser aprovechadas para conocer el consumo de un determinado aparato eléctrico.
 
-\item Pantalla 10: contiene los parámetros configurables del Smart Plug seleccionado. Se accede a esta pantalla presionando la opción Configuración en el menú del botón de acción flotante. Los parámetros que se pueden configurar son básicamente tres: el nombre del dispositivo, el ícono del Smart Plug y la programación horaria para cada día de la semana.
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=14cm]{./Figures/3_3_1_app_wireframe_3.png}
+	\caption{Detalle de la maqueta, pantallas 8 y 9.}
+	\label{fig:app_wireframe_3}
+\end{figure}
+
+
+\item Pantalla 10 (parte izquierda de la Figura \ref{fig:app_wireframe_4}): contiene los parámetros configurables del Smart Plug seleccionado. Se accede a esta pantalla presionando la opción Configuración en el menú del botón de acción flotante. Los parámetros que se pueden configurar son básicamente tres: el nombre del dispositivo, el ícono del Smart Plug y la programación horaria para cada día de la semana.
 
 En cuanto al nombre del dispositivo, se puede configurar un nombre de hasta 32 caracteres. Una vez ingresado se debe presionar la flecha que se encuentra a la derecha del control para ingresar el texto. Este nombre quedará configurado en el Smart Plug, por lo que todas las aplicaciones que tengan registrado a este Plug, verán el nuevo nombre.
 
-Al presionar el ícono del Smart Plug se mostrará la pantalla 11, permitiendo elegir una imagen de una lista de íconos. Una vez que se selecciona uno de estos se vuelve a la pantalla 10. El ícono es una información propia de la aplicación móvil y no queda guardado en el Smart Plug. Por lo tanto, distintas aplicaciones móviles pueden asignar íconos diferentes a un mismo Plug.
+Al presionar el ícono del Smart Plug se mostrará la pantalla 11 (parte central de la Figura \ref{fig:app_wireframe_4}), permitiendo elegir una imagen de una lista de íconos. Una vez que se selecciona uno de estos se vuelve a la pantalla 10. El ícono es una información propia de la aplicación móvil y no queda guardado en el Smart Plug. Por lo tanto, distintas aplicaciones móviles pueden asignar íconos diferentes a un mismo Plug.
 
 Finalmente, la programación horaria puede ser habilitada y deshabilitada para cada día de la semana individualmente. La transparencia del recuadro que contiene la información de cada día indica si la programación horaria está habilitada: si el recuadro es semi-transparente, está deshabilitada, pero si no es transparente, está habilitada. 
 
-Si se presiona cualquiera de los días se mostrará la pantalla 12 invitando a ingresar la hora de encendido de la carga. Se puede elegir cambiar esta hora o dejar la que estaba ya configurada. Una vez configurada la hora de encendido se volverá a mostrar la pantalla 12 para ingresar la hora de apagado; se procede de igual forma que antes. Cuando se ingresan ambas horas se configura el Smart Plug con estos nuevos valores.
+Si se presiona cualquiera de los días se mostrará la pantalla 12 (parte derecha de la Figura \ref{fig:app_wireframe_4}) invitando a ingresar la hora de encendido de la carga. Se puede elegir cambiar esta hora o dejar la que estaba ya configurada. Una vez configurada la hora de encendido se volverá a mostrar la pantalla 12 para ingresar la hora de apagado; se procede de igual forma que antes. Cuando se ingresan ambas horas se configura el Smart Plug con estos nuevos valores.
 
 Si en cambio de desea deshabilitar esta opción para un día de la semana, se debe mantener presionado el recuadro del día elegido. Cuando se deshabilite la opción, el recuadro se mostrará semi-transparente.
 
 \end{itemize}
+
+
+\begin{figure}[!h]
+	\centering
+	\includegraphics[width=14cm]{./Figures/3_3_1_app_wireframe_4.png}
+	\caption{Detalle de la maqueta, pantallas 10, 11 y 12.}
+	\label{fig:app_wireframe_4}
+\end{figure}
+
+
 
 
 \subsection{Arquitectura de la aplicación}
