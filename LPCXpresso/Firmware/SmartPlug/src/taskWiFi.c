@@ -942,6 +942,11 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 		buff[0] = taskSmartPlug_getLoadState();
 		bytesRead = 1;
 	}
+	else if (regEE == REG_SYNCH_TIME)
+	{
+		buff[0] = taskRTC_isTimeSynchronized();
+		bytesRead = 1;
+	}
 	else
 	{
 		GetResource(resEEPROM);
@@ -1120,6 +1125,8 @@ uint32_t readEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t bPointer, uint8_
 void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buff)
 {
 	uint8_t enabledTimes;
+	rtc_time_t fullTime;
+
 
 	if (regEE == REG_LOAD_STATE)
 	{
@@ -1128,6 +1135,18 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 			SetEvent(taskSmartPlug, evRelayOff);
 		else if (buff[0] == 1)
 			SetEvent(taskSmartPlug, evRelayOn);
+	}
+	else if (regEE == REG_DATE_TIME)
+	{
+		// Llegan 6 bytes con el siguiente formato: dia mes año (00 a 99) hora minutos segundos
+		fullTime.dayOfMonth = buff[0];
+		fullTime.month = buff[0];
+		fullTime.year = buff[0] + 2000;
+		fullTime.hour = buff[0];
+		fullTime.minute = buff[0];
+		fullTime.second = buff[0];
+
+		taskRTC_setTime(&fullTime);
 	}
 	else
 	{
