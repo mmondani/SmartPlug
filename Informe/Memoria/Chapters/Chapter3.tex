@@ -200,7 +200,7 @@ Es una tarea periódica que se ejecuta cada 10ms, mediante una alarma de FreeOSE
 
 También consulta la memoria EEPROM para leer o modificar los parámetros de configuración del Smart Plug y para enviarle a la aplicación móvil las mediciones históricas de potencia activa y energía consumida.
 
-Cuando se inicia la tarea, se conecta con un servidor NTP para obtener la fecha y hora. Estos parámetros son enviados a la tarea taskRTC para que configure el RTC interno del microcontrolador.
+Cuando se inicia la tarea, se conecta con un servidor NTP para obtener la fecha y hora. Estos parámetros son enviados a la tarea taskRTC para que configure el RTC interno del microcontrolador. En caso de no poder concretar la conexión con el servidor NTP, la aplicación móvil le informará la hora actual.
 
 La comunicación con el módulo es a través de una UART y tanto la recepción como la transmisión se realizan a través de la interrupción de este periférico. La tarea es periódica, cada 10ms, para procesar los mensajes que llegan desde el módulo RN1723  de forma asincrónica.
 
@@ -607,7 +607,7 @@ Por ejemplo cuando se enciende la carga de un Smart Plug desde la lista de Plugs
 
 \item Servicio. Cuando se inicia la aplicación por primera vez, esta inicia una instancia de la clase SmartPlugService que hereda a la clase Service de Android. Un servicio permite implementar una parte de la lógica que se debe ejecutar por un tiempo prolongado en un thread distinto del thread principal de la aplicación. Además, como fue configurado en el caso de esta aplicación, este servicio se mantiene ejecutándose aún cuando la aplicación se encuentra cerrada.
 
-Dentro del servicio se implementa la lógica para la consulta periódica de los Smart Plugs que identificó la aplicación. Cada 10 minutos, el servicio se ejecutará y realizará una serie de consultas a todos los Smart Plugs que conozca, preguntando el último valor de las mediciones, algunos parámetros de configuración para ver si fueron cambiados por otra aplicación y el estado de la carga, para ver si fue conmutada por otra aplicación.
+Dentro del servicio se implementa la lógica para la consulta periódica de los Smart Plugs que identificó la aplicación. Cada 10 minutos, el servicio se ejecutará y realizará una serie de consultas a todos los Smart Plugs que conozca, preguntando el último valor de las mediciones, algunos parámetros de configuración para ver si fueron cambiados por otra aplicación y el estado de la carga, para ver si fue conmutada por otra aplicación. Además le preguntará al Smart Plug si pudo obtener la hora para sincronizar su reloj interno; en caso de no estar sincronizado, la aplicación le enviará la hora actual.
 
 Además, cada 1 hora aproximadamente, el servicio le pedirá a todos los Smart Plugs las mediciones históricas del día para conocer los valores de potencia activa y energía consumida de la última hora.
 

@@ -4,26 +4,26 @@
 
 \label{Chapter5} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
 
-En este capítulo se presentan las principales conclusiones del trabajo, así como también las futuras mejoras que se le pueden realizar al equipo..
+En este capítulo se presentan las principales conclusiones del trabajo, así como también las futuras mejoras que se pueden realizar sobre el equipo.
 
 
 \section{Conclusiones generales}
 
 En la presente memoria se documentó el diseño e implementación de un Smart Plug. Se logró construir un prototipo funcional que permitió evaluar las prestaciones del equipo y desarrollar una aplicación para dispositivos móviles con sistema Android para poder interactuar con los Smart Plugs. 
 
-La información provista por cada uno de los Plugs le permitirá al usuario conocer el consumo de los dispositivos eléctricos, permitiéndole tomar decisiones con el objetivo de reducirlo. Se tomó como principal objetivo en el diseño de la aplicación, que la misma fuera sencilla de utilizar y que presentara los datos de una forma útil.
+La información provista por cada uno de los Plugs le permitirá al usuario conocer el consumo de los dispositivos eléctricos, ayudándolo a tomar decisiones con el objetivo de cambiar la forma en que los utiliza. Se tomó como principal objetivo en el diseño de la aplicación, que la misma fuera sencilla de utilizar y que presentara los datos de una forma útil.
 
 El dispositivo desarrollado será uno de los primeros equipos de fabricación nacional con estas características, complementando la línea de productos de domótica ya existente.
 
 Para la realización del proyecto se aplicaron los conocimientos aprendidos en la carrera de especialización en sistemas embebidos, principalmente de las siguientes asignaturas:
 
 \begin{itemize}
-\item Arquitectura de microprocesadores: en la misma se aprendió la arquitectura del microcontrolador utilizado en el Smart Plug. Fue la base para empezar a usar dichos programadores.
-\item Programación de microprocesadores: Se aplicaron las metodologías aprendidas, el uso de capas para generar abstracción con el hardware y teoría de programación orientada a objetos.
+\item Arquitectura de microprocesadores: en la misma se aprendió la arquitectura del microcontrolador utilizado en el Smart Plug y técnicas básicas de programación. Fue la base para empezar a usar dichos microcontroladores.
+\item Programación de microprocesadores: se aplicaron las metodologías aprendidas, el uso de capas para generar abstracción con el hardware y la teoría de programación orientada a objetos.
 \item Ingeniería de software en sistemas embebidos: se aplicaron los conocimientos adquiridos para diseñar, implementar y probar tanto el firmware como la aplicación móvil. Esto constituyó uno de los principales aportes del proyecto a la metodología habitual de trabajo, ya que permitirá utilizar las técnicas y herramientas aprendidas a otros desarrollos.
-\item Gestión de Proyectos en Ingeniería: lo aprendido en esta asignatura permitió abordar el proyecto de forma ordenada, previendo las tareas  que se debían realizar y el tiempo que se le debía dedicar a cada una de estas. Tanto las heramientas como la forma de trabajo aprendidas en la materia son otro de los aportes del proyecto a la forma de trabajo habitual.
-\item Sistemas Operativos de Tiempo Real: a pesar de que cuando se cursó esta materia, se enseñaba únicamente el uso de FreeRTOS, los conocimientos aprendidos permitieron entender de forma muy rápida el uso de otro RTOS como es FreeOSEK.
-\item Protocolos de comunicación en sistemas embebidos: Se utilizó la comunicación SPI aprendida en la asignatura.
+\item Gestión de Proyectos en Ingeniería: lo aprendido en esta asignatura permitió abordar el proyecto de forma ordenada, previendo las tareas  que se debían realizar y el tiempo que se le debía dedicar a cada una de estas. Tanto las herramientas como la forma de trabajo aprendidas en la materia son otro de los aportes del proyecto a la forma de trabajo habitual.
+\item Sistemas Operativos de Tiempo Real: a pesar de que cuando se cursó esta materia, se enseñaba únicamente el uso de FreeRTOS, los conocimientos aprendidos permitieron entender, sin mayores dificultades, el uso de otro RTOS como es FreeOSEK.
+\item Protocolos de comunicación en sistemas embebidos: se utilizó la comunicación SPI aprendida en la asignatura.
 \item Diseño para manufacturabilidad: se discutieron los diseños y se realizaron revisiones y modificaciones para mejorar el funcionamiento del equipo.
 \end{itemize}
 
@@ -31,21 +31,21 @@ Para la realización del proyecto se aplicaron los conocimientos aprendidos en l
 Por otro lado, durante el desarrollo de este proyecto, se adquirieron conocimientos en las áreas de:
 
 \begin{itemize}
-\item Diseño de aplicaciones móviles. Se aprendió la importancia del uso de maquetas al momento de diseñar una aplicación, lo cual facilita la articulación entre la estética buscada y la funcionalidad de la aplicación.
-\item Programación de aplicación para el sistema Android. A pesar de que que contaba con alguna experiencia en programación de aplicaciones bajo Android, la aplicación desarrollada introdujo el uso de nuevas clases, especialmente relacionadas con el manejo de servicios.
+\item Diseño de aplicaciones móviles: se aprendió la importancia del uso de maquetas al momento de diseñar una aplicación, lo cual facilita la articulación entre la estética buscada y la funcionalidad de la aplicación.
+\item Programación de aplicación para el sistema Android: a pesar de que que se contaba con alguna experiencia en programación de aplicaciones bajo Android, la aplicación desarrollada introdujo el uso de nuevas clases, especialmente relacionadas con el manejo de servicios.
 \end{itemize}
 
 
 \section{Trabajo futuro}
 \label{sec:trabajo_futuro}
 
-Para continuar con el desarrollo del equipo para llegar a obtener un equipo comercial, se plantearon las siguientes mejoras y modificaciones sobre las que se debe trabajar:
+Para continuar con el desarrollo del equipo, con el objetivo de obtener un producto comercial, se plantearon las siguientes mejoras y modificaciones sobre las que se debe trabajar:
 
 \begin{itemize}
-\item Rediseñar la adaptación de las señales de tensión corriente para reducir el tamaño del PCB. Evaluar la posibilidad de utilizar divisores resistivos para el canal de tensión y un shunt para la corriente. Implementar un diseño propio de fuente switching la cual se integre en el PCB del producto.
+\item Rediseñar la adaptación de las señales de tensión y corriente para reducir el tamaño del PCB. Evaluar la posibilidad de utilizar divisores resistivos para el canal de tensión y un shunt para la corriente. Implementar un diseño propio de fuente switching la cual se integre en el PCB del producto.
 \item Agregar la lógica del proceso de prueba en fábrica. La comunicación entre el probador del equipo y el equipo se realizará a través de la UART de debug, por lo que se debe modificar la tarea moduleLog para permitir recibir comandos durante la prueba. La prueba de fábrica incluirá: grabación del ID único, calibración de continua y de ganancia del canal de corriente y de tensión del front-end analógico.
 \item En la aplicación móvil, el agregado de un nuevo Smart Plug se realizará introduciendo el ID único del producto. En la versión descrita en este trabajo, la aplicación muestra todos los Smart Plugs que encuentra.
 \item En la aplicación móvil, se agregará información acerca del costo de la energía consumida y se introducirá la posibilidad de configurar un nivel de energía o de dinero, superado el cual se generarán notificaciones en el celular.
-\item Desarrollar la infraestructura necesaria para permitir comandar os Smart Plugs tanto desde la misma red WiFi en la que se encuentran como desde cualquier otra red.
+\item Desarrollar la infraestructura necesaria para permitir comandar los Smart Plugs tanto desde la misma red WiFi en la que se encuentran como desde cualquier otra red.
 \end{itemize}
 

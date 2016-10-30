@@ -10,15 +10,15 @@ En este capítulo se describen las pruebas realizadas sobre el prototipo y se ex
 
 \section{Ensayos de caja negra}
 
-Luego de realizar la implementación de cada uno de los aspectos del producto, hardware, firmware y aplicación móvil, se procedió a validar los requerimientos establecidos durante la planificación. Para esto se escribió una serie de pruebas que buscaron cubrir todos los requerimientos y se las llevó a cabo, registrando el procedimiento y los resultados.
+Al finalizar la implementación de cada uno de los aspectos del producto, hardware, firmware y aplicación móvil, se procedió a validar los requerimientos establecidos durante la planificación. Para esto se escribió una serie de pruebas que buscaron cubrir todos los requerimientos y se las llevó a cabo, registrando el procedimiento y los resultados. Las pruebas se realizaron al terminar cada una de las etapas.
 
-Todas las pruebas que se llevaron a cabo, especialmente las aplicadas al firmware y a la aplicación móvil, fueron del tipo "caja negra", es decir, fueron pruebas que buscaban comprobar que ante ciertas entradas las salidas fueran las esperadas, dejando de lado la implementación interna.
+Todas las pruebas que se llevaron a cabo, especialmente las aplicadas al firmware y a la aplicación móvil, fueron del tipo ''caja negra'', es decir, fueron pruebas que buscaban comprobar que ante ciertas entradas las salidas fueran las esperadas, dejando de lado la implementación interna.
 
-El realizar pruebas sistemáticas para comprobar los requerimientos de un producto desarrollado, representó una nueva forma de trabajo dentro de la empresa. Esto fue la causa de que se eligieran implementar pruebas de caja negra, como un primer paso en el proceso de incorporar pruebas unitarias, de integración, de sistema, etc en los próximos proyectos que se lleven a cabo.
+El realizar pruebas sistemáticas para comprobar los requerimientos de un producto desarrollado, representó una nueva forma de trabajo dentro de la empresa. Esto fue la causa de que se eligieran implementar pruebas de caja negra, como un primer paso en el proceso de incorporar pruebas unitarias, de integración, de sistema, etc, en los próximos proyectos que se lleven a cabo.
 
 \section{Hardware}
 
-El documento completo de pruebas puede encontrarse en el documento \textit{Smart Plug Hardware - Documento de pruebas} en \citep{repo_hardware}. A continuación se describen algunas pruebas significativas y se muestran sus resultados.
+El registro completo de pruebas puede encontrarse en el documento \textit{Smart Plug Hardware - Documento de pruebas} en \citep{repo_hardware}. A continuación se describen algunas pruebas significativas y se muestran sus resultados.
 
 Al diseñar el Smart Plug se debió establecer la tensión y la corriente máxima de medición para el medidor eléctrico. Como fue explicado, estos valores se fijaron en 240VAC y 5A. por lo tanto, fue necesario validar que el hardware diseñado fuera capaz de medir estos valores.
 
@@ -48,6 +48,7 @@ En el caso de la tensión, se utilizó el autotransformador variable para genera
 
 En el caso de la corriente, se ajustó la tensión de línea sobre el Smart Plug en 10VAC utilizando el autotransformador, y se usaron distintas combinaciones de resistencias de potencia para generar diferentes corrientes. Para contrastar las mediciones se empleó un amperímetro. Los resultados se encuentran por debajo del 2\% en el rango de 0,02A hasta 4A. Los puntos en los que el error relativo está por arriba del 1\% en realidad representan una variación de una centésima en la medición respecto del amperímetro.
 
+Para validar el resto de los requerimientos de hardware se realizaron firmwares especiales que tenían por objetivo validar un aspecto particular del equipo. Estos firmwares se pueden encontrar en \citep{repo_firmware} dentro de la carpeta \textit{Tests}. Los tests de hardware son aquellos cuyo nombre comienza con \textit{SmartPlug\_hw\_test}.
 
 
 \section{Firmware}
@@ -70,7 +71,7 @@ A continuación se resumen las pruebas para las distintas señalizaciones:
 
 Otro aspecto importante que debió validarse es que el Smart Plug generara un mensaje UDP periódico cada 2 segundos a la dirección de broadcast de la red WiFi. Es importante que estos mensajes existan ya que la aplicación móvil depende de estos para identificar a los Plugs existentes en la red. Además, dentro de estos mensajes periódicos debe informarse el número de ID único del dispositivo.
 
-Para realizar la prueba se tulizó una computadora, dentro de la misma red que el Smart Plug, ejecutando un capturador de paquetes (Wireshark). En la Figura \ref{fig:mensajes_udp} puede verse una porción de la captura, en la que se aprecia que el tiempo entre mensajes UDP dirigidos a la dirección broadcast de la red es de aproximadamente 2 segundos. Además, en la misma figura se puede ver el contenido de uno de los mensajes, en donde se resaltan los seis dígitos del ID del Smart Plug (en este caso 123456) expresado en caracteres ASCII.
+Para realizar la prueba se utilizó una computadora, dentro de la misma red que el Smart Plug, ejecutando un capturador de paquetes (Wireshark). En la Figura \ref{fig:mensajes_udp} puede verse una porción de la captura, en la que se aprecia que el tiempo entre mensajes UDP dirigidos a la dirección broadcast de la red es de aproximadamente 2 segundos. Además, en la misma figura se puede ver el contenido de uno de los mensajes, en donde se resaltan los seis dígitos del ID del Smart Plug (en este caso 123456) expresado en caracteres ASCII.
 
 \begin{figure}[h]
 	\centering
@@ -98,23 +99,23 @@ La interfaz gráfica del software consta de cuatro secciones principales:
 \begin{enumerate}
 \item Permite elegir el puerto UDP en el que escuchar los mensajes periódicos enviados por los Smart Plugs y el puerto TCP al que mandar las tramas. Los Smart Plugs envían sus mensajes periódicos al puerto UDP 55555 y escuchan las conexiones TCP en el puerto 2000.
 
-\item Cuando se abre el puerto UD, se empiezan a recibir mensajes periódicos de los Smart Plugs que estén conectados en la misma red a la que pertenece la computadora que está corriendo esta aplicación. Cuando llega un mensaje periódico se agrega el ID único del Plug que lo envió en la lista de la derecha, como puede verse con el Plug de ID 123456. Al seleccionar uno de los Smart Plugs de la lista, en los controles de la izquierda de esta sección se visualizarán algunos parámetros del Plug: dirección AMAC, IP, RSSI de la señal WiFi, hora de llegada del mensajes, etc.
+\item Cuando se abre el puerto UDP, se empiezan a recibir mensajes periódicos de los Smart Plugs que estén conectados en la misma red a la que pertenece la computadora que está corriendo esta aplicación. Cuando llega un mensaje periódico se agrega el ID único del Plug que lo envió en la lista de la derecha, como puede verse con el Plug de ID 123456. Al seleccionar uno de los Smart Plugs de la lista, en los controles de la izquierda de esta sección se visualizarán algunos parámetros del Plug: dirección MAC, IP, RSSI de la señal WiFi, hora de llegada del mensajes, etc.
 
-\item Esta sección permite elegir el comando que se va a enviar al Smart Plug seleccionado en la sección 2. Se debe elegir tanto el comando como el registro afectado (en caso de que corresponda). Además, si el comando requiere un parámetro adicional, como puede ser el en el caso del comando SET, en el campo Payload se puede ingresar los datos que debe llevar la trama.
+\item Esta sección permite elegir el comando que se va a enviar al Smart Plug seleccionado en la sección 2. Se debe elegir tanto el comando como el registro afectado (en caso de que corresponda). Además, si el comando requiere un parámetro adicional, como puede ser el en el caso del comando SET, en el campo Payload se pueden ingresar los datos que debe llevar la trama.
 
-\item Muestra la trama enviada y la trama recibida como respuesta. En el caso de la respuesta. se muestra la misma parseada de acuerdo al comando y al registro manipulado. De esta forma, si se está enviando el comando GET de un registro de tipo float, la aplicación mostrará el contenido de la respuesta como un float.
+\item Muestra la trama enviada y la trama recibida como respuesta. En el caso de la respuesta. se muestra la misma parseada de acuerdo al comando y al registro manipulado. De esta forma, por ejemplo, si se está enviando el comando GET de un registro de tipo float (como puede ser la tensión eficaz medida), la aplicación mostrará el contenido de la respuesta como un float.
 \end{enumerate}
 
 Utilizando esta aplicación se llevaron a cabo numerosos casos de prueba para comprobar la correcta implementación del protocolo en el firmware del Smart Plug. Tanto las pruebas como los resultados obtenidos pueden verse en el documento \textit{Smart Plug Firmware - Documento de Pruebas v1.0} en \citep{repo_docu_firmware}.
 
-El código fuente de esta aplicación se encuentra en \citep{repo_simulador_tcp}.
+Por otro lado, el código fuente de esta aplicación de PC se encuentra en \citep{repo_simulador_tcp}.
 
 
 \section{Aplicación móvil}
 
-En el caso de la aplicación móvil, además de las pruebas de caja negra para validar sus requerimientos (las cuales pueden encontrarse en el documento \textit{Smart Plug App - Documento de Pruebas v1.0} en \citep{repo_docu_app}) se llevó a cabo una prueba general del sistema para comprobar su funcionamiento.
+En el caso de la aplicación móvil, además de las pruebas de caja negra para validar sus requerimientos (las cuales pueden encontrarse en el documento \textit{Smart Plug App - Documento de Pruebas v1.0} en \citep{repo_docu_app}) se llevó a cabo una prueba general del sistema completo para comprobar su funcionamiento.
 
-Básicamente la prueba general consistió en dejar conectado el Smart Plug durante 5 días con una lámpara de 60W conectada y se realizaron distintas configuraciones para comprobar su funcionamiento.
+Básicamente la prueba general consistió en dejar conectado el Smart Plug durante 5 días con una lámpara de 60W conectada realizando distintas configuraciones para comprobar su funcionamiento.
 
 Las acciones que se realizaron dentro de la prueba fueron:
 
