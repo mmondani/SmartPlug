@@ -748,6 +748,30 @@ public class SmartPlugService extends Service {
                      */
                     EventBus.getDefault().post(new UpdateSmartPlugEvent(ev.getId()));
                 }
+                else if (frame.getCommand() == SmartPlugCommHelper.Commands.RESP_GET &&
+                        frame.getRegister() == SmartPlugCommHelper.Registers.SYNCH_TIME) {
+                    /**
+                     * Se recibe un byte que indica si el RTC está sincronizado (1) o no (0)
+                     */
+                    if (frame.getData() == 0) {
+                        // Se configura la hora del Smart Plug a partir de la hora del smartphone.
+                        Calendar calendar = Calendar.getInstance();
+                        byte day = (byte) calendar.get(Calendar.DAY_OF_MONTH);
+                        byte month = (byte) (calendar.get(Calendar.MONTH) + 1);
+                        byte year = (byte) (calendar.get(Calendar.YEAR) - 2000);
+                        byte hour = (byte) calendar.get(Calendar.HOUR_OF_DAY);
+                        byte minute = (byte) calendar.get(Calendar.MINUTE);
+                        byte second = (byte) calendar.get(Calendar.SECOND);
+                        byte dayOfWeek = (byte) (calendar.get(Calendar.DAY_OF_WEEK) - 1);
+
+                        EventBus.getDefault().post(new CommandEvent(ev.getId(), SmartPlugCommHelper.getInstance().
+                                getRawData(SmartPlugCommHelper.Commands.SET,
+                                        SmartPlugCommHelper.Registers.DATE_TIME,
+                                        new byte[]{day, month, year, hour, minute, second, dayOfWeek}
+                                )
+                        ));
+                    }
+                }
             }
             else if (basicFrame.getFrameType() == BasicFrame.Types.BYTE_ARRAY_PARAM) {
                 ByteArrayFrame frame = (ByteArrayFrame)basicFrame;
@@ -1150,6 +1174,14 @@ public class SmartPlugService extends Service {
          */
         data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
                 SmartPlugCommHelper.Registers.LOAD_STATE);
+        EventBus.getDefault().post(new CommandEvent(id, data));
+
+
+        /**
+         * Se pide si está sincronizado el RTC o no.
+         */
+        data = SmartPlugCommHelper.getInstance().getRawData(SmartPlugCommHelper.Commands.GET,
+                SmartPlugCommHelper.Registers.SYNCH_TIME);
         EventBus.getDefault().post(new CommandEvent(id, data));
     }
 

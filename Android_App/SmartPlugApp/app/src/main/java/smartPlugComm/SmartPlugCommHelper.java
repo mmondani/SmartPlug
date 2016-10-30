@@ -34,6 +34,8 @@ public class SmartPlugCommHelper {
         public static final byte CURRENT_MEASUREMENTS = 0x08;
         public static final byte DEVICE_ID = 0x10;
         public static final byte LOAD_STATE = 0x15;
+        public static final byte SYNCH_TIME = 0x1A;
+        public static final byte DATE_TIME = 0x1B;
         public static final byte MONDAY_LOAD_ON_TIME = 0x20;
         public static final byte MONDAY_LOAD_OFF_TIME = 0x21;
         public static final byte TUESDAY_LOAD_ON_TIME = 0x22;
@@ -226,6 +228,14 @@ public class SmartPlugCommHelper {
                                 /**
                                  * El payload es 1 byte que indica si la carga está encendida (1) o
                                  * apagada (0).
+                                 */
+                                if ( (data.length - 7) == 1 )
+                                    frame = new ByteFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));
+                            }
+                            else if (register == Registers.SYNCH_TIME) {
+                                /**
+                                 * El payload es 1 byte que indica si el RTC está sincronizado (1) o
+                                 * no (0).
                                  */
                                 if ( (data.length - 7) == 1 )
                                     frame = new ByteFrame ((byte)length, (byte)command, (byte)register, Arrays.copyOfRange(data, 5, data.length - 2));

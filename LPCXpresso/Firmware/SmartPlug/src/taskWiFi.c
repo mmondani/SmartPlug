@@ -318,10 +318,10 @@ TASK(taskWiFi)
                 stateOut = 0;
                 stateIn = 1;
 
-                // Si no se pudo sincronizar a los 20 segundos va a volver a intentar
+                // Si no se pudo sincronizar a los 5 minutos va a volver a intentar
                 if (ioRN1723_isTimeValid(rn1723) == 0)
                 {
-                	cTimer_start(timerSynchronizeTime, 20000);
+                	cTimer_start(timerSynchronizeTime, 5 * 60 * 1000);
                 	SetEvent (taskSmartPlug, evRTCNoSynch);
                 }
                 else
@@ -1138,15 +1138,20 @@ void writeEEPROMbyRegister (void* ee, uint8_t regEE, uint8_t count, uint8_t* buf
 	}
 	else if (regEE == REG_DATE_TIME)
 	{
-		// Llegan 6 bytes con el siguiente formato: dia mes año (00 a 99) hora minutos segundos
+		// Llegan 7 bytes con el siguiente formato: dia mes año (00 a 99) hora minutos segundos día_de_la_semana
 		fullTime.dayOfMonth = buff[0];
-		fullTime.month = buff[0];
-		fullTime.year = buff[0] + 2000;
-		fullTime.hour = buff[0];
-		fullTime.minute = buff[0];
-		fullTime.second = buff[0];
+		fullTime.month = buff[1];
+		fullTime.year = buff[2] + 2000;
+		fullTime.hour = buff[3];
+		fullTime.minute = buff[4];
+		fullTime.second = buff[5];
+		fullTime.dayOfWeek = buff[6];
 
 		taskRTC_setTime(&fullTime);
+
+		cTimer_stop(timerSynchronizeTime);
+
+		SetEvent (taskSmartPlug, evRTCSynch);
 	}
 	else
 	{

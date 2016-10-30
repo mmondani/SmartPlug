@@ -282,11 +282,12 @@ void MainWindow::on_pushSend_clicked()
             regByte = REG_DATE_TIME;
             payloadStrings = payload.split(" ", QString::SkipEmptyParts);
 
-            // Siempre se envían 7 bytes.
-            payloadBytes.clear();
+            // Siempre se envían 6 bytes.
+            payloadBytes.resize(6);
+            payloadBytes.fill('\0');
             for (int i = 0; i < payloadStrings.length(); i++)
             {
-                if (i >= 7)
+                if (i >= 6)
                     break;
 
                 char number = (char)(payloadStrings.at(i).toInt());
@@ -298,7 +299,6 @@ void MainWindow::on_pushSend_clicked()
             commandByte = CMD_SET;
             regByte = registerNameMap[reg];
             payloadStrings = payload.split(" ", QString::SkipEmptyParts);
-            payloadBytes.clear();
             for (int i = 0; i < payloadStrings.length(); i++)
             {
                 if (i >= 2)
