@@ -7,7 +7,7 @@
 
 %----------------------------------------------------------------------------------------
 
-En este capítulo se explican los criterios utilizados en el desarrollo del prototipo y se justifican las decisiones de diseño; así como también se describe la implementación.
+En este capítulo se explican los criterios utilizados en el desarrollo del prototipo y se justifican las decisiones de diseño, así como también se describe la implementación.
 
 \section{Hardware}
 \label{section:hardware}
@@ -131,6 +131,8 @@ La comunicación es sencilla, a través de comandos enviados por una UART. Con e
 
 La conmutación de la carga está a cargo de un relay mecánico. En la Figura \ref{fig:pcb_control_carga} puede verse que la fase de la línea eléctrica se conecta entre los contactos \textit{común} y \textit{normal cerrado} del relay para que, en caso de ocurrir un desperfecto con el Smart Plug, la carga pueda seguir funcionando.
 
+La elección de un relay de este tipo por sobre los de estado sólido, radicó en el menor costo de los primeros. Por otro lado, la gran mayoría de los smart plugs disponibles actualmente utilizan relays mecánicos.
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=10cm]{./Figures/3_1_2_pcb_control_carga.png}
@@ -194,7 +196,7 @@ Es una tarea que se ejecuta cada 20ms mediante una alarma de FreeOSEK.
 Es una tarea periódica que se ejecuta cada 10ms, mediante una alarma de FreeOSEK, para actualizar los leds.
 
 
-\item taskRTC. Se encarga de configurar y acceder al RTC interno del microcontrolador. Es la tarea que genera los eventos para indicar el paso de un minuto, una hora o un día, los cuales son utilizados por taskSmartPlug para registrar las mediciones de potencia activa y energía consumida por hora.
+\item taskRTC. Se encarga de configurar y acceder al RTC interno del microcontrolador. Es la tarea que genera los eventos para indicar el paso de un minuto, una hora o un día, los cuales son utilizados por taskSmartPlug para registrar las mediciones de potencia activa y energía consumida en cada hora del día.
 
 \item taskWiFi. Se encarga de recibir las conexiones desde la aplicación móvil. Interacciona con taskMeter para requerir las últimas mediciones de acuerdo a lo solicitado por la aplicación móvil.
 
