@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   id="svg4330"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="firmware_diagrama_capas.svg"
+   inkscape:export-filename="/home/ragnarok/Dropbox/Cursos LSE/TP Final/Memoria/Imagenes/Capitulo 3/3-2-2/firmware_diagrama_capas.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
+  <defs
+     id="defs4332">
+    <filter
+       id="filter4677"
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow">
+      <feFlood
+         id="feFlood4679"
+         flood-opacity="0.5"
+         flood-color="rgb(0,0,0)"
+         result="flood" />
+      <feComposite
+         id="feComposite4681"
+         in2="SourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur4683"
+         in="composite"
+         stdDeviation="1.8"
+         result="blur" />
+      <feOffset
+         id="feOffset4685"
+         dx="2"
+         dy="2"
+         result="offset" />
+      <feComposite
+         id="feComposite4687"
+         in2="offset"
+         in="SourceGraphic"
+         operator="over"
+         result="fbSourceGraphic" />
+      <feColorMatrix
+         result="fbSourceGraphicAlpha"
+         in="fbSourceGraphic"
+         values="0 0 0 -1 0 0 0 0 -1 0 0 0 0 -1 0 0 0 0 1 0"
+         id="feColorMatrix4689" />
+      <feFlood
+         id="feFlood4691"
+         flood-opacity="0.5"
+         flood-color="rgb(0,0,0)"
+         result="flood"
+         in="fbSourceGraphic" />
+      <feComposite
+         id="feComposite4693"
+         in2="fbSourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur4695"
+         in="composite"
+         stdDeviation="1.8"
+         result="blur" />
+      <feOffset
+         id="feOffset4697"
+         dx="2"
+         dy="2"
+         result="offset" />
+      <feComposite
+         id="feComposite4699"
+         in2="offset"
+         in="fbSourceGraphic"
+         operator="over"
+         result="composite2" />
+    </filter>
+    <filter
+       id="filter4701"
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow">
+      <feFlood
+         id="feFlood4703"
+         flood-opacity="0.5"
+         flood-color="rgb(0,0,0)"
+         result="flood" />
+      <feComposite
+         id="feComposite4705"
+         in2="SourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur4707"
+         in="composite"
+         stdDeviation="1.8"
+         result="blur" />
+      <feOffset
+         id="feOffset4709"
+         dx="2"
+         dy="2"
+         result="offset" />
+      <feComposite
+         id="feComposite4711"
+         in2="offset"
+         in="SourceGraphic"
+         operator="over"
+         result="composite2" />
+    </filter>
+    <filter
+       id="filter4713"
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow">
+      <feFlood
+         id="feFlood4715"
+         flood-opacity="0.5"
+         flood-color="rgb(0,0,0)"
+         result="flood" />
+      <feComposite
+         id="feComposite4717"
+         in2="SourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur4719"
+         in="composite"
+         stdDeviation="1.8"
+         result="blur" />
+      <feOffset
+         id="feOffset4721"
+         dx="2"
+         dy="2"
+         result="offset" />
+      <feComposite
+         id="feComposite4723"
+         in2="offset"
+         in="SourceGraphic"
+         operator="over"
+         result="composite2" />
+    </filter>
+    <filter
+       id="filter4725"
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow">
+      <feFlood
+         id="feFlood4727"
+         flood-opacity="0.5"
+         flood-color="rgb(0,0,0)"
+         result="flood" />
+      <feComposite
+         id="feComposite4729"
+         in2="SourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur4731"
+         in="composite"
+         stdDeviation="1.8"
+         result="blur" />
+      <feOffset
+         id="feOffset4733"
+         dx="2"
+         dy="2"
+         result="offset" />
+      <feComposite
+         id="feComposite4735"
+         in2="offset"
+         in="SourceGraphic"
+         operator="over"
+         result="composite2" />
+    </filter>
+    <filter
+       id="filter4737"
+       style="color-interpolation-filters:sRGB;"
+       inkscape:label="Drop Shadow">
+      <feFlood
+         id="feFlood4739"
+         flood-opacity="0.5"
+         flood-color="rgb(0,0,0)"
+         result="flood" />
+      <feComposite
+         id="feComposite4741"
+         in2="SourceGraphic"
+         in="flood"
+         operator="in"
+         result="composite1" />
+      <feGaussianBlur
+         id="feGaussianBlur4743"
+         in="composite"
+         stdDeviation="1.8"
+         result="blur" />
+      <feOffset
+         id="feOffset4745"
+         dx="2"
+         dy="2"
+         result="offset" />
+      <feComposite
+         id="feComposite4747"
+         in2="offset"
+         in="SourceGraphic"
+         operator="over"
+         result="composite2" />
+    </filter>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="275.38927"
+     inkscape:cy="922.33382"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1600"
+     inkscape:window-height="876"
+     inkscape:window-x="0"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata4335">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#f2f2f2;fill-opacity:1;stroke:#000000;stroke-width:0.9363783;stroke-opacity:1"
+       id="rect4763"
+       width="411.49219"
+       height="273.63504"
+       x="130.6825"
+       y="83.758934"
+       ry="2.6209819" />
+    <g
+       id="g4387"
+       transform="translate(-1.1478577,0)"
+       style="filter:url(#filter4725)">
+      <rect
+         ry="2.5587971"
+         y="308.06561"
+         x="154.00499"
+         height="31.15373"
+         width="372.85715"
+         id="rect4357"
+         style="fill:#808080;fill-opacity:1;stroke:none" />
+      <text
+         transform="scale(1.125566,0.88844191)"
+         sodipodi:linespacing="125%"
+         id="text4359"
+         y="369.78488"
+         x="248.34911"
+         style="font-size:18.30205154000000078px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
+         xml:space="preserve"><tspan
+           y="369.78488"
+           x="248.34911"
+           id="tspan4361"
+           sodipodi:role="line">HARDWARE</tspan></text>
+    </g>
+    <g
+       id="g4392"
+       transform="translate(-103.36296,0)"
+       style="filter:url(#filter4713)">
+      <rect
+         ry="2.5587971"
+         y="266.07101"
+         x="256.22009"
+         height="31.15373"
+         width="372.85715"
+         id="rect4357-0"
+         style="fill:#2a7fff;fill-opacity:1;stroke:none" />
+      <text
+         transform="scale(1.125566,0.88844191)"
+         sodipodi:linespacing="125%"
+         id="text4359-3"
+         y="322.51721"
+         x="247.3293"
+         style="font-size:18.30205154000000078px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
+         xml:space="preserve"><tspan
+           y="322.51721"
+           x="247.3293"
+           id="tspan4361-2"
+           sodipodi:role="line">BIBLIOTECAS DEL FABRICANTE</tspan></text>
+    </g>
+    <g
+       id="g4392-0"
+       transform="translate(-192.64867,-127.14284)">
+      <g
+         id="g4426"
+         transform="translate(76.285714,45.142857)"
+         style="filter:url(#filter4677)">
+        <g
+           id="g4584"
+           transform="translate(5.7142857,15)">
+          <rect
+             ry="9.4228973"
+             y="209.28531"
+             x="263.36295"
+             height="114.72515"
+             width="155.71429"
+             id="rect4357-0-7-2-2"
+             style="fill:#ff7f2a;fill-opacity:1;stroke:none" />
+          <text
+             transform="scale(1.125566,0.88844191)"
+             sodipodi:linespacing="125%"
+             id="text4359-3-1"
+             y="295.32639"
+             x="303.14975"
+             style="font-size:18.30205154000000078px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
+             xml:space="preserve"><tspan
+               y="295.32639"
+               x="306.36691"
+               id="tspan4361-2-3"
+               sodipodi:role="line">SISTEMA </tspan><tspan
+               y="318.20395"
+               x="303.14975"
+               sodipodi:role="line"
+               id="tspan4424">OPERATIVO</tspan></text>
+        </g>
+      </g>
+      <g
+         id="g4426-5"
+         transform="translate(298.68964,-9.8717502)"
+         style="filter:url(#filter4701)">
+        <rect
+           style="fill:#ff7f2a;fill-opacity:1;stroke:none"
+           id="rect4357-0-7-2"
+           width="155.71429"
+           height="114.72515"
+           x="262.33307"
+           y="281.15704"
+           ry="9.4228973" />
+        <text
+           xml:space="preserve"
+           style="font-size:18.30205154000000078px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
+           x="301.87286"
+           y="338.27512"
+           id="text4359-3-1-2"
+           sodipodi:linespacing="125%"
+           transform="scale(1.125566,0.88844191)"><tspan
+             id="tspan4424-1"
+             sodipodi:role="line"
+             x="301.87286"
+             y="338.27512">DRIVERS</tspan></text>
+        <g
+           id="g4505"
+           transform="translate(-0.2302478,0)">
+          <rect
+             ry="2.5587969"
+             y="357.35873"
+             x="270.06332"
+             height="31.153723"
+             width="140.71429"
+             id="rect4357-0-7-2-1"
+             style="fill:#aa0000;fill-opacity:1;stroke:none" />
+          <text
+             transform="scale(1.125566,0.88844191)"
+             sodipodi:linespacing="125%"
+             id="text4359-3-1-2-7"
+             y="418.3913"
+             x="302.68283"
+             style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
+             xml:space="preserve"><tspan
+               y="418.3913"
+               x="302.68283"
+               sodipodi:role="line"
+               id="tspan4424-1-9">ABSTRACCIÓN DE</tspan><tspan
+               id="tspan4503"
+               y="432.1413"
+               x="302.68283"
+               sodipodi:role="line">HARDWARE</tspan></text>
+        </g>
+        <g
+           transform="translate(-0.74715454,-51.415967)"
+           id="g4505-5">
+          <g
+             id="g4543"
+             transform="translate(0,18)">
+            <rect
+               style="fill:#aa0000;fill-opacity:1;stroke:none"
+               id="rect4357-0-7-2-1-9"
+               width="140.71429"
+               height="31.153723"
+               x="270.58023"
+               y="351.32465"
+               ry="2.5587969" />
+            <text
+               xml:space="preserve"
+               style="font-size:11px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
+               x="302.68283"
+               y="418.3913"
+               id="text4359-3-1-2-7-0"
+               sodipodi:linespacing="125%"
+               transform="scale(1.125566,0.88844191)"><tspan
+                 sodipodi:role="line"
+                 x="302.68283"
+                 y="418.3913"
+                 id="tspan4503-3">PERIFÉRICOS</tspan></text>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g
+       id="g4387-3"
+       transform="translate(-4.7192755,-206.99458)"
+       style="filter:url(#filter4737)">
+      <rect
+         ry="2.5587971"
+         y="304.94446"
+         x="157.18855"
+         height="31.15373"
+         width="372.85715"
+         id="rect4357-1"
+         style="fill:#00d400;fill-opacity:1;stroke:none" />
+      <text
+         transform="scale(1.125566,0.88844191)"
+         sodipodi:linespacing="125%"
+         id="text4359-36"
+         y="369.78488"
+         x="248.34911"
+         style="font-size:18.30205154000000078px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ffffff;fill-opacity:1;stroke:none;font-family:Verdana;-inkscape-font-specification:Verdana"
+         xml:space="preserve"><tspan
+           y="369.78488"
+           x="248.34911"
+           id="tspan4361-4"
+           sodipodi:role="line">APLICACIÓN</tspan></text>
+    </g>
+  </g>
+</svg>
