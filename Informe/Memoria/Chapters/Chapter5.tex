@@ -43,6 +43,7 @@ Para continuar con el desarrollo del equipo, con el objetivo de obtener un produ
 
 \begin{itemize}
 \item Rediseñar la adaptación de las señales de tensión y corriente para reducir el tamaño del PCB. Evaluar la posibilidad de utilizar divisores resistivos para el canal de tensión y un shunt para la corriente. Implementar un diseño propio de fuente switching la cual se integre en el PCB del producto.
+\item Abordar el diseño final del PCB teniendo en cuenta lo establecido por la Resolución 171/16 (antes 92/98) de Seguridad Eléctrica, la cual debe ser cumplida para poder comercializar el producto.
 \item Agregar la lógica del proceso de prueba en fábrica. La comunicación entre el probador del equipo y el equipo se realizará a través de la UART de debug, por lo que se debe modificar la tarea moduleLog para permitir recibir comandos durante la prueba. La prueba de fábrica incluirá: grabación del ID único, calibración de continua y de ganancia del canal de corriente y de tensión del front-end analógico.
 \item En la aplicación móvil, el agregado de un nuevo Smart Plug se realizará introduciendo el ID único del producto. En la versión descrita en este trabajo, la aplicación muestra todos los Smart Plugs que encuentra.
 \item En la aplicación móvil, se agregará información acerca del costo de la energía consumida y se introducirá la posibilidad de configurar un nivel de energía o de dinero, superado el cual se generarán notificaciones en el celular.

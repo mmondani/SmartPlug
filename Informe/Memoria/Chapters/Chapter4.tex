@@ -20,13 +20,13 @@ El realizar pruebas sistemáticas para comprobar los requerimientos de un produc
 
 El registro completo de pruebas puede encontrarse en el documento \textit{Smart Plug Hardware - Documento de pruebas} en \citep{repo_hardware}. A continuación se describen algunas pruebas significativas y se muestran sus resultados.
 
-Al diseñar el Smart Plug se debió establecer la tensión y la corriente máxima de medición para el medidor eléctrico. Como fue explicado, estos valores se fijaron en 240VAC y 5A. por lo tanto, fue necesario validar que el hardware diseñado fuera capaz de medir estos valores.
+Al diseñar el Smart Plug se debió establecer la tensión y la corriente máxima de medición para el medidor eléctrico. Como fue explicado, estos valores se fijaron en 240 VAC y 5 A. por lo tanto, fue necesario validar que el hardware diseñado fuera capaz de medir estos valores.
 
-El límite en la medición tanto de la corriente como de la tensión está impuesto por la tensión máxima de pico que soporta el front-end analógico en sus entradas diferenciales. Esta tensión no puede superar los 250mV de pico. Por lo tanto, cuando se aplicaran los valores máximos para los que fue diseñado el Smart Plug, la tensión pico en las entradas diferenciales debía estar por debajo de los 250mV.
+El límite en la medición tanto de la corriente como de la tensión está impuesto por la tensión máxima de pico que soporta el front-end analógico en sus entradas diferenciales. Esta tensión no puede superar los 250 mV de pico. Por lo tanto, cuando se aplicaran los valores máximos para los que fue diseñado el Smart Plug, la tensión pico en las entradas diferenciales debía estar por debajo de los 250 mV.
 
-En el caso de la tensión, se utilizó un autotransformador variable de de 0 a 250V, el cual permitió generar una tensión de 240VAC. Aplicando esta tensión, se midió la señal en la entrada diferencial del CS5490 mediante un osciloscopio, comprobándose que su tensión de pico era de 203mV, valor que se encuentra por debajo del máximo permitido por el CS5490.
+En el caso de la tensión, se utilizó un autotransformador variable de de 0 a 250 VAC, el cual permitió generar una tensión de 240 VAC. Aplicando esta tensión, se midió la señal en la entrada diferencial del CS5490 mediante un osciloscopio, comprobándose que su tensión de pico era de 203 mV, valor que se encuentra por debajo del máximo permitido por el CS5490.
 
-En el caso de la corriente, y debido a que los canales de tensión y corriente son independientes, para producir una corriente de 5A de forma sencilla se eligió reducir la tensión con que se alimenta al Smart Plug. Para esto se utilizó el autotransformador, generando una tensión de 5VAC. Como carga se utilizó una resistencia de potencia de 1$\Omega$. Se ajustó la salida del autotransformador hasta medir una corriente de 5A sobre la carga. La tensión pico medida mediante un osciloscopio en la entrada diferencial del canal de corriente fue de 192mV, valor que comprueba que el equipo puede medir la corriente especificada.
+En el caso de la corriente, y debido a que los canales de tensión y corriente son independientes, para producir una corriente de 5 A de forma sencilla se eligió reducir la tensión con que se alimenta al Smart Plug. Para esto se utilizó el autotransformador, generando una tensión de 5 VAC. Como carga se utilizó una resistencia de potencia de 1$\Omega$. Se ajustó la salida del autotransformador hasta medir una corriente de 5A sobre la carga. La tensión pico medida mediante un osciloscopio en la entrada diferencial del canal de corriente fue de 192 mV, valor que comprueba que el equipo puede medir la corriente especificada.
 
 Un aspecto que debió ser medido, aunque no estuviera relacionado con un requerimiento, fue el error relativo en las mediciones de tensión y de corriente. En las Figuras \ref{fig:error_canal_tensión} y \ref{fig:error_canal_corriente} pueden verse los resultados de las mediciones para el canal de tensión y el de corriente respectivamente.
 
@@ -44,9 +44,9 @@ Un aspecto que debió ser medido, aunque no estuviera relacionado con un requeri
 	\label{fig:error_canal_corriente}
 \end{figure}
 
-En el caso de la tensión, se utilizó el autotransformador variable para generar distintas tensiones de entrada y se comparó la tensión medida por el Smart Plug contra un voltímetro usado para el contraste. Como puede verse, el error relativo se encuentra por debajo del 1\% en todo el rango de tensión desde los 200VAC hasta los 240VAC.
+En el caso de la tensión, se utilizó el autotransformador variable para generar distintas tensiones de entrada y se comparó la tensión medida por el Smart Plug contra un voltímetro usado para el contraste. Como puede verse, el error relativo se encuentra por debajo del 1\% en todo el rango de tensión desde los 200 VAC hasta los 240 VAC.
 
-En el caso de la corriente, se ajustó la tensión de línea sobre el Smart Plug en 10VAC utilizando el autotransformador, y se usaron distintas combinaciones de resistencias de potencia para generar diferentes corrientes. Para contrastar las mediciones se empleó un amperímetro. Los resultados se encuentran por debajo del 2\% en el rango de 0,02A hasta 4A. Los puntos en los que el error relativo está por arriba del 1\% en realidad representan una variación de una centésima en la medición respecto del amperímetro.
+En el caso de la corriente, se ajustó la tensión de línea sobre el Smart Plug en 10 VAC utilizando el autotransformador, y se usaron distintas combinaciones de resistencias de potencia para generar diferentes corrientes. Para contrastar las mediciones se empleó un amperímetro. Los resultados se encuentran por debajo del 2\% en el rango de 0,02 A hasta 4 A. Los puntos en los que el error relativo está por arriba del 1\% en realidad representan una variación de una centésima en la medición respecto del amperímetro.
 
 Para validar el resto de los requerimientos de hardware se realizaron firmwares especiales que tenían por objetivo validar un aspecto particular del equipo. Estos firmwares se pueden encontrar en \citep{repo_firmware} dentro de la carpeta \textit{Tests}. Los tests de hardware son aquellos cuyo nombre comienza con \textit{SmartPlug\_hw\_test}.
 
@@ -61,9 +61,9 @@ Uno de los aspectos que se debió validar en el caso del firmware fueron las se�
 A continuación se resumen las pruebas para las distintas señalizaciones:
 
 \begin{itemize}
-\item Led verde destellante a 2Hz: esta señalización se produce al iniciar el Smart Plug como un punto de acceso. Para esto, se mantuvo presionado el pulsador en la placa del Smart Plug durante 5 segundos y se comprobó que el Plug creara una red WiFi. El led comenzó a destellar con una frecuencia de 2Hz (medido con un osciloscopio) cuando se creó la red WiFi. El led dejó de destellar cuando se configuró una red WiFi a la que se tenía que conectar el Smart Plug.
-\item Led verde destellante a 1Hz: esta señalización se produce mientras dura el proceso de WPS. Para producirla, se presionó el pulsador en la placa del Smart Plug. Luego de hacer esto, el led comenzó a destellar con una frecuencia de 1Hz. Se presionó el botón de WPS en un router WiFi y cuando el Smart Plug se unió a la red, el led verde dejó de destellar.
-\item Led rojo destellante a 1Hz: se produce cuando el Smart Plug no puede registrarse en una red WiFi. Para producir esta situación se enciende el Smart Plug con el router WiFi desenergizado. Luego de unos segundos, al no poder conectarse a la red WiFi, el led rojo comenzó a destellar a una frecuencia de 1Hz.
+\item Led verde destellante a 2 Hz: esta señalización se produce al iniciar el Smart Plug como un punto de acceso. Para esto, se mantuvo presionado el pulsador en la placa del Smart Plug durante 5 segundos y se comprobó que el Plug creara una red WiFi. El led comenzó a destellar con una frecuencia de 2 Hz (medido con un osciloscopio) cuando se creó la red WiFi. El led dejó de destellar cuando se configuró una red WiFi a la que se tenía que conectar el Smart Plug.
+\item Led verde destellante a 1 Hz: esta señalización se produce mientras dura el proceso de WPS. Para producirla, se presionó el pulsador en la placa del Smart Plug. Luego de hacer esto, el led comenzó a destellar con una frecuencia de 1 Hz. Se presionó el botón de WPS en un router WiFi y cuando el Smart Plug se unió a la red, el led verde dejó de destellar.
+\item Led rojo destellante a 1 Hz: se produce cuando el Smart Plug no puede registrarse en una red WiFi. Para producir esta situación se enciende el Smart Plug con el router WiFi desenergizado. Luego de unos segundos, al no poder conectarse a la red WiFi, el led rojo comenzó a destellar a una frecuencia de 1 Hz.
 \item Led verde y rojo destellan: se produce cuando el Smart Plug no puede sincronizar la su fecha y hora con un servidor NTP. Para producir esta falla, se configuró el router WiFi para que impidiera las conexiones a la dirección IP del servidor NTP usado por el Plug. Cuando se encendió el Smart Plug, luego de unos segundos el led verde y el rojo comenzaron a destellar.
 \item Led verde encendido: esta señalización indica el correcto funcionamiento del Smart Plug. Para producir esta situación se eliminaron las condiciones de falla antes simuladas y el led verde se encidió luego de unos segundos.
 \end{itemize}
@@ -115,7 +115,7 @@ Por otro lado, el código fuente de esta aplicación de PC se encuentra en \cite
 
 En el caso de la aplicación móvil, además de las pruebas de caja negra para validar sus requerimientos (las cuales pueden encontrarse en el documento \textit{Smart Plug App - Documento de Pruebas v1.0} en \citep{repo_docu_app}) se llevó a cabo una prueba general del sistema completo para comprobar su funcionamiento.
 
-Básicamente la prueba general consistió en dejar conectado el Smart Plug durante 5 días con una lámpara de 60W conectada realizando distintas configuraciones para comprobar su funcionamiento.
+Básicamente la prueba general consistió en dejar conectado el Smart Plug durante 5 días con una lámpara de 60 W conectada realizando distintas configuraciones para comprobar su funcionamiento.
 
 Las acciones que se realizaron dentro de la prueba fueron:
 

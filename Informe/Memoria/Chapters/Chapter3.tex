@@ -28,11 +28,11 @@ Los bloques mencionados en la Figura \ref{fig:prototipo} son explicados en las S
 A pesar de ser un prototipo funcional, el hardware se diseño pensando en las características finales que tendrá el producto. Por lo tanto se debieron definir las especificaciones deseadas para el equipo:
 
 \begin{itemize}
-\item Tensión máxima de operación: 240VAC
-\item Corriente máxima de operación: 5A
+\item Tensión máxima de operación: 240 VAC
+\item Corriente máxima de operación: 5 A
 \end{itemize}
 
-Para una tensión de operación de 220VAC, la máxima potencia que se puede conectar es de 1100W. Para un primer producto se buscó cubrir la automatización de aparatos eléctricos de baja potencia como lámparas, ventiladores, electrodomésticos pequeños, televisores, etc. El manejo de equipos de mayor potencia como aires acondicionados, estufas eléctricas, hornos eléctricos, etc, será cubierto en un futuro cuando se modifique el hardware para soportar una mayor corriente, generando así un nuevo producto.
+Para una tensión de operación de 220 VAC, la máxima potencia que se puede conectar es de 1100 W. Para un primer producto se buscó cubrir la automatización de aparatos eléctricos de baja potencia como lámparas, ventiladores, electrodomésticos pequeños, televisores, etc. El manejo de equipos de mayor potencia como aires acondicionados, estufas eléctricas, hornos eléctricos, etc, será cubierto en un futuro cuando se modifique el hardware para soportar una mayor corriente, generando así un nuevo producto.
 
 
 
@@ -51,7 +51,7 @@ En la Figura \ref{fig:hardware_diagrama_bloques} pueden verse los principales bl
 A continuación se describe brévemente cada uno de los módulos. Una explicación más detallada de cada uno se encuentra en la Subsección \ref{subsec:detalles_hardware}:
 
 \begin{itemize}
-\item Fuente de alimentación. La alimentación del equipo es obtenida de la misma línea eléctrica a la que está conectado el dispositivo. Debe generar dos niveles de tensión, 5V y 3,3V y debe ser capaz de soportar el consumo especialmente del módulo WiFi.
+\item Fuente de alimentación. La alimentación del equipo es obtenida de la misma línea eléctrica a la que está conectado el dispositivo. Debe generar dos niveles de tensión, 5 V y 3,3 V y debe ser capaz de soportar el consumo especialmente del módulo WiFi.
 \item Adaptación de las señales de corriente y tensión. Este bloque se encarga de adaptar la señal de tensión de la línea y la señal de la corriente consumida por el aparato eléctrico a los niveles que requiere el front-end analógico CS5490. La adaptación se realiza mediante transformadores para lograr una completa aislación de la línea.
 \item Front-end analógico CS5490. Es el circuito integrado encargado de tomar las señales de la línea y generar las mediciones eléctricas de interés: tensión eficaz, corriente eficaz, frecuencia de línea, factor de potencia, energía consumida, etc.
 \item Control de la carga. La conmutación de la carga se realiza mediante un relay mecánico.
@@ -69,7 +69,7 @@ En este apartado de la memoria se describen las decisiones de diseño asociadas 
 
 \subsubsection{Fuente de alimentación}
 
-El esquemático de la fuente del Smart Plug puede verse en la Figura \ref{fig:pcb_fuente}. Esta fuente de alimentación se conecta a la misma línea eléctrica que es medida por el front-end analógico. A partir de la tensión de 220VAC genera una tensión de 5V y 3,3V. Para lograr los 5V se utiliza una fuente switching con montaje para PCB VSK-S2-5U la cual puede entregar hasta 400mA. Esta fuente permite generar una tensión estable manteniendo un empaquetado de reducido tamaño (34 x 22 x 18 mm). 
+El esquemático de la fuente del Smart Plug puede verse en la Figura \ref{fig:pcb_fuente}. Esta fuente de alimentación se conecta a la misma línea eléctrica que es medida por el front-end analógico. A partir de la tensión de 220 VAC genera una tensión de 5 V y 3,3 V. Para lograr los 5 V se utiliza una fuente switching con montaje para PCB VSK-S2-5U la cual puede entregar hasta 400 mA. Esta fuente permite generar una tensión estable manteniendo un empaquetado de reducido tamaño (34 x 22 x 18 mm). 
 
 \begin{figure}[h]
 	\centering
@@ -81,7 +81,7 @@ El esquemático de la fuente del Smart Plug puede verse en la Figura \ref{fig:pc
 
 Se debe aclarar que esta fuente switching fue elegida para el prototipo funcional. En la versión final del equipo se utilizará una fuente switching AC-DC de similares características diseñada dentro de la empresa X-28 Alarmas, debido a que tanto el tamaño del empaquetado de la fuente como su costo (U\$s 13,25 por unidad al momento de escribir la memoria) son prohibitivos para incluir esta fuente en el diseño final.
 
-En cuanto al regulador de 3,3V se eligió un componente que puede entregar hasta 500mA. El requerimiento de corriente tanto de la fuente switching como del regulador de 3,3V surge del consumo especialmente del módulo WiFi RN1723, el cual puede requerir hasta 250mA.
+En cuanto al regulador de 3,3 V se eligió un componente que puede entregar hasta 500 mA. El requerimiento de corriente tanto de la fuente switching como del regulador de 3,3 V surge del consumo especialmente del módulo WiFi RN1723, el cual puede requerir hasta 250 mA.
 
 
 \subsubsection{Adaptación de las señales de tensión y corriente}
@@ -95,17 +95,17 @@ En la Figura \ref{fig:pcb_adaptacion} puede verse la sección del esquemático r
 	\label{fig:pcb_adaptacion}
 \end{figure}
 
-De acuerdo a la hoja de datos del front-end elegido para este proyecto (CS5490) tanto la señal de corriente como la de tensión no deben superar los 250mV de pico en las entradas diferenciales del circuito integrado. Para lograr esto, primero se debe definir la tensión y la corriente máxima que debe medir el Smart Plug. En el caso concreto de este proyecto, y como ya fue mencionado, estos valores son: tensión máxima - 240VAC, corriente máxima - 5A.
+De acuerdo a la hoja de datos del front-end elegido para este proyecto (CS5490) tanto la señal de corriente como la de tensión no deben superar los 250 mV de pico en las entradas diferenciales del circuito integrado. Para lograr esto, primero se debe definir la tensión y la corriente máxima que debe medir el Smart Plug. En el caso concreto de este proyecto, y como ya fue mencionado, estos valores son: tensión máxima - 240 VAC, corriente máxima - 5 A.
 
 Definidos estos valores, se eligió aislar el resto del circuito de la línea eléctrica tomando las señales de tensión y corriente mediante transformadores. Al igual que sucedió con la elección de la fuente switching, esta decisión fue exclusivamente para el desarrollo del prototipo funcional, ya que en la versión final será conveniente reemplazar el transformador de tensión por divisores resistivos y el transformador de corriente por un shunt. Ambos cambios van a permitir reducir el tamaño del producto final y su costo.
 
-Luego de los transformadores hay divisores resistivos dispuestos en forma diferencial para reducir la tensión a los valores tolerados por el CS5409. Finalmente hay filtros pasa-bajo con un a frecuencia de corte de 3,3kHz.
+Luego de los transformadores hay divisores resistivos dispuestos en forma diferencial para reducir la tensión a los valores tolerados por el CS5409. Finalmente hay filtros pasa-bajo con un a frecuencia de corte de 3,3 kHz.
 
 Con los valores elegidos de relación de transformación y divisores resistivos, los valores máximos soportados por el equipo resultan:
 
 \begin{itemize}
-\item Tensión máxima soportada por el hardware: 320VAC.
-\item Corriente máxima soportada por el hardware: 6,5A.
+\item Tensión máxima soportada por el hardware: 320 VAC.
+\item Corriente máxima soportada por el hardware: 6,5 A.
 \end{itemize}
 
 Ambos valores se encuentran por encima de los valores máximos informados al usuario.
@@ -122,7 +122,7 @@ Luego de adaptar las señales de tensión y de corriente, las mismas deben ser m
 	\label{fig:pcb_medicion_energia}
 \end{figure}
 
-A parte de los componentes relacionados con la adaptación de las señales de línea, este circuito integrado  no necesita de una gran cantidad de componentes adicionales, salvo algunos capacitores y un cristal de 4,096Mhz con el cual va generar la base de tiempo interna para realizar las mediciones y cálculos.
+A parte de los componentes relacionados con la adaptación de las señales de línea, este circuito integrado  no necesita de una gran cantidad de componentes adicionales, salvo algunos capacitores y un cristal de 4,096 MHz con el cual va generar la base de tiempo interna para realizar las mediciones y cálculos.
 
 La comunicación es sencilla, a través de comandos enviados por una UART. Con estos comandos se van poder conocer casi todas las mediciones que calcula el CS5490. La única medición que no puede ser conocida a través de la lectura de un registro es la energía consumida. Esta es informada mediante pulsos a través del pin \textit{DO}. Para esto se debe configurar la constante del medidor en el CS5490, es decir la cantidad de pulsos a los que equivale un kilowatt-hora.
 
@@ -140,7 +140,7 @@ La elección de un relay de este tipo por sobre los de estado sólido, radicó e
 	\label{fig:pcb_control_carga}
 \end{figure}
 
-Para funcionar, la bobina del relay requiere de una tensión de 5V y los contactos soportan una corriente máxima de 8A con 250VAC, valor que satisface sobradamente las especificaciones propuestas para el Smart Plug.
+Para funcionar, la bobina del relay requiere de una tensión de 5 V y los contactos soportan una corriente máxima de 8 A con 250 VAC, valor que satisface sobradamente las especificaciones propuestas para el Smart Plug.
 
 \subsubsection{Módulo WiFi}
 
